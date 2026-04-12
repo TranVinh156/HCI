@@ -1,814 +1,864 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import type { Route } from "./+types/home";
 
-type CameraStatus = "online" | "offline";
-type WarningType = "blur" | "signal" | "occlusion";
-type Area = "A-Block" | "B-Block" | "C-Block" | "D-Block";
-type TimePreset = "5m" | "1h" | "24h";
-type ActiveView = "live" | "dashboard" | "playback" | "alerts";
+type Role = "lecturer" | "school" | "admin";
+type Panel = "dashboard" | "reports" | "history";
+type RiskLevel = "thấp" | "vừa" | "cao";
+type FeedbackType = "hợp_lý" | "xem_lại";
 
-interface Camera {
+type SessionRow = {
   id: string;
-  name: string;
-  area: Area;
-  status: CameraStatus;
-  fps: number;
-  bitrate: number;
-  warnings: WarningType[];
-  blur: number;
-  brightness: number;
-  frameDrop: number;
-  lastSeen: string;
-}
+  date: string;
+  className: string;
+  attentive: number;
+  distracted: number;
+  noteTaking: number;
+  drowsyMinutes: number;
+  confidence: number;
+  recommendation: string;
+};
 
-interface AlertEvent {
+type Indicator = {
   id: string;
-  cameraId: string;
-  severity: "high" | "medium" | "low";
-  type: WarningType | "offline";
-  message: string;
+  label: string;
+  value: string;
+  trend: string;
+  explain: string;
+};
+
+type EventItem = {
+  id: string;
+  minute: number;
+  timeLabel: string;
+  title: string;
+  description: string;
+  confidence: number;
+  severity: RiskLevel;
+};
+
+type MinuteCell = {
+  id: string;
+  minute: number;
+  attentive: number;
+  distracted: number;
+  uncertainty: number;
+  level: RiskLevel;
+};
+
+type TimeWindow = {
+  id: string;
+  label: string;
+  attentive: number;
+  distracted: number;
+  confidence: number;
+  level: RiskLevel;
+  causes: string[];
+  actions: string[];
+  sessionIds: string[];
+  minuteCells: MinuteCell[];
+  events: EventItem[];
+};
+
+type AuditLog = {
+  id: string;
   at: string;
-  second: number;
-}
+  role: Role;
+  action: string;
+  detail: string;
+};
 
-const areas: Area[] = ["A-Block", "B-Block", "C-Block", "D-Block"];
+const roleLabel: Record<Role, string> = {
+  lecturer: "Giảng viên",
+  school: "Nhà trường",
+  admin: "Quản trị viên",
+};
 
-const makeCameras = (): Camera[] =>
-  Array.from({ length: 48 }, (_, i) => {
-    const area = areas[i % areas.length];
-    const status: CameraStatus = i % 11 === 0 ? "offline" : "online";
-    const warningSeed = i % 6;
-    const warnings: WarningType[] = [];
-    if (warningSeed === 0 || warningSeed === 3) warnings.push("blur");
-    if (warningSeed === 1 || warningSeed === 5) warnings.push("signal");
-    if (warningSeed === 2 || warningSeed === 4) warnings.push("occlusion");
+const roleHint: Record<Role, string> = {
+  lecturer: "Tối ưu bài giảng từ các điểm rơi mất chú ý theo tiến trình tiết học.",
+  school: "Theo dõi hiệu quả dạy học và điều kiện lớp bằng dữ liệu tổng hợp, ẩn danh.",
+  admin: "Giám sát an toàn hệ thống, fairness, audit và cơ chế dừng khẩn cấp (kill-switch).",
+};
 
-    return {
-      id: `CAM-${String(i + 1).padStart(3, "0")}`,
-      name: `Class ${String(i + 1).padStart(2, "0")}`,
-      area,
-      status,
-      fps: status === "offline" ? 0 : 16 + (i % 15),
-      bitrate: status === "offline" ? 0 : 1300 + (i % 8) * 350,
-      warnings,
-      blur: 18 + ((i * 7) % 64),
-      brightness: 28 + ((i * 11) % 57),
-      frameDrop: ((i * 3) % 19) / 10,
-      lastSeen: status === "offline" ? `${1 + (i % 5)}m ago` : "Live",
-    };
-  });
-
-const baseCameras = makeCameras();
-
-const defaultAlerts: AlertEvent[] = [
+const sessions: SessionRow[] = [
   {
-    id: "A-01",
-    cameraId: "CAM-003",
-    severity: "high",
-    type: "blur",
-    message: "Blur > threshold for 36s",
-    at: "09:42:10",
-    second: 138,
+    id: "S-2026-04-10-01",
+    date: "10/04/2026 07:30",
+    className: "INT3011E-3",
+    attentive: 74,
+    distracted: 16,
+    noteTaking: 41,
+    drowsyMinutes: 5,
+    confidence: 86,
+    recommendation: "Giảm block lý thuyết liên tục và chen tương tác ngắn sau mỗi 12 phút.",
   },
   {
-    id: "A-02",
-    cameraId: "CAM-011",
-    severity: "high",
-    type: "offline",
-    message: "Offline for 1m 12s",
-    at: "09:41:28",
-    second: 96,
+    id: "S-2026-04-08-02",
+    date: "08/04/2026 13:30",
+    className: "INT3011E-3",
+    attentive: 68,
+    distracted: 22,
+    noteTaking: 37,
+    drowsyMinutes: 11,
+    confidence: 84,
+    recommendation: "Ưu tiên thảo luận nhóm ở giữa tiết để tránh tụt chú ý sau giờ trưa.",
   },
   {
-    id: "A-03",
-    cameraId: "CAM-021",
-    severity: "medium",
-    type: "occlusion",
-    message: "Lens occlusion detected",
-    at: "09:39:47",
-    second: 224,
+    id: "S-2026-04-04-03",
+    date: "04/04/2026 09:20",
+    className: "INT2030-1",
+    attentive: 79,
+    distracted: 12,
+    noteTaking: 46,
+    drowsyMinutes: 3,
+    confidence: 88,
+    recommendation: "Giữ nhịp hiện tại, thêm 2 checkpoint hỏi đáp ở phút 20 và 35.",
   },
   {
-    id: "A-04",
-    cameraId: "CAM-009",
-    severity: "medium",
-    type: "signal",
-    message: "Signal unstable and frame jitter",
-    at: "09:38:17",
-    second: 182,
+    id: "S-2026-04-02-04",
+    date: "02/04/2026 15:10",
+    className: "INT2030-1",
+    attentive: 71,
+    distracted: 18,
+    noteTaking: 39,
+    drowsyMinutes: 8,
+    confidence: 82,
+    recommendation: "Cần tăng trực quan hóa nội dung trừu tượng và nhắc lớp ghi chú có chủ đích.",
   },
 ];
 
-const trendBlur = [31, 36, 41, 40, 46, 54, 49, 55, 57, 52, 48, 45];
-const trendBrightness = [58, 55, 52, 47, 43, 49, 51, 53, 56, 60, 63, 59];
-const trendDrop = [1, 2, 3, 2, 5, 8, 7, 6, 4, 5, 3, 2];
+const timeWindows: TimeWindow[] = [
+  {
+    id: "TW-01",
+    label: "07:30-07:50",
+    attentive: 78,
+    distracted: 11,
+    confidence: 88,
+    level: "thấp",
+    causes: ["Mở bài có ví dụ thực tế", "Lớp vào nhịp nhanh"],
+    actions: ["Giữ format khởi động 5 phút", "Chốt mục tiêu học tập đầu giờ"],
+    sessionIds: ["S-2026-04-10-01", "S-2026-04-04-03"],
+    minuteCells: [
+      { id: "M-01", minute: 5, attentive: 84, distracted: 8, uncertainty: 9, level: "thấp" },
+      { id: "M-02", minute: 10, attentive: 81, distracted: 10, uncertainty: 8, level: "thấp" },
+      { id: "M-03", minute: 15, attentive: 78, distracted: 12, uncertainty: 10, level: "thấp" },
+      { id: "M-04", minute: 20, attentive: 76, distracted: 13, uncertainty: 11, level: "vừa" },
+      { id: "M-05", minute: 25, attentive: 77, distracted: 12, uncertainty: 12, level: "vừa" },
+      { id: "M-06", minute: 30, attentive: 79, distracted: 11, uncertainty: 9, level: "thấp" },
+    ],
+    events: [
+      {
+        id: "E-01",
+        minute: 14,
+        timeLabel: "07:44",
+        title: "Mất chú ý tăng nhẹ",
+        description: "Khi chuyển sang phần định nghĩa, tỉ lệ nhìn xuống tăng.",
+        confidence: 83,
+        severity: "vừa",
+      },
+      {
+        id: "E-02",
+        minute: 19,
+        timeLabel: "07:49",
+        title: "Tương tác kéo lại tập trung",
+        description: "Sau câu hỏi trắc nghiệm nhanh, mức attentive tăng trở lại.",
+        confidence: 87,
+        severity: "thấp",
+      },
+    ],
+  },
+  {
+    id: "TW-02",
+    label: "13:20-13:50",
+    attentive: 63,
+    distracted: 27,
+    confidence: 84,
+    level: "cao",
+    causes: ["Khung giờ sau nghỉ trưa", "Mật độ nội dung dài liên tục"],
+    actions: ["Đổi sang thảo luận nhóm 7 phút", "Giảm tốc độ giảng 10-15%"],
+    sessionIds: ["S-2026-04-08-02", "S-2026-04-02-04"],
+    minuteCells: [
+      { id: "M-07", minute: 5, attentive: 72, distracted: 17, uncertainty: 13, level: "vừa" },
+      { id: "M-08", minute: 10, attentive: 68, distracted: 20, uncertainty: 15, level: "vừa" },
+      { id: "M-09", minute: 15, attentive: 64, distracted: 24, uncertainty: 17, level: "cao" },
+      { id: "M-10", minute: 20, attentive: 59, distracted: 29, uncertainty: 20, level: "cao" },
+      { id: "M-11", minute: 25, attentive: 61, distracted: 27, uncertainty: 19, level: "cao" },
+      { id: "M-12", minute: 30, attentive: 65, distracted: 23, uncertainty: 16, level: "vừa" },
+    ],
+    events: [
+      {
+        id: "E-03",
+        minute: 16,
+        timeLabel: "13:36",
+        title: "Tụt chú ý đồng loạt",
+        description: "Mất chú ý tăng đồng thời ở nhiều cụm ghế trong 4 phút liên tiếp.",
+        confidence: 85,
+        severity: "cao",
+      },
+      {
+        id: "E-04",
+        minute: 22,
+        timeLabel: "13:42",
+        title: "Drowsy tăng",
+        description: "Tín hiệu drowsy tăng trong nhóm ngồi cuối lớp.",
+        confidence: 74,
+        severity: "cao",
+      },
+      {
+        id: "E-05",
+        minute: 28,
+        timeLabel: "13:48",
+        title: "Nhịp lớp cải thiện",
+        description: "Sau khi đổi hoạt động, attentive bắt đầu phục hồi.",
+        confidence: 79,
+        severity: "vừa",
+      },
+    ],
+  },
+  {
+    id: "TW-03",
+    label: "15:10-15:40",
+    attentive: 72,
+    distracted: 18,
+    confidence: 85,
+    level: "vừa",
+    causes: ["Nội dung trừu tượng", "Tương tác hai chiều chưa đều"],
+    actions: ["Thêm sơ đồ trực quan", "Gọi phản hồi nhanh theo cặp"],
+    sessionIds: ["S-2026-04-02-04"],
+    minuteCells: [
+      { id: "M-13", minute: 5, attentive: 76, distracted: 14, uncertainty: 12, level: "vừa" },
+      { id: "M-14", minute: 10, attentive: 73, distracted: 17, uncertainty: 14, level: "vừa" },
+      { id: "M-15", minute: 15, attentive: 70, distracted: 20, uncertainty: 16, level: "vừa" },
+      { id: "M-16", minute: 20, attentive: 69, distracted: 21, uncertainty: 17, level: "cao" },
+      { id: "M-17", minute: 25, attentive: 72, distracted: 18, uncertainty: 13, level: "vừa" },
+      { id: "M-18", minute: 30, attentive: 75, distracted: 15, uncertainty: 11, level: "thấp" },
+    ],
+    events: [
+      {
+        id: "E-06",
+        minute: 12,
+        timeLabel: "15:22",
+        title: "Phân tán tăng theo cụm",
+        description: "Nhóm bàn giữa có xu hướng nhìn lệch khỏi bảng.",
+        confidence: 77,
+        severity: "vừa",
+      },
+      {
+        id: "E-07",
+        minute: 21,
+        timeLabel: "15:31",
+        title: "Cần xem lại tín hiệu",
+        description: "Mô hình báo drowsy nhưng confidence thấp, cần human review.",
+        confidence: 68,
+        severity: "vừa",
+      },
+    ],
+  },
+];
+
+const initialAudit: AuditLog[] = [
+  {
+    id: "A-01",
+    at: "09:01:12",
+    role: "admin",
+    action: "Xem nhật ký",
+    detail: "Tải 20 bản ghi audit gần nhất.",
+  },
+  {
+    id: "A-02",
+    at: "09:03:25",
+    role: "lecturer",
+    action: "Mở dashboard",
+    detail: "Truy cập lớp INT3011E-3 với dữ liệu ẩn danh.",
+  },
+];
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "Classroom AI Quality Ops" },
+    { title: "Dashboard học tập có trách nhiệm" },
     {
       name: "description",
       content:
-        "UI-only control center for live monitoring, quality analytics, playback investigation, and alert management.",
+        "Hệ thống phân tích tương tác lớp học bằng dữ liệu tổng hợp, có phân quyền và cơ chế human-in-the-loop.",
     },
   ];
 }
 
-function Sparkline({
-  values,
-  color,
-}: {
-  values: number[];
-  color: string;
-}) {
-  const max = Math.max(...values);
-  const min = Math.min(...values);
-  const points = values
-    .map((v, i) => {
-      const x = (i / (values.length - 1)) * 100;
-      const y = 100 - ((v - min) / Math.max(max - min, 1)) * 100;
-      return `${x},${y}`;
-    })
-    .join(" ");
+function roleIndicators(role: Role): Indicator[] {
+  if (role === "lecturer") {
+    return [
+      {
+        id: "attention",
+        label: "Tỉ lệ tập trung trung bình",
+        value: "74%",
+        trend: "+5% so với tuần trước",
+        explain: "Tăng rõ khi tiết học có mini-quiz và checkpoint hỏi đáp.",
+      },
+      {
+        id: "distracted",
+        label: "Tỉ lệ phân tán",
+        value: "16%",
+        trend: "-3%",
+        explain: "Giảm khi nội dung được chia theo cụm 10-12 phút.",
+      },
+      {
+        id: "drowsy",
+        label: "Phút có dấu hiệu buồn ngủ",
+        value: "6 phút/tiết",
+        trend: "-2 phút",
+        explain: "Giảm sau khi đổi hoạt động ở giữa tiết.",
+      },
+      {
+        id: "confidence",
+        label: "Độ tin cậy phân tích",
+        value: "86%",
+        trend: "Ổn định",
+        explain: "Confidence thấp sẽ tự gắn cờ để giảng viên xem lại.",
+      },
+    ];
+  }
 
-  return (
-    <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="sparkline">
-      <polyline points={points} fill="none" stroke={color} strokeWidth="3" />
-    </svg>
-  );
+  if (role === "school") {
+    return [
+      {
+        id: "coverage",
+        label: "Số lớp có báo cáo ẩn danh",
+        value: "124 lớp",
+        trend: "+12 lớp/tháng",
+        explain: "Dữ liệu chỉ tổng hợp theo lớp, bộ môn, học kỳ.",
+      },
+      {
+        id: "teaching",
+        label: "Chỉ số hiệu quả dạy học",
+        value: "7.8/10",
+        trend: "+0.4",
+        explain: "Tăng ở các lớp có can thiệp đúng điểm rơi mất chú ý.",
+      },
+      {
+        id: "risk",
+        label: "Khung giờ rủi ro lặp lại",
+        value: "13:20-13:50",
+        trend: "3 tuần liên tiếp",
+        explain: "Nên điều chỉnh lịch hoặc ưu tiên hoạt động thực hành.",
+      },
+      {
+        id: "privacy",
+        label: "Mức độ ẩn danh",
+        value: "100%",
+        trend: "Đạt chuẩn",
+        explain: "Không hiển thị danh tính sinh viên ở cấp nhà trường.",
+      },
+    ];
+  }
+
+  return [
+    {
+      id: "uptime",
+      label: "Độ sẵn sàng hệ thống",
+      value: "99.2%",
+      trend: "+0.2%",
+      explain: "Ổn định 30 ngày gần nhất, không đứt luồng dữ liệu tổng hợp.",
+    },
+    {
+      id: "fairness",
+      label: "Fairness kiểm thử",
+      value: "Đạt",
+      trend: "Sai lệch < 3%",
+      explain: "Theo dõi theo nhóm điều kiện ánh sáng, kính, vị trí ngồi.",
+    },
+    {
+      id: "retention",
+      label: "Lưu trữ video gốc",
+      value: "7 ngày",
+      trend: "Tự xóa",
+      explain: "Video chỉ lưu phục vụ khiếu nại, hết hạn tự động xóa.",
+    },
+    {
+      id: "policy",
+      label: "Tuân thủ chính sách",
+      value: "Đạt",
+      trend: "Không vi phạm",
+      explain: "Cấm dùng hệ thống làm căn cứ kỷ luật tự động.",
+    },
+  ];
 }
 
-function warningLabel(type: WarningType | "offline") {
-  if (type === "offline") return "Offline";
-  if (type === "blur") return "Blur";
-  if (type === "signal") return "Signal";
-  return "Occlusion";
+function levelLabel(level: RiskLevel) {
+  if (level === "cao") return "Rủi ro cao";
+  if (level === "vừa") return "Rủi ro vừa";
+  return "Ổn định";
+}
+
+function levelClass(level: RiskLevel) {
+  if (level === "cao") return "is-high";
+  if (level === "vừa") return "is-medium";
+  return "is-low";
 }
 
 export default function Home() {
-  const [activeView, setActiveView] = useState<ActiveView>("live");
-  const [cameraOrder, setCameraOrder] = useState<string[]>(() => {
-    if (typeof window === "undefined") return baseCameras.map((c) => c.id);
-    const saved = window.localStorage.getItem("camera-order");
-    if (!saved) return baseCameras.map((c) => c.id);
+  const [role, setRole] = useState<Role>("lecturer");
+  const [panel, setPanel] = useState<Panel>("dashboard");
+  const [activeWindowId, setActiveWindowId] = useState<string>("TW-02");
+  const [focusRiskOnly, setFocusRiskOnly] = useState(false);
+  const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
+  const [selectedMinuteId, setSelectedMinuteId] = useState<string>("M-10");
+  const [feedbackMap, setFeedbackMap] = useState<Record<string, FeedbackType>>({});
+  const [interventionMap, setInterventionMap] = useState<Record<string, boolean>>({});
+  const [isKillSwitchActive, setIsKillSwitchActive] = useState(false);
+  const [auditLogs, setAuditLogs] = useState<AuditLog[]>(initialAudit);
 
-    try {
-      const parsed = JSON.parse(saved) as string[];
-      return parsed.length > 0 ? parsed : baseCameras.map((c) => c.id);
-    } catch {
-      return baseCameras.map((c) => c.id);
-    }
-  });
-  const [gridSize, setGridSize] = useState<number>(() => {
-    if (typeof window === "undefined") return 3;
-    const saved = Number(window.localStorage.getItem("camera-grid-size") ?? "3");
-    return Number.isFinite(saved) ? Math.min(Math.max(saved, 2), 10) : 3;
-  });
-  const [search, setSearch] = useState("");
-  const [areaFilter, setAreaFilter] = useState<Area | "all">("all");
-  const [statusFilter, setStatusFilter] = useState<CameraStatus | "all">("all");
-  const [issueOnly, setIssueOnly] = useState(false);
-  const [hovered, setHovered] = useState<string | null>(null);
-  const [selectedCamera, setSelectedCamera] = useState<Camera | null>(null);
-  const [draggingId, setDraggingId] = useState<string | null>(null);
-  const [timePreset, setTimePreset] = useState<TimePreset>("1h");
-  const [errorFilter, setErrorFilter] = useState<WarningType | "all">("all");
-  const [playbackSecond, setPlaybackSecond] = useState(120);
-  const [syncMode, setSyncMode] = useState(true);
-  const [alerts, setAlerts] = useState<AlertEvent[]>(defaultAlerts);
-  const [toasts, setToasts] = useState<AlertEvent[]>([]);
+  const indicators = useMemo(() => roleIndicators(role), [role]);
+  const canViewSessionDetail = role !== "school";
+  const canTriggerGovernance = role === "admin";
 
-  const orderedCameras = useMemo(() => {
-    const byId = new Map(baseCameras.map((cam) => [cam.id, cam]));
-    const listed = cameraOrder.map((id) => byId.get(id)).filter(Boolean) as Camera[];
-    if (listed.length === baseCameras.length) return listed;
-
-    const missing = baseCameras.filter((cam) => !cameraOrder.includes(cam.id));
-    return [...listed, ...missing];
-  }, [cameraOrder]);
-
-  const filteredCameras = useMemo(() => {
-    return orderedCameras.filter((cam) => {
-      const textPass =
-        search.trim().length === 0 ||
-        cam.name.toLowerCase().includes(search.toLowerCase()) ||
-        cam.id.toLowerCase().includes(search.toLowerCase());
-      const areaPass = areaFilter === "all" || cam.area === areaFilter;
-      const statusPass = statusFilter === "all" || cam.status === statusFilter;
-      const issuePass = !issueOnly || cam.status === "offline" || cam.warnings.length > 0;
-      return textPass && areaPass && statusPass && issuePass;
-    });
-  }, [orderedCameras, search, areaFilter, statusFilter, issueOnly]);
-
-  const visibleCameras = filteredCameras.slice(0, gridSize * gridSize);
-  const onlineCount = orderedCameras.filter((c) => c.status === "online").length;
-  const offlineCount = orderedCameras.length - onlineCount;
-  const issueCount = orderedCameras.filter(
-    (c) => c.status === "offline" || c.warnings.length > 0,
-  ).length;
-
-  const topDefect = useMemo(() => {
-    return [...orderedCameras]
-      .sort((a, b) => b.blur + b.frameDrop * 10 - (a.blur + a.frameDrop * 10))
-      .slice(0, 6);
-  }, [orderedCameras]);
-
-  const areaHeatmap = useMemo(() => {
-    return areas.map((area) => {
-      const inArea = orderedCameras.filter((c) => c.area === area);
-      const score = Math.round(
-        inArea.reduce((sum, cam) => sum + cam.blur + cam.frameDrop * 10, 0) /
-          Math.max(inArea.length, 1),
-      );
-      return { area, score };
-    });
-  }, [orderedCameras]);
-
-  const playbackCamera =
-    selectedCamera ?? orderedCameras.find((cam) => cam.status === "online") ?? orderedCameras[0];
-
-  const playbackEvents = alerts
-    .filter((a) => a.cameraId === playbackCamera?.id)
-    .sort((a, b) => a.second - b.second);
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      window.localStorage.setItem("camera-grid-size", String(gridSize));
-    }
-  }, [gridSize]);
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      window.localStorage.setItem("camera-order", JSON.stringify(cameraOrder));
-    }
-  }, [cameraOrder]);
-
-  useEffect(() => {
-    const timer = window.setInterval(() => {
-      const target = orderedCameras[(Date.now() / 1000) % orderedCameras.length | 0];
-      const eventTypes: Array<WarningType | "offline"> = ["blur", "signal", "occlusion", "offline"];
-      const eventType = eventTypes[(Date.now() / 2000) % eventTypes.length | 0];
-      const seededSecond = 40 + ((Date.now() / 1000) % 260 | 0);
-      const newAlert: AlertEvent = {
-        id: `A-${Date.now()}`,
-        cameraId: target.id,
-        severity: eventType === "offline" ? "high" : "medium",
-        type: eventType,
-        message:
-          eventType === "offline"
-            ? `${target.id} offline > 1 minute`
-            : `${warningLabel(eventType)} score exceeded threshold`,
-        at: new Date().toLocaleTimeString("en-GB", { hour12: false }),
-        second: seededSecond,
-      };
-      setAlerts((prev) => [newAlert, ...prev].slice(0, 40));
-      setToasts((prev) => [newAlert, ...prev].slice(0, 3));
-    }, 9000);
-
-    return () => window.clearInterval(timer);
-  }, [orderedCameras]);
-
-  useEffect(() => {
-    if (toasts.length === 0) return;
-    const timer = window.setTimeout(() => {
-      setToasts((prev) => prev.slice(0, -1));
-    }, 4000);
-
-    return () => window.clearTimeout(timer);
-  }, [toasts]);
-
-  useEffect(() => {
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key.toLowerCase() === "f") {
-        const target = selectedCamera ?? visibleCameras[0];
-        if (target) setSelectedCamera(target);
-      }
-      if (event.key === "ArrowLeft") {
-        setPlaybackSecond((s) => Math.max(0, s - 1));
-      }
-      if (event.key === "ArrowRight") {
-        setPlaybackSecond((s) => Math.min(300, s + 1));
-      }
-    };
-
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [selectedCamera, visibleCameras]);
-
-  const jumpToPlayback = (camId: string, second: number) => {
-    const cam = orderedCameras.find((c) => c.id === camId);
-    if (!cam) return;
-    setSelectedCamera(cam);
-    setPlaybackSecond(second);
-    setActiveView("playback");
+  const addAudit = (action: string, detail: string, roleSnapshot: Role = role) => {
+    const at = new Date().toLocaleTimeString("vi-VN", { hour12: false });
+    setAuditLogs((prev) => [
+      { id: `A-${Date.now()}`, at, role: roleSnapshot, action, detail },
+      ...prev,
+    ].slice(0, 20));
   };
 
-  const handleDrop = (targetId: string) => {
-    if (!draggingId || draggingId === targetId) return;
-    const next = [...cameraOrder];
-    const from = next.indexOf(draggingId);
-    const to = next.indexOf(targetId);
-    if (from === -1 || to === -1) return;
+  const shownWindows = useMemo(() => {
+    if (!focusRiskOnly) return timeWindows;
+    return timeWindows.filter((item) => item.level !== "thấp");
+  }, [focusRiskOnly]);
 
-    const [moved] = next.splice(from, 1);
-    next.splice(to, 0, moved);
-    setCameraOrder(next);
-    setDraggingId(null);
+  const activeWindow =
+    shownWindows.find((item) => item.id === activeWindowId) ?? shownWindows[0] ?? timeWindows[0];
+
+  const selectedMinute =
+    activeWindow.minuteCells.find((cell) => cell.id === selectedMinuteId) ?? activeWindow.minuteCells[0];
+
+  const relatedEvents = activeWindow.events.filter(
+    (event) => Math.abs(event.minute - selectedMinute.minute) <= 6,
+  );
+
+  const linkedSessions = sessions.filter((session) => activeWindow.sessionIds.includes(session.id));
+  const selectedSession = sessions.find((session) => session.id === selectedSessionId) ?? linkedSessions[0] ?? null;
+
+  const interventionImpact = selectedSession
+    ? {
+        before: Math.max(selectedSession.attentive - 6, 50),
+        after: selectedSession.attentive + (interventionMap[selectedSession.id] ? 4 : 0),
+      }
+    : null;
+
+  const handleRoleChange = (nextRole: Role) => {
+    setRole(nextRole);
+    addAudit("Chuyển vai trò", `Người dùng chuyển sang vai trò ${roleLabel[nextRole]}.`, nextRole);
+  };
+
+  const handleWindowChange = (windowId: string) => {
+    setActiveWindowId(windowId);
+    const windowItem = timeWindows.find((item) => item.id === windowId);
+    if (windowItem?.minuteCells[0]) setSelectedMinuteId(windowItem.minuteCells[0].id);
+    addAudit("Chọn khung giờ", `Mở phân tích cho khung ${windowItem?.label ?? windowId}.`);
+  };
+
+  const handleMinuteChange = (minuteId: string) => {
+    setSelectedMinuteId(minuteId);
+    const minuteItem = activeWindow.minuteCells.find((cell) => cell.id === minuteId);
+    addAudit("Drill-down theo phút", `Xem dữ liệu phút ${minuteItem?.minute ?? "?"} của ${activeWindow.label}.`);
+  };
+
+  const handleFeedback = (eventId: string, feedback: FeedbackType) => {
+    setFeedbackMap((prev) => ({ ...prev, [eventId]: feedback }));
+    addAudit(
+      "Phản hồi human-in-the-loop",
+      `Sự kiện ${eventId} được đánh dấu ${feedback === "hợp_lý" ? "hợp lý" : "cần xem lại"}.`,
+    );
+  };
+
+  const handleApplyIntervention = () => {
+    if (!selectedSession) return;
+    setInterventionMap((prev) => ({ ...prev, [selectedSession.id]: true }));
+    addAudit("Áp dụng can thiệp", `Đã ghi nhận can thiệp sư phạm cho phiên ${selectedSession.id}.`);
+  };
+
+  const jumpToDashboardBySession = (sessionId: string) => {
+    setPanel("dashboard");
+    setSelectedSessionId(sessionId);
+    const matchWindow = timeWindows.find((item) => item.sessionIds.includes(sessionId));
+    if (matchWindow) {
+      setActiveWindowId(matchWindow.id);
+      setSelectedMinuteId(matchWindow.minuteCells[0]?.id ?? selectedMinuteId);
+    }
+    addAudit("Điều hướng từ lịch sử", `Mở dashboard để xem phiên ${sessionId}.`);
+  };
+
+  const toggleKillSwitch = () => {
+    const next = !isKillSwitchActive;
+    setIsKillSwitchActive(next);
+    addAudit(
+      next ? "Kích hoạt kill-switch" : "Tắt kill-switch",
+      next
+        ? "Dừng phát sinh khuyến nghị tự động, chỉ cho phép chế độ xem." 
+        : "Khôi phục khuyến nghị tự động sau kiểm tra an toàn.",
+      "admin",
+    );
   };
 
   return (
-    <main className="ops-shell">
-      <header className="ops-topbar">
-        <div>
-          <p className="eyebrow">Classroom Quality Ops</p>
-          <h1>AI Camera Monitoring Center</h1>
-        </div>
-        <div className="status-strip">
-          <span className="chip chip-online">Online {onlineCount}</span>
-          <span className="chip chip-offline">Offline {offlineCount}</span>
-          <span className="chip chip-warn">Issues {issueCount}</span>
-          <button
-            className={`chip ${issueOnly ? "chip-active" : ""}`}
-            onClick={() => setIssueOnly((v) => !v)}
-          >
-            Highlight Issues
-          </button>
-        </div>
+    <main className="edu-shell">
+      <header className="hero-card">
+        <p className="eyebrow">Responsible AI for Education</p>
+        <h1>Dashboard và Báo cáo Theo Phân quyền</h1>
+        <p className="lead">
+          Hệ thống dùng dữ liệu tổng hợp để tối ưu hóa phương pháp sư phạm. Mọi quyết định quan trọng đều
+          cần xác nhận của con người, không dùng để giám sát cá nhân hay kỷ luật tự động.
+        </p>
       </header>
 
-      <section className="view-switch">
+      <section className="role-bar">
+        <div className="role-switch" role="tablist" aria-label="Chọn vai trò">
+          {(Object.keys(roleLabel) as Role[]).map((item) => (
+            <button
+              key={item}
+              role="tab"
+              aria-selected={role === item}
+              className={role === item ? "active" : ""}
+              onClick={() => handleRoleChange(item)}
+            >
+              {roleLabel[item]}
+            </button>
+          ))}
+        </div>
+        <p className="role-hint">{roleHint[role]}</p>
+      </section>
+
+      <section className="guardrail-grid">
+        <article>
+          <h2>Phạm vi dữ liệu</h2>
+          <p>Chỉ hiển thị tổng hợp theo lớp/phiên học, không hiển thị danh tính cá nhân mặc định.</p>
+        </article>
+        <article>
+          <h2>Human-in-the-loop</h2>
+          <p>Mọi cảnh báo có thể được đánh dấu “hợp lý” hoặc “cần xem lại” để tránh quyết định máy móc.</p>
+        </article>
+        <article>
+          <h2>Ràng buộc quản trị</h2>
+          <p>Cấm tuyệt đối dùng đầu ra dashboard làm căn cứ trực tiếp để trừ điểm hoặc kỷ luật.</p>
+        </article>
+      </section>
+
+      <section className="panel-switch">
         {[
-          ["live", "Live Monitoring"],
-          ["dashboard", "Quality Dashboard"],
-          ["playback", "Playback / Investigation"],
-          ["alerts", "Alert & Notification"],
-        ].map(([key, label]) => (
-          <button
-            key={key}
-            className={activeView === key ? "active" : ""}
-            onClick={() => setActiveView(key as ActiveView)}
-          >
+          ["dashboard", "Dashboard tương tác"],
+          ["reports", "Báo cáo diễn giải"],
+          ["history", "Lịch sử phiên học"],
+        ].map(([id, label]) => (
+          <button key={id} className={panel === id ? "active" : ""} onClick={() => setPanel(id as Panel)}>
             {label}
           </button>
         ))}
       </section>
 
-      {activeView === "live" && (
-        <section className="live-layout">
-          <aside className="camera-sidebar">
-            <div className="panel-head">
-              <h2>Camera Directory</h2>
-              <p>{filteredCameras.length} matched</p>
+      {panel === "dashboard" && (
+        <section className="dashboard-grid">
+          <article className="card span-2">
+            <div className="card-head">
+              <h2>Chỉ số tổng quan theo vai trò {roleLabel[role]}</h2>
+              <span>Khung đang xem: {activeWindow.label}</span>
             </div>
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search by camera or class"
-            />
-            <div className="filter-row">
-              <select
-                value={areaFilter}
-                onChange={(e) => setAreaFilter(e.target.value as Area | "all")}
-              >
-                <option value="all">All areas</option>
-                {areas.map((area) => (
-                  <option key={area} value={area}>
-                    {area}
-                  </option>
-                ))}
-              </select>
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value as CameraStatus | "all")}
-              >
-                <option value="all">All status</option>
-                <option value="online">Online</option>
-                <option value="offline">Offline</option>
-              </select>
-            </div>
-            <label className="zoom-control">
-              Grid density: {gridSize}x{gridSize}
-              <input
-                type="range"
-                min={2}
-                max={10}
-                value={gridSize}
-                onChange={(e) => setGridSize(Number(e.target.value))}
-              />
-            </label>
-            <div className="camera-list">
-              {filteredCameras.slice(0, 24).map((cam) => (
-                <button key={cam.id} onClick={() => setSelectedCamera(cam)}>
-                  <strong>{cam.id}</strong>
-                  <span>{cam.name}</span>
-                  <small>{cam.area}</small>
-                </button>
-              ))}
-            </div>
-          </aside>
-
-          <div className="camera-grid-wrap">
-            <div
-              className="camera-grid"
-              style={{
-                gridTemplateColumns: `repeat(${gridSize}, minmax(0, 1fr))`,
-              }}
-            >
-              {visibleCameras.map((cam) => (
-                <article
-                  key={cam.id}
-                  className={`camera-tile ${cam.status === "offline" ? "tile-offline" : ""}`}
-                  draggable
-                  onDragStart={() => setDraggingId(cam.id)}
-                  onDragOver={(e) => e.preventDefault()}
-                  onDrop={() => handleDrop(cam.id)}
-                  onMouseEnter={() => setHovered(cam.id)}
-                  onMouseLeave={() => setHovered((v) => (v === cam.id ? null : v))}
-                  onClick={() => setSelectedCamera(cam)}
-                >
-                  <div className="video-noise" />
-                  <div className="tile-head">
-                    <span className={`dot ${cam.status}`} />
-                    <p>{cam.id}</p>
-                    <small>{cam.status === "online" ? "Online" : "Offline"}</small>
-                  </div>
-                  <div className="tile-meta">
-                    <span>FPS {cam.fps}</span>
-                    <span>{cam.bitrate} kbps</span>
-                  </div>
-                  <div className="tile-alerts">
-                    {cam.warnings.length === 0 ? (
-                      <span className="ok-tag">No Alert</span>
-                    ) : (
-                      cam.warnings.map((w) => (
-                        <span key={w} className={`warn-tag warn-${w}`}>
-                          {warningLabel(w)}
-                        </span>
-                      ))
-                    )}
-                  </div>
-                  {hovered === cam.id && (
-                    <div className="hover-preview">
-                      <p>Quick Preview</p>
-                      <small>
-                        Blur {cam.blur}% · Bright {cam.brightness}% · Drop {cam.frameDrop.toFixed(1)}%
-                      </small>
-                    </div>
-                  )}
-                </article>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {activeView === "dashboard" && (
-        <section className="dashboard-layout">
-          <div className="dashboard-main">
-            <div className="panel-head">
-              <h2>Quality Health Dashboard</h2>
-              <div className="filter-row">
-                <select
-                  value={areaFilter}
-                  onChange={(e) => setAreaFilter(e.target.value as Area | "all")}
-                >
-                  <option value="all">All areas</option>
-                  {areas.map((area) => (
-                    <option key={area} value={area}>
-                      {area}
-                    </option>
-                  ))}
-                </select>
-                <select
-                  value={errorFilter}
-                  onChange={(e) => setErrorFilter(e.target.value as WarningType | "all")}
-                >
-                  <option value="all">All errors</option>
-                  <option value="blur">Blur</option>
-                  <option value="signal">Signal</option>
-                  <option value="occlusion">Occlusion</option>
-                </select>
-                <select
-                  value={timePreset}
-                  onChange={(e) => setTimePreset(e.target.value as TimePreset)}
-                >
-                  <option value="5m">Last 5m</option>
-                  <option value="1h">Last 1h</option>
-                  <option value="24h">Last 24h</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="metrics-grid">
-              <article>
-                <h3>Blur Score ({timePreset})</h3>
-                <Sparkline values={trendBlur} color="#ff934f" />
-              </article>
-              <article>
-                <h3>Brightness</h3>
-                <Sparkline values={trendBrightness} color="#50c7f9" />
-              </article>
-              <article>
-                <h3>Frame Drop</h3>
-                <Sparkline values={trendDrop} color="#ff4d67" />
-              </article>
-              <article>
-                <h3>Top N Failing Cameras</h3>
-                <ul className="top-list">
-                  {topDefect.map((cam) => (
-                    <li key={cam.id}>
-                      <span>{cam.id}</span>
-                      <small>{cam.area}</small>
-                      <strong>{Math.round(cam.blur + cam.frameDrop * 10)}</strong>
-                    </li>
-                  ))}
-                </ul>
-              </article>
-            </div>
-
-            <div className="heatmap">
-              {areaHeatmap.map((entry) => (
-                <div
-                  key={entry.area}
-                  className="heat-cell"
-                  style={{
-                    background: `linear-gradient(160deg, rgba(18,24,35,1), rgba(255,100,69,${
-                      entry.score / 120
-                    }))`,
-                  }}
-                >
-                  <p>{entry.area}</p>
-                  <strong>Score {entry.score}</strong>
+            <div className="indicator-grid">
+              {indicators.map((item) => (
+                <div className="indicator" key={item.id}>
+                  <p>{item.label}</p>
+                  <strong>{item.value}</strong>
+                  <small>{item.trend}</small>
                 </div>
               ))}
             </div>
+          </article>
 
-            <div className="quality-table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Camera</th>
-                    <th>Status</th>
-                    <th>Blur</th>
-                    <th>Brightness</th>
-                    <th>Last Seen</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {orderedCameras
-                    .filter((cam) => (areaFilter === "all" ? true : cam.area === areaFilter))
-                    .filter((cam) => {
-                      if (errorFilter === "all") return true;
-                      return cam.warnings.includes(errorFilter);
-                    })
-                    .slice(0, 18)
-                    .map((cam) => (
-                      <tr key={cam.id}>
-                        <td>{cam.id}</td>
-                        <td>
-                          <span className={cam.status === "online" ? "status-ok" : "status-bad"}>
-                            {cam.status}
-                          </span>
-                        </td>
-                        <td>{cam.blur}%</td>
-                        <td>{cam.brightness}%</td>
-                        <td>{cam.lastSeen}</td>
-                      </tr>
-                    ))}
-                </tbody>
-              </table>
+          <article className="card">
+            <div className="card-head">
+              <h2>Bộ lọc khung giờ</h2>
             </div>
-          </div>
-
-          <aside className="alert-panel">
-            <div className="panel-head">
-              <h3>Real-time Alert Stream</h3>
-              <p>Log tail</p>
-            </div>
-            <ul>
-              {alerts.slice(0, 14).map((alert) => (
-                <li key={alert.id}>
-                  <button onClick={() => jumpToPlayback(alert.cameraId, alert.second)}>
-                    <span className={`severity ${alert.severity}`} />
-                    <div>
-                      <strong>{alert.cameraId}</strong>
-                      <p>{alert.message}</p>
-                      <small>{alert.at}</small>
-                    </div>
+            <button
+              className={`toggle-chip ${focusRiskOnly ? "active" : ""}`}
+              onClick={() => {
+                setFocusRiskOnly((value) => !value);
+                addAudit("Lọc khung giờ", "Bật/tắt chế độ chỉ hiển thị rủi ro vừa và cao.");
+              }}
+            >
+              {focusRiskOnly ? "Đang lọc: chỉ rủi ro vừa/cao" : "Hiển thị toàn bộ khung giờ"}
+            </button>
+            <ul className="risk-window-list">
+              {shownWindows.map((item) => (
+                <li key={item.id}>
+                  <button
+                    className={`${item.id === activeWindow.id ? "active" : ""} ${levelClass(item.level)}`}
+                    onClick={() => handleWindowChange(item.id)}
+                  >
+                    <strong>{item.label}</strong>
+                    <span>{levelLabel(item.level)}</span>
+                    <small>Mất chú ý: {item.distracted}%</small>
                   </button>
                 </li>
               ))}
             </ul>
-          </aside>
-        </section>
-      )}
+          </article>
 
-      {activeView === "playback" && playbackCamera && (
-        <section className="playback-layout">
-          <div className="player-stage">
-            <div className="player-head">
-              <h2>
-                Playback {playbackCamera.id} · {playbackCamera.name}
-              </h2>
-              <div className="playback-controls">
-                <button onClick={() => setPlaybackSecond((s) => Math.max(0, s - 10))}>-10s</button>
-                <button onClick={() => setPlaybackSecond((s) => Math.max(0, s - 1))}>-1s</button>
-                <button onClick={() => setPlaybackSecond((s) => Math.min(300, s + 1))}>+1s</button>
-                <button onClick={() => setPlaybackSecond((s) => Math.min(300, s + 10))}>+10s</button>
+          <article className="card">
+            <div className="card-head">
+              <h2>Heatmap theo phút (nhấn để drill-down)</h2>
+            </div>
+            <div className="minute-heatmap" aria-label="Heatmap theo phút">
+              {activeWindow.minuteCells.map((cell) => (
                 <button
-                  className={syncMode ? "active" : ""}
-                  onClick={() => setSyncMode((v) => !v)}
+                  key={cell.id}
+                  className={`minute-cell ${cell.id === selectedMinute.id ? "active" : ""} ${levelClass(
+                    cell.level,
+                  )}`}
+                  onClick={() => handleMinuteChange(cell.id)}
+                  aria-label={`Phút ${cell.minute} tập trung ${cell.attentive}%`}
                 >
-                  Multi-camera Sync
+                  <span>P{cell.minute}</span>
+                  <strong>{cell.attentive}%</strong>
                 </button>
-              </div>
+              ))}
             </div>
+            <p className="assist-note">
+              Điểm đang chọn: phút {selectedMinute.minute} · Mất chú ý {selectedMinute.distracted}% · Bất định
+              {selectedMinute.uncertainty}%
+            </p>
+          </article>
 
-            <div className="playback-player">
-              <div className="video-noise" />
-              <div className="bbox b1" />
-              <div className="bbox b2" />
-              <div className="frame-error">Blur and low brightness detected</div>
+          <article className="card span-2">
+            <div className="card-head">
+              <h2>Bằng chứng sự kiện theo tiến trình</h2>
+              <span>{relatedEvents.length} sự kiện gần mốc đã chọn</span>
             </div>
-
-            <div className="timeline-wrap">
-              <div className="timeline-scale">
-                {playbackEvents.map((event) => (
-                  <button
-                    key={event.id}
-                    title={event.message}
-                    style={{ left: `${(event.second / 300) * 100}%` }}
-                    onClick={() => setPlaybackSecond(event.second)}
-                  />
-                ))}
-              </div>
-              <input
-                type="range"
-                min={0}
-                max={300}
-                value={playbackSecond}
-                onChange={(e) => setPlaybackSecond(Number(e.target.value))}
-              />
-              <p>Timecode: 00:{String(Math.floor(playbackSecond / 60)).padStart(2, "0")}:{String(playbackSecond % 60).padStart(2, "0")}</p>
-            </div>
-
-            {syncMode && (
-              <div className="sync-row">
-                {orderedCameras.slice(0, 3).map((cam) => (
-                  <article key={cam.id}>
-                    <div className="video-noise" />
-                    <p>
-                      {cam.id} synced at +{playbackSecond}s
-                    </p>
-                  </article>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <aside className="event-sidebar">
-            <div className="panel-head">
-              <h3>Event List</h3>
-              <p>Jump by AI detect</p>
-            </div>
-            <ul>
-              {playbackEvents.length === 0 ? (
-                <li className="empty">No events for this camera.</li>
+            <ul className="event-timeline">
+              {relatedEvents.length === 0 ? (
+                <li className="empty-card">Không có sự kiện phù hợp ở mốc này.</li>
               ) : (
-                playbackEvents.map((event) => (
-                  <li key={event.id}>
-                    <button onClick={() => setPlaybackSecond(event.second)}>
-                      <strong>{warningLabel(event.type)}</strong>
-                      <p>{event.message}</p>
-                      <small>
-                        t+{event.second}s · {event.at}
-                      </small>
-                    </button>
+                relatedEvents.map((event) => (
+                  <li key={event.id} className={`event-card ${levelClass(event.severity)}`}>
+                    <div className="event-head">
+                      <strong>{event.timeLabel}</strong>
+                      <span>{event.title}</span>
+                      <small>Confidence: {event.confidence}%</small>
+                    </div>
+                    <p>{event.description}</p>
+                    <div className="feedback-row">
+                      <button
+                        className={feedbackMap[event.id] === "hợp_lý" ? "active" : ""}
+                        onClick={() => handleFeedback(event.id, "hợp_lý")}
+                      >
+                        Hợp lý
+                      </button>
+                      <button
+                        className={feedbackMap[event.id] === "xem_lại" ? "active" : ""}
+                        onClick={() => handleFeedback(event.id, "xem_lại")}
+                      >
+                        Cần xem lại
+                      </button>
+                      {event.confidence < 75 && <span className="warning-tag">Độ tin cậy thấp</span>}
+                    </div>
                   </li>
                 ))
               )}
             </ul>
-          </aside>
-        </section>
-      )}
+          </article>
 
-      {activeView === "alerts" && (
-        <section className="alerts-layout">
-          <div className="rule-panel">
-            <div className="panel-head">
-              <h2>Rule Configuration</h2>
-              <p>Signal &gt; Noise: only push meaningful alerts</p>
+          <article className="card">
+            <div className="card-head">
+              <h2>Can thiệp và hiệu quả</h2>
             </div>
-            <div className="rule-card">
-              <h3>Rule 01</h3>
-              <p>Blur score &gt; threshold in 30 seconds</p>
-              <div className="rule-row">
-                <label>
-                  Threshold
-                  <input defaultValue={72} />
-                </label>
-                <label>
-                  Window
-                  <input defaultValue="30s" />
-                </label>
-              </div>
-            </div>
-            <div className="rule-card">
-              <h3>Rule 02</h3>
-              <p>Camera offline &gt; 1 minute</p>
-              <div className="rule-row">
-                <label>
-                  Timeout
-                  <input defaultValue="1m" />
-                </label>
-                <label>
-                  Escalation
-                  <input defaultValue="High" />
-                </label>
-              </div>
-            </div>
-            <div className="rule-card">
-              <h3>Notification Channels</h3>
-              <div className="channel-row">
-                <label>
-                  <input type="checkbox" defaultChecked /> Email
-                </label>
-                <label>
-                  <input type="checkbox" defaultChecked /> Slack
-                </label>
-                <label>
-                  <input type="checkbox" defaultChecked /> Webhook
-                </label>
-              </div>
-              <button>Save Rules</button>
-            </div>
-          </div>
-
-          <aside className="notify-panel">
-            <div className="panel-head">
-              <h3>Real-time Notification Panel</h3>
-              <p>1-click drill down to playback</p>
-            </div>
-            <ul>
-              {alerts.slice(0, 12).map((alert) => (
-                <li key={alert.id}>
-                  <button onClick={() => jumpToPlayback(alert.cameraId, alert.second)}>
-                    <span className={`severity ${alert.severity}`} />
-                    <div>
-                      <strong>{alert.message}</strong>
-                      <small>
-                        {alert.cameraId} · {alert.at}
-                      </small>
-                    </div>
+            {selectedSession && interventionImpact ? (
+              <>
+                <p className="assist-note">
+                  Phiên: {selectedSession.id} · Lớp {selectedSession.className}
+                </p>
+                <div className="before-after">
+                  <div>
+                    <span>Trước can thiệp</span>
+                    <strong>{interventionImpact.before}%</strong>
+                  </div>
+                  <div>
+                    <span>Sau can thiệp</span>
+                    <strong>{interventionImpact.after}%</strong>
+                  </div>
+                </div>
+                {role === "lecturer" && (
+                  <button className="primary-btn" onClick={handleApplyIntervention}>
+                    Ghi nhận đã áp dụng can thiệp
                   </button>
-                </li>
+                )}
+              </>
+            ) : (
+              <p className="assist-note">Chọn một phiên liên quan để xem hiệu quả trước/sau can thiệp.</p>
+            )}
+            <div className="session-link-row">
+              <span>Phiên liên quan:</span>
+              {linkedSessions.map((session) => (
+                <button key={session.id} className="session-pill" onClick={() => setSelectedSessionId(session.id)}>
+                  {session.id}
+                </button>
               ))}
-            </ul>
-          </aside>
+            </div>
+          </article>
+
+          {canTriggerGovernance && (
+            <article className="card">
+              <div className="card-head">
+                <h2>Governance & Kill-switch</h2>
+              </div>
+              <p className="assist-note">
+                Trạng thái hệ thống: {isKillSwitchActive ? "Đang giới hạn chỉ chế độ xem" : "Đang hoạt động bình thường"}
+              </p>
+              <button className="primary-btn" onClick={toggleKillSwitch}>
+                {isKillSwitchActive ? "Tắt kill-switch" : "Kích hoạt kill-switch"}
+              </button>
+              <ul className="risk-list">
+                <li>Rò rỉ dữ liệu cá nhân hoặc truy cập vượt phân quyền.</li>
+                <li>Sai số vượt ngưỡng an toàn liên tục theo nhiều phiên.</li>
+                <li>Bị lạm dụng cho mục đích đánh giá kỷ luật cá nhân.</li>
+                <li>Khảo sát cho thấy tác động tâm lý tiêu cực kéo dài.</li>
+              </ul>
+            </article>
+          )}
         </section>
       )}
 
-      {selectedCamera && (
-        <section className="focus-modal" onClick={() => setSelectedCamera(null)}>
-          <article onClick={(e) => e.stopPropagation()}>
-            <header>
-              <h2>
-                {selectedCamera.id} · {selectedCamera.name}
-              </h2>
-              <button onClick={() => setSelectedCamera(null)}>Close</button>
-            </header>
-            <div className="focus-player">
-              <div className="video-noise" />
-              <div className="bbox b1" />
-              <div className="bbox b2" />
+      {panel === "reports" && (
+        <section className="report-layout">
+          <article className="card">
+            <div className="card-head">
+              <h2>Báo cáo sư phạm theo tuần</h2>
+              <span>Ẩn danh hóa</span>
             </div>
-            <div className="mini-timeline">
-              <span>Mini timeline</span>
-              <input
-                type="range"
-                min={0}
-                max={180}
-                defaultValue={70}
-                onChange={(e) => setPlaybackSecond(Number(e.target.value))}
-              />
-              <p>Shortcut: F to open focused camera, ←/→ to seek</p>
+            <p>
+              Điểm rơi mất chú ý lặp lại chủ yếu ở phút 15-25 của các tiết sau giờ trưa. Khuyến nghị tăng hoạt
+              động tương tác ngắn, giảm nội dung độc thoại liên tục, và theo dõi hiệu quả ở 2 tuần kế tiếp.
+            </p>
+          </article>
+
+          <article className="card">
+            <div className="card-head">
+              <h2>Báo cáo điều kiện phòng học</h2>
+              <span>Tổng hợp cấp lớp/khoa</span>
             </div>
+            <p>
+              Các phòng có ánh sáng yếu và nhiệt độ cao có tương quan với mức drowsy tăng. Nên ưu tiên xử lý
+              điều kiện lớp học trước khi diễn giải theo năng lực người học.
+            </p>
+          </article>
+
+          <article className="card">
+            <div className="card-head">
+              <h2>Cảnh báo đạo đức và pháp lý</h2>
+              <span>Bắt buộc tuân thủ</span>
+            </div>
+            <ul className="risk-list">
+              <li>Không hiển thị xếp hạng cá nhân sinh viên trên dashboard.</li>
+              <li>Mọi quyết định cá nhân hóa bắt buộc có xác nhận của con người.</li>
+              <li>Video gốc không lưu mặc định; nếu lưu phải giới hạn thời gian tự xóa.</li>
+            </ul>
           </article>
         </section>
       )}
 
-      <div className="toast-stack">
-        {toasts.map((toast) => (
-          <button
-            key={toast.id}
-            className="toast"
-            onClick={() => jumpToPlayback(toast.cameraId, toast.second)}
-          >
-            <strong>{warningLabel(toast.type)}</strong>
-            <p>{toast.message}</p>
-          </button>
-        ))}
-      </div>
+      {panel === "history" && (
+        <section className="card history-table">
+          <div className="card-head">
+            <h2>Lịch sử phiên và chỉ số tổng hợp</h2>
+            <span>Truy xuất có kiểm toán</span>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Mã phiên</th>
+                <th>Thời gian</th>
+                <th>Lớp</th>
+                <th>Tập trung</th>
+                <th>Phân tán</th>
+                <th>Ghi chép</th>
+                <th>Buồn ngủ</th>
+                <th>Độ tin cậy</th>
+                <th>Diễn giải</th>
+                <th>Tương tác</th>
+              </tr>
+            </thead>
+            <tbody>
+              {sessions.map((row) => (
+                <tr key={row.id}>
+                  <td>{row.id}</td>
+                  <td>{row.date}</td>
+                  <td>{row.className}</td>
+                  <td>{row.attentive}%</td>
+                  <td>{row.distracted}%</td>
+                  <td>{row.noteTaking}%</td>
+                  <td>{row.drowsyMinutes} phút</td>
+                  <td>{row.confidence}%</td>
+                  <td>{row.recommendation}</td>
+                  <td>
+                    {canViewSessionDetail ? (
+                      <button className="session-pill" onClick={() => jumpToDashboardBySession(row.id)}>
+                        Xem khung giờ liên quan
+                      </button>
+                    ) : (
+                      <span className="muted-text">Ẩn chi tiết theo quyền</span>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
+      )}
+
+      {selectedSession && canViewSessionDetail && (
+        <section className="card session-focus">
+          <div className="card-head">
+            <h2>Chi tiết phiên: {selectedSession.id}</h2>
+            <button className="session-pill" onClick={() => setSelectedSessionId(null)}>
+              Đóng
+            </button>
+          </div>
+          <p>
+            Lớp <strong>{selectedSession.className}</strong> lúc {selectedSession.date}: tập trung
+            <strong> {selectedSession.attentive}%</strong>, phân tán <strong>{selectedSession.distracted}%</strong>,
+            drowsy <strong>{selectedSession.drowsyMinutes} phút</strong>, confidence
+            <strong> {selectedSession.confidence}%</strong>.
+          </p>
+          <p>
+            Gợi ý sư phạm: {selectedSession.recommendation} Dữ liệu được dùng để cải thiện phương pháp dạy,
+            không sử dụng cho kỷ luật cá nhân.
+          </p>
+        </section>
+      )}
+
+      {canTriggerGovernance && (
+        <section className="card history-table">
+          <div className="card-head">
+            <h2>Nhật ký kiểm toán thao tác</h2>
+            <span>20 bản ghi gần nhất</span>
+          </div>
+          <table className="audit-table">
+            <thead>
+              <tr>
+                <th>Thời điểm</th>
+                <th>Vai trò</th>
+                <th>Hành động</th>
+                <th>Chi tiết</th>
+              </tr>
+            </thead>
+            <tbody>
+              {auditLogs.map((row) => (
+                <tr key={row.id}>
+                  <td>{row.at}</td>
+                  <td>{roleLabel[row.role]}</td>
+                  <td>{row.action}</td>
+                  <td>{row.detail}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
+      )}
     </main>
   );
 }
