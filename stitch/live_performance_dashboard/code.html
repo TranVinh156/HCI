@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Live Performance Dashboard - The Insightful Lens</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-tertiary-container": "#b4b2ff",
+                    "on-primary-container": "#8ebdf9",
+                    "primary": "#00355f",
+                    "on-surface": "#191c1e",
+                    "secondary-fixed": "#84f5ee",
+                    "primary-fixed-dim": "#a0c9ff",
+                    "tertiary-container": "#3728cf",
+                    "on-error": "#ffffff",
+                    "background": "#f7f9fb",
+                    "on-primary-fixed-variant": "#07497d",
+                    "on-primary-fixed": "#001c37",
+                    "surface-container-highest": "#e0e3e5",
+                    "error": "#ba1a1a",
+                    "on-secondary-fixed-variant": "#00504d",
+                    "surface-bright": "#f7f9fb",
+                    "on-surface-variant": "#42474f",
+                    "on-tertiary-fixed": "#0f0069",
+                    "on-background": "#191c1e",
+                    "surface-container-low": "#f2f4f6",
+                    "surface-container": "#eceef0",
+                    "outline-variant": "#c2c7d1",
+                    "surface": "#f7f9fb",
+                    "on-primary": "#ffffff",
+                    "primary-container": "#0f4c81",
+                    "surface-container-lowest": "#ffffff",
+                    "on-secondary-container": "#006f6a",
+                    "surface-variant": "#e0e3e5",
+                    "surface-container-high": "#e6e8ea",
+                    "surface-dim": "#d8dadc",
+                    "on-secondary-fixed": "#00201e",
+                    "surface-tint": "#2d6197",
+                    "inverse-surface": "#2d3133",
+                    "secondary-fixed-dim": "#66d8d2",
+                    "tertiary-fixed": "#e2dfff",
+                    "on-error-container": "#93000a",
+                    "error-container": "#ffdad6",
+                    "secondary-container": "#81f2eb",
+                    "inverse-on-surface": "#eff1f3",
+                    "secondary": "#006a66",
+                    "on-tertiary": "#ffffff",
+                    "inverse-primary": "#a0c9ff",
+                    "tertiary-fixed-dim": "#c3c0ff",
+                    "on-tertiary-fixed-variant": "#3323cc",
+                    "tertiary": "#1f00ae",
+                    "on-secondary": "#ffffff",
+                    "primary-fixed": "#d2e4ff",
+                    "outline": "#727780"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Manrope"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-overlay {
+            background: rgba(247, 249, 251, 0.6);
+            backdrop-filter: blur(24px);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body flex overflow-hidden">
+<!-- SideNavBar -->
+<aside class="h-screen w-72 left-0 sticky flex flex-col h-full p-4 gap-2 border-r border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 font-['Inter'] font-medium text-sm">
+<div class="px-4 py-6">
+<h1 class="font-['Manrope'] font-extrabold text-sky-900 dark:text-sky-200 text-2xl tracking-tight">The Insightful Lens</h1>
+<p class="text-xs text-slate-500 mt-1 uppercase tracking-widest font-bold">AI Classroom Observer</p>
+</div>
+<nav class="flex-1 flex flex-col gap-1">
+<!-- Active Tab: Live Dashboard -->
+<a class="flex items-center gap-3 px-4 py-3 bg-sky-100 dark:bg-sky-900/30 text-sky-900 dark:text-sky-100 font-semibold rounded-lg transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span>Live Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:text-sky-800 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+<span>Session Analytics</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:text-sky-800 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+<span>Student Profiles</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:text-sky-800 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="settings_suggest">settings_suggest</span>
+<span>AI Configuration</span>
+</a>
+</nav>
+<div class="mt-auto flex flex-col gap-1 border-t border-slate-200 dark:border-slate-800 pt-4">
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:text-sky-800 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="help_outline">help_outline</span>
+<span>Help Center</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:text-sky-800 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+<span>Sign Out</span>
+</a>
+</div>
+</aside>
+<main class="flex-1 flex flex-col h-screen overflow-hidden">
+<!-- TopAppBar -->
+<header class="w-full top-0 sticky flex justify-between items-center h-16 px-6 w-full bg-slate-50 dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 z-10">
+<div class="flex items-center gap-4 flex-1">
+<div class="relative w-96">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" data-icon="search">search</span>
+<input class="w-full bg-slate-100 dark:bg-slate-800 border-none rounded-full py-2 pl-10 pr-4 focus:ring-2 ring-primary text-sm" placeholder="Search students or metrics..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-2 px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full text-xs font-bold animate-pulse">
+<span class="material-symbols-outlined text-sm" data-icon="sensors" style="font-variation-settings: 'FILL' 1;">sensors</span>
+                    LIVE FEED ACTIVE
+                </div>
+<div class="flex items-center gap-4">
+<button class="text-slate-500 hover:bg-slate-200/50 dark:hover:bg-slate-800 p-2 rounded-full transition-colors">
+<span class="material-symbols-outlined" data-icon="videocam">videocam</span>
+</button>
+<button class="text-slate-500 hover:bg-slate-200/50 dark:hover:bg-slate-800 p-2 rounded-full transition-colors relative">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<div class="h-8 w-8 rounded-full overflow-hidden border-2 border-primary-container">
+<img alt="Professor Profile" data-alt="close-up portrait of a professional academic professor in a modern glass office with scholarly books in background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDX7kpFVr0Cld-tlzY69vmlEn9jeUqhpOqdsfWLaNqMApu2HF5UuNjPCT3yuWlql06WliqfSAeFvGxDD8IJ7qsZa2UYJ-woPappx-o-m4f7X1sML8G8fJcY9tqhcvXuVs89-DLNy8kaQg4Uja1MTE3d0GzQyNQvPqzxUT70R76hcTzo5p2jx2uNw85ILH1N9jA_RlgJlpoVhcyDelnjvd5HZGg1zmdfiHZHMP9IBZaKxfea1B1AnKlCe9wHBCsnOHr8CbOpimPJCuni"/>
+</div>
+</div>
+</div>
+</header>
+<!-- Content Area -->
+<div class="flex-1 overflow-y-auto p-6 flex flex-col gap-6">
+<!-- Headline Section -->
+<div class="flex justify-between items-end">
+<div>
+<h2 class="font-headline font-bold text-3xl text-primary tracking-tight">Classroom Engagement Metrics</h2>
+<p class="text-on-surface-variant text-sm mt-1">Section 402 • Room 204 • Professor Julian Vance</p>
+</div>
+<div class="flex gap-3">
+<button class="bg-surface-container-high px-4 py-2 rounded-md font-medium text-sm text-on-surface hover:bg-slate-200 transition-colors">Generate Report</button>
+<button class="bg-gradient-to-br from-primary to-primary-container text-on-primary px-4 py-2 rounded-md font-semibold text-sm hover:opacity-90 active:scale-95 transition-all">Export Session</button>
+</div>
+</div>
+<!-- Main Live Grid (Bento Style) -->
+<div class="grid grid-cols-12 gap-6 flex-1">
+<!-- Live Video Feed (Primary) -->
+<div class="col-span-8 relative group rounded-xl overflow-hidden bg-slate-200 shadow-sm border border-outline-variant/15">
+<img class="w-full h-full object-cover" data-alt="modern high-tech classroom view from high angle showing students sitting at sleek desks with glowing laptop screens and interactive whiteboards" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAsQa-IcVVQQ_TP6bHJ_t267QpNQAXrImQkXQT6uXJJT7ybWa5sqZFFGhIUk0JDm7rRijdvIZRGHocpUbcuXlxjQT1AkYiUG7bC7tOMNW2sFW8MYaDVbGYayZOcR84b8V-QX9TYHMuHdDjJD39VTbcmh-h4wz7iiKQ9_mo4W-Gb5SrRH7OysdMtta0YfDmg4Bi8oeNkdK4fKuseBGvw_GYoxWWSQSE2W5Y0Pxawq6QgYgGSHMME0hZobQvLAKX0OoIidFNqdllEE0Ix"/>
+<!-- AI Overlays -->
+<div class="absolute inset-0 pointer-events-none">
+<!-- Student A Bounding Box -->
+<div class="absolute top-1/4 left-1/4 w-32 h-44 border-2 border-on-tertiary-container rounded-lg">
+<div class="absolute -top-10 left-0 glass-overlay px-2 py-1 rounded-md flex items-center gap-2 border border-white/20">
+<span class="bg-tertiary-container text-on-tertiary-container text-[10px] px-2 py-0.5 rounded-full font-bold">FOCUSED</span>
+<span class="material-symbols-outlined text-sky-600 text-sm" data-icon="sentiment_satisfied">sentiment_satisfied</span>
+</div>
+</div>
+<!-- Student B Bounding Box -->
+<div class="absolute top-1/3 right-1/4 w-32 h-44 border-2 border-error/50 rounded-lg">
+<div class="absolute -top-10 left-0 glass-overlay px-2 py-1 rounded-md flex items-center gap-2 border border-white/20">
+<span class="bg-error-container text-on-error-container text-[10px] px-2 py-0.5 rounded-full font-bold uppercase">Distracted</span>
+<span class="material-symbols-outlined text-error text-sm" data-icon="sentiment_dissatisfied">sentiment_dissatisfied</span>
+</div>
+</div>
+<!-- Heatmap Overlay (Faux) -->
+<div class="absolute bottom-10 left-10 glass-overlay p-4 rounded-xl border border-white/20 pointer-events-auto">
+<h4 class="text-xs font-bold text-primary mb-2 uppercase tracking-tighter">Activity Heatmap</h4>
+<div class="flex gap-1 h-8 items-end">
+<div class="w-4 bg-primary/20 h-2 rounded-t-sm"></div>
+<div class="w-4 bg-primary/40 h-4 rounded-t-sm"></div>
+<div class="w-4 bg-primary/80 h-8 rounded-t-sm"></div>
+<div class="w-4 bg-primary/60 h-6 rounded-t-sm"></div>
+<div class="w-4 bg-primary h-7 rounded-t-sm"></div>
+</div>
+</div>
+</div>
+<!-- Video Controls Overlay -->
+<div class="absolute bottom-4 right-4 flex gap-2">
+<button class="p-2 bg-black/40 text-white rounded-full backdrop-blur-md hover:bg-black/60 transition-colors">
+<span class="material-symbols-outlined" data-icon="fullscreen">fullscreen</span>
+</button>
+<button class="p-2 bg-black/40 text-white rounded-full backdrop-blur-md hover:bg-black/60 transition-colors">
+<span class="material-symbols-outlined" data-icon="grid_view">grid_view</span>
+</button>
+</div>
+</div>
+<!-- Metrics Sidebar (Bento Stack) -->
+<div class="col-span-4 flex flex-col gap-6">
+<!-- High-Level Engagement -->
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/15 flex flex-col justify-between h-40">
+<div class="flex justify-between items-start">
+<h3 class="text-on-surface-variant text-sm font-medium">Overall Engagement</h3>
+<span class="material-symbols-outlined text-primary" data-icon="insights">insights</span>
+</div>
+<div class="flex items-baseline gap-2">
+<span class="text-4xl font-bold text-primary">84%</span>
+<span class="text-secondary text-sm font-semibold flex items-center"><span class="material-symbols-outlined text-sm" data-icon="arrow_upward">arrow_upward</span> 12%</span>
+</div>
+<div class="w-full bg-surface-container h-1.5 rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 84%"></div>
+</div>
+</div>
+<!-- Focus Levels -->
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/15 flex flex-col justify-between h-40">
+<div class="flex justify-between items-start">
+<h3 class="text-on-surface-variant text-sm font-medium">Mean Focus Level</h3>
+<span class="material-symbols-outlined text-secondary" data-icon="psychology">psychology</span>
+</div>
+<div class="flex items-baseline gap-2">
+<span class="text-4xl font-bold text-secondary">72.5</span>
+<span class="text-on-surface-variant text-xs font-medium uppercase tracking-wider">High Stability</span>
+</div>
+<div class="flex gap-1 h-4">
+<div class="flex-1 bg-secondary-container rounded-sm"></div>
+<div class="flex-1 bg-secondary-container rounded-sm"></div>
+<div class="flex-1 bg-secondary-container rounded-sm"></div>
+<div class="flex-1 bg-secondary rounded-sm"></div>
+<div class="flex-1 bg-secondary/30 rounded-sm"></div>
+</div>
+</div>
+<!-- Student Participation Bubble -->
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/15 flex-1">
+<div class="flex justify-between items-center mb-6">
+<h3 class="text-on-surface-variant text-sm font-medium">Active Participation</h3>
+<span class="text-[10px] font-bold text-primary px-2 py-0.5 bg-primary-fixed rounded-full">REAL-TIME</span>
+</div>
+<div class="space-y-4">
+<div class="flex items-center gap-4">
+<img alt="Student" class="w-8 h-8 rounded-full" data-alt="close-up profile of a diverse university student smiling in a library" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCkQcD8ZJW3Ay21MFedhgeCGrB2O4AfXZ8hyzbSzRaNMA5zdWEd1slCP24KJ64shgdgmsK7gOYQf4bO8bk6OHviSj1ay4YNAnRjcJusDt_OKhiRdpJW2Gkk9ozJ3QPqBWcHsRgoC5ndHVTe1tXNc9m2q7qvagCJ7aGkzNsA3xf2SoX_W5KhvOGKQrficQxnmvKG_8CLpZaozyBGv0QqEfIWTJ3VoHqmPDrkVL2N9Sl3yn-d1oWYpReDeq_2C1A_ZiWLc_6NNzfDdHEB"/>
+<div class="flex-1">
+<div class="flex justify-between text-xs font-bold text-primary">
+<span>Leo M.</span>
+<span>4 Questions</span>
+</div>
+<div class="w-full bg-surface-container h-1 mt-1 rounded-full">
+<div class="bg-primary h-full" style="width: 90%"></div>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<img alt="Student" class="w-8 h-8 rounded-full" data-alt="close-up profile of a diverse university student with glasses working on a laptop" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCeyOuNbM0e3Hy0HOMSUgr2th3tOJafRyIYyUsXmI7puNEg4zessKtrb_k-pq3Kige9CeDemt814aPR2I8h8fBpVRAeEJVoFUTxVN6Qnjp7etSbwRarT87Ix_WmHlmDw1GmHv5lPNTVTl-VKJmSbpCE1M5UDsVHCqdAjAF13_ZVwV2yyyumQm2b7RxxKUZDpv_O9oezp3d_sQfVFnywBu7DqHtfliIyN6WZzUZMcYR_1OXn2PkCAcGdwEQN_PlBhxBN5EtJUvvuuhVL"/>
+<div class="flex-1">
+<div class="flex justify-between text-xs font-bold text-primary">
+<span>Sarah J.</span>
+<span>3 Questions</span>
+</div>
+<div class="w-full bg-surface-container h-1 mt-1 rounded-full">
+<div class="bg-primary h-full" style="width: 65%"></div>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<img alt="Student" class="w-8 h-8 rounded-full" data-alt="close-up profile of a diverse male student taking notes in a lecture hall" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB4Lj-ns-EH9zuih3ZTqXlHC7E1roXOGg5UftX_45N0XKk7nj4Jd_bbWHNrODcTl0HCUa6MGtbsqeF7NraBvci5QnFmTEmUrMwkQncfwxIJb0c7kQs5I6meWjWufkbY73JSGrX1kvVNek8cr3MsYDhgc52AXQcJGN6-FQRkmw63-xZ9AGajpd63JnfY9zrLq2HVRIWb3KbU-vAuMwHF4H8njTjf52gPJ4-GB--uOCF23VYCmgPH2p4QAgbfiDtNtqzbAdy8E_gtUDOc"/>
+<div class="flex-1">
+<div class="flex justify-between text-xs font-bold text-primary">
+<span>Ahmed K.</span>
+<span>2 Questions</span>
+</div>
+<div class="w-full bg-surface-container h-1 mt-1 rounded-full">
+<div class="bg-primary h-full" style="width: 45%"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Bottom Data Row -->
+<div class="grid grid-cols-4 gap-6">
+<div class="bg-surface-container-low p-5 rounded-xl flex items-center gap-4">
+<div class="p-3 bg-white rounded-lg shadow-sm">
+<span class="material-symbols-outlined text-primary" data-icon="history">history</span>
+</div>
+<div>
+<p class="text-xs text-on-surface-variant font-medium">Session Duration</p>
+<p class="text-lg font-bold text-primary">01:24:05</p>
+</div>
+</div>
+<div class="bg-surface-container-low p-5 rounded-xl flex items-center gap-4">
+<div class="p-3 bg-white rounded-lg shadow-sm">
+<span class="material-symbols-outlined text-secondary" data-icon="groups">groups</span>
+</div>
+<div>
+<p class="text-xs text-on-surface-variant font-medium">Students Present</p>
+<p class="text-lg font-bold text-primary">28 / 32</p>
+</div>
+</div>
+<div class="bg-surface-container-low p-5 rounded-xl flex items-center gap-4 border border-primary/10">
+<div class="p-3 bg-primary-container rounded-lg shadow-sm">
+<span class="material-symbols-outlined text-on-primary-container" data-icon="smart_toy">smart_toy</span>
+</div>
+<div>
+<p class="text-xs text-on-surface-variant font-medium">AI Insights Logged</p>
+<p class="text-lg font-bold text-primary">142</p>
+</div>
+</div>
+<div class="bg-error-container/30 p-5 rounded-xl flex items-center gap-4 border border-error/10">
+<div class="p-3 bg-white rounded-lg shadow-sm">
+<span class="material-symbols-outlined text-error" data-icon="warning">warning</span>
+</div>
+<div>
+<p class="text-xs text-error font-medium">Anomalies Detected</p>
+<p class="text-lg font-bold text-error">2</p>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Student Profile - The Insightful Lens</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary-container": "#b4b2ff",
+                        "on-primary-container": "#8ebdf9",
+                        "primary": "#00355f",
+                        "on-surface": "#191c1e",
+                        "secondary-fixed": "#84f5ee",
+                        "primary-fixed-dim": "#a0c9ff",
+                        "tertiary-container": "#3728cf",
+                        "on-error": "#ffffff",
+                        "background": "#f7f9fb",
+                        "on-primary-fixed-variant": "#07497d",
+                        "on-primary-fixed": "#001c37",
+                        "surface-container-highest": "#e0e3e5",
+                        "error": "#ba1a1a",
+                        "on-secondary-fixed-variant": "#00504d",
+                        "surface-bright": "#f7f9fb",
+                        "on-surface-variant": "#42474f",
+                        "on-tertiary-fixed": "#0f0069",
+                        "on-background": "#191c1e",
+                        "surface-container-low": "#f2f4f6",
+                        "surface-container": "#eceef0",
+                        "outline-variant": "#c2c7d1",
+                        "surface": "#f7f9fb",
+                        "on-primary": "#ffffff",
+                        "primary-container": "#0f4c81",
+                        "surface-container-lowest": "#ffffff",
+                        "on-secondary-container": "#006f6a",
+                        "surface-variant": "#e0e3e5",
+                        "surface-container-high": "#e6e8ea",
+                        "surface-dim": "#d8dadc",
+                        "on-secondary-fixed": "#00201e",
+                        "surface-tint": "#2d6197",
+                        "inverse-surface": "#2d3133",
+                        "secondary-fixed-dim": "#66d8d2",
+                        "tertiary-fixed": "#e2dfff",
+                        "on-error-container": "#93000a",
+                        "error-container": "#ffdad6",
+                        "secondary-container": "#81f2eb",
+                        "inverse-on-surface": "#eff1f3",
+                        "secondary": "#006a66",
+                        "on-tertiary": "#ffffff",
+                        "inverse-primary": "#a0c9ff",
+                        "tertiary-fixed-dim": "#c3c0ff",
+                        "on-tertiary-fixed-variant": "#3323cc",
+                        "tertiary": "#1f00ae",
+                        "on-secondary": "#ffffff",
+                        "primary-fixed": "#d2e4ff",
+                        "outline": "#727780"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Manrope"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .glass-card {
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(24px);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body min-h-screen flex">
+<!-- SideNavBar Component -->
+<aside class="hidden md:flex flex-col h-screen w-72 left-0 sticky bg-slate-50 dark:bg-slate-950 p-4 gap-2 border-r border-slate-100 dark:border-slate-800 transition-all duration-200 ease-in-out font-['Inter'] font-medium text-sm">
+<div class="mb-8 px-2 flex flex-col gap-1">
+<h1 class="font-['Manrope'] font-extrabold text-sky-900 dark:text-sky-200 text-xl tracking-tight">The Insightful Lens</h1>
+<p class="text-slate-500 text-xs">AI Classroom Observer</p>
+</div>
+<nav class="flex-grow flex flex-col gap-1">
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:text-sky-800 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span>Live Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:text-sky-800 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+<span>Session Analytics</span>
+</a>
+<!-- Active State: Student Profiles -->
+<a class="flex items-center gap-3 px-4 py-3 bg-sky-100 dark:bg-sky-900/30 text-sky-900 dark:text-sky-100 font-semibold rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+<span>Student Profiles</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:text-sky-800 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="settings_suggest">settings_suggest</span>
+<span>AI Configuration</span>
+</a>
+</nav>
+<div class="mt-auto border-t border-slate-100 pt-4 flex flex-col gap-1">
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:text-sky-800 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="help_outline">help_outline</span>
+<span>Help Center</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:text-sky-800 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+<span>Sign Out</span>
+</a>
+</div>
+</aside>
+<main class="flex-grow overflow-y-auto">
+<!-- TopAppBar Component -->
+<header class="w-full top-0 sticky bg-slate-50 dark:bg-slate-900 flex justify-between items-center h-16 px-6 z-10">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-slate-500" data-icon="search">search</span>
+<span class="text-slate-400 font-['Inter'] text-sm">Search student observations...</span>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-4 text-slate-500">
+<span class="material-symbols-outlined cursor-pointer hover:bg-slate-200/50 p-2 rounded-full transition-colors" data-icon="sensors">sensors</span>
+<span class="material-symbols-outlined cursor-pointer hover:bg-slate-200/50 p-2 rounded-full transition-colors" data-icon="videocam">videocam</span>
+<div class="relative">
+<span class="material-symbols-outlined cursor-pointer hover:bg-slate-200/50 p-2 rounded-full transition-colors" data-icon="notifications">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full"></span>
+</div>
+</div>
+<div class="h-8 w-8 rounded-full overflow-hidden border-2 border-primary-container">
+<img alt="Professor Profile" data-alt="portrait of a professional educator with graying hair and glasses in a softly lit university office setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDnqUiEbFRs2N8gXr5kQIJZXZ3EGiYDf_lccCtwYvetVYSerWVIrj1_LCq5kYd_xmKdFujBPTHH24CwpuA5fHPrFKOP1hzD5gAjGqSFBoT9vg_EV-g9qXg4X3bhigJlhm7YuNAxlYqPKu6VHUZunOMVgoqib4SpAaRmubzy3S0NAqOL-XK-ZhHV3KSAUaOQpcf9be0WAToYuwb87hQqY3KLRdUkcVbLe402p7ycIsxJ3tEDg3I4IDjnMAULE2hLBZMAfPQe_RV3S8dC"/>
+</div>
+</div>
+</header>
+<div class="p-8 max-w-7xl mx-auto space-y-8">
+<!-- Hero Section: Student Identity -->
+<section class="flex flex-col md:flex-row gap-8 items-start">
+<div class="relative group">
+<div class="w-48 h-48 rounded-xl overflow-hidden shadow-sm">
+<img alt="Student Photo" class="w-full h-full object-cover" data-alt="headshot of a thoughtful teenage male student in a blue denim jacket in a natural daylight school setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCWYOMKeZqbOVZhTRZ9XkLnRPdE-XPfFkU7lpr4KGUlZBl1CDXDahsPGRJmMbwky9dxb3CjADgLFRiJTdIW1K9ozGNdj-JopzcTotDgMAhPeKKrXpvDwqDDt6fT_yHUk0VjCoMxP9YZUBd4_bEBU38DDB7z7wHFUfpEyC5ssLgKMrjYKenyyEo9zuKZz_jbpsJEMKxPVlmmuSdVsCh0bC8eew1Fnras9TL30_Ck_ARSnn53ZbYwwzIQJtN0RFGPLTtEX-GDtmdVOkYq"/>
+</div>
+<div class="absolute -bottom-2 -right-2 bg-primary text-white p-2 rounded-lg shadow-lg">
+<span class="material-symbols-outlined text-lg" data-icon="verified_user" style="font-variation-settings: 'FILL' 1;">verified_user</span>
+</div>
+</div>
+<div class="flex-grow space-y-4">
+<div>
+<h2 class="font-headline font-bold text-3xl text-primary tracking-tight">Benjamin Harrison</h2>
+<p class="text-on-surface-variant font-medium">Grade 11 • Honors Computer Science • Section B</p>
+</div>
+<div class="flex flex-wrap gap-2">
+<span class="px-4 py-1.5 rounded-full bg-secondary-container text-on-secondary-container text-xs font-semibold">High Engagement</span>
+<span class="px-4 py-1.5 rounded-full bg-surface-container-high text-on-surface-variant text-xs font-semibold">98% Attendance</span>
+<span class="px-4 py-1.5 rounded-full bg-tertiary-container text-on-tertiary-container text-xs font-semibold">Peer Leader</span>
+</div>
+<p class="max-w-2xl text-on-surface-variant text-sm leading-relaxed">
+                        Benjamin demonstrates strong analytical skills during collaborative coding sessions. He consistently contributes to peer debugging and shows a high degree of focus during lecture-to-task transitions. AI observation noted a 14% increase in verbal participation this month.
+                    </p>
+</div>
+</section>
+<!-- Bento Grid: Analytics & Insights -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+<!-- Engagement History (Large) -->
+<div class="md:col-span-8 bg-surface-container-lowest rounded-lg p-6 flex flex-col">
+<div class="flex justify-between items-center mb-10">
+<h3 class="font-headline font-bold text-lg text-primary">Engagement Trends</h3>
+<div class="flex gap-4">
+<div class="flex items-center gap-2">
+<div class="w-3 h-3 rounded-full bg-primary"></div>
+<span class="text-xs font-medium text-on-surface-variant">Benjamin</span>
+</div>
+<div class="flex items-center gap-2">
+<div class="w-3 h-3 rounded-full bg-outline-variant"></div>
+<span class="text-xs font-medium text-on-surface-variant">Class Avg</span>
+</div>
+</div>
+</div>
+<div class="h-48 flex items-end justify-between gap-2 px-2">
+<!-- Bar Chart Representation -->
+<div class="w-full flex flex-col items-center gap-2">
+<div class="w-full bg-surface-container rounded-t-sm relative h-32">
+<div class="absolute bottom-0 w-full bg-primary-container rounded-t-sm" style="height: 85%"></div>
+<div class="absolute bottom-0 w-2 left-1/2 -translate-x-1/2 bg-primary rounded-t-full h-full opacity-20"></div>
+</div>
+<span class="text-[10px] text-on-surface-variant font-bold uppercase tracking-widest">Mon</span>
+</div>
+<div class="w-full flex flex-col items-center gap-2">
+<div class="w-full bg-surface-container rounded-t-sm relative h-32">
+<div class="absolute bottom-0 w-full bg-primary-container rounded-t-sm" style="height: 70%"></div>
+</div>
+<span class="text-[10px] text-on-surface-variant font-bold uppercase tracking-widest">Tue</span>
+</div>
+<div class="w-full flex flex-col items-center gap-2">
+<div class="w-full bg-surface-container rounded-t-sm relative h-32">
+<div class="absolute bottom-0 w-full bg-primary-container rounded-t-sm" style="height: 95%"></div>
+</div>
+<span class="text-[10px] text-on-surface-variant font-bold uppercase tracking-widest">Wed</span>
+</div>
+<div class="w-full flex flex-col items-center gap-2">
+<div class="w-full bg-surface-container rounded-t-sm relative h-32">
+<div class="absolute bottom-0 w-full bg-primary-container rounded-t-sm" style="height: 60%"></div>
+</div>
+<span class="text-[10px] text-on-surface-variant font-bold uppercase tracking-widest">Thu</span>
+</div>
+<div class="w-full flex flex-col items-center gap-2">
+<div class="w-full bg-surface-container rounded-t-sm relative h-32">
+<div class="absolute bottom-0 w-full bg-primary-container rounded-t-sm" style="height: 88%"></div>
+</div>
+<span class="text-[10px] text-on-surface-variant font-bold uppercase tracking-widest">Fri</span>
+</div>
+</div>
+</div>
+<!-- Specific AI Feedback (Medium) -->
+<div class="md:col-span-4 bg-primary-container text-on-primary-container rounded-lg p-6 relative overflow-hidden flex flex-col justify-between">
+<div class="z-10">
+<h3 class="font-headline font-bold text-lg mb-4">AI Snapshot</h3>
+<p class="text-sm opacity-90 leading-relaxed italic">
+                            "Benjamin exhibits 'Flow State' characteristics during laboratory assignments. Pupils dilation and posture indicate high cognitive load during complex problem solving between 10:15 - 10:45 AM."
+                        </p>
+</div>
+<div class="mt-6 flex items-center gap-3 z-10">
+<div class="p-2 bg-on-primary-container/20 rounded-lg">
+<span class="material-symbols-outlined" data-icon="psychology">psychology</span>
+</div>
+<div>
+<p class="text-xs font-bold uppercase tracking-widest">Cognitive State</p>
+<p class="text-sm">Deep Focus Detected</p>
+</div>
+</div>
+<!-- Decorative element -->
+<div class="absolute -top-10 -right-10 w-40 h-40 bg-white opacity-5 rounded-full blur-3xl"></div>
+</div>
+<!-- Attendance Card (Small) -->
+<div class="md:col-span-3 bg-surface-container-lowest rounded-lg p-6 flex flex-col justify-center items-center gap-2">
+<span class="text-on-surface-variant text-xs font-bold uppercase tracking-widest mb-2">Attendance</span>
+<div class="relative w-24 h-24 flex items-center justify-center">
+<svg class="w-full h-full transform -rotate-90">
+<circle class="text-surface-container" cx="48" cy="48" fill="transparent" r="40" stroke="currentColor" stroke-width="8"></circle>
+<circle class="text-secondary" cx="48" cy="48" fill="transparent" r="40" stroke="currentColor" stroke-dasharray="251.2" stroke-dashoffset="5" stroke-width="8"></circle>
+</svg>
+<span class="absolute font-headline font-bold text-2xl text-on-surface">98%</span>
+</div>
+<p class="text-[10px] text-secondary mt-2 font-medium">32/33 Days Present</p>
+</div>
+<!-- Recent Notes (Large) -->
+<div class="md:col-span-9 bg-surface-container-lowest rounded-lg p-6">
+<h3 class="font-headline font-bold text-lg text-primary mb-6">Observation Log</h3>
+<div class="space-y-4">
+<div class="flex gap-4 p-4 rounded-xl hover:bg-surface-container-low transition-colors">
+<div class="flex-shrink-0 w-12 h-12 bg-surface-container-high rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-primary" data-icon="edit_note">edit_note</span>
+</div>
+<div class="flex-grow">
+<div class="flex justify-between items-start">
+<h4 class="font-semibold text-sm">Complex Algebra Workshop</h4>
+<span class="text-[10px] text-on-surface-variant">Oct 24, 2023</span>
+</div>
+<p class="text-xs text-on-surface-variant mt-1 leading-relaxed">
+                                    Successfully assisted Sarah with quadratic functions. Showed patience and clear communication. AI tracked "Collaborative Pulse" at 88.
+                                </p>
+</div>
+</div>
+<div class="flex gap-4 p-4 rounded-xl hover:bg-surface-container-low transition-colors">
+<div class="flex-shrink-0 w-12 h-12 bg-surface-container-high rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-primary" data-icon="menu_book">menu_book</span>
+</div>
+<div class="flex-grow">
+<div class="flex justify-between items-start">
+<h4 class="font-semibold text-sm">Self-Directed Study</h4>
+<span class="text-[10px] text-on-surface-variant">Oct 22, 2023</span>
+</div>
+<p class="text-xs text-on-surface-variant mt-1 leading-relaxed">
+                                    Minor distraction noted during the first 10 minutes (tablet notification). Self-corrected and regained focus quickly. 
+                                </p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Comparative Metrics -->
+<section class="bg-surface-container rounded-lg p-8">
+<div class="flex flex-col md:flex-row justify-between items-end gap-8">
+<div class="space-y-1">
+<h3 class="font-headline font-bold text-xl text-primary">Comparative Performance</h3>
+<p class="text-sm text-on-surface-variant">Metric assessment relative to classroom percentile averages.</p>
+</div>
+<button class="bg-primary text-white px-6 py-2.5 rounded-md font-semibold text-sm flex items-center gap-2 hover:opacity-90 transition-opacity active:scale-[0.98]">
+<span class="material-symbols-outlined text-sm" data-icon="ios_share">ios_share</span>
+                        Generate Parent Report
+                    </button>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-12 mt-10">
+<div class="space-y-3">
+<div class="flex justify-between text-xs font-bold tracking-tight uppercase">
+<span>Verbal Participation</span>
+<span class="text-primary">82nd Percentile</span>
+</div>
+<div class="h-1.5 w-full bg-white rounded-full overflow-hidden">
+<div class="h-full bg-primary" style="width: 82%"></div>
+</div>
+</div>
+<div class="space-y-3">
+<div class="flex justify-between text-xs font-bold tracking-tight uppercase">
+<span>Focus Stability</span>
+<span class="text-primary">94th Percentile</span>
+</div>
+<div class="h-1.5 w-full bg-white rounded-full overflow-hidden">
+<div class="h-full bg-primary" style="width: 94%"></div>
+</div>
+</div>
+<div class="space-y-3">
+<div class="flex justify-between text-xs font-bold tracking-tight uppercase">
+<span>Peer Collaboration</span>
+<span class="text-primary">68th Percentile</span>
+</div>
+<div class="h-1.5 w-full bg-white rounded-full overflow-hidden">
+<div class="h-full bg-primary" style="width: 68%"></div>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-white border-t border-slate-100 flex items-center justify-around z-20">
+<button class="flex flex-col items-center text-slate-400">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="text-[10px] font-bold">LIVE</span>
+</button>
+<button class="flex flex-col items-center text-slate-400">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+<span class="text-[10px] font-bold">STATS</span>
+</button>
+<button class="flex flex-col items-center text-primary">
+<span class="material-symbols-outlined" data-icon="group" style="font-variation-settings: 'FILL' 1;">group</span>
+<span class="text-[10px] font-bold">STUDENTS</span>
+</button>
+<button class="flex flex-col items-center text-slate-400">
+<span class="material-symbols-outlined" data-icon="settings_suggest">settings_suggest</span>
+<span class="text-[10px] font-bold">AI</span>
+</button>
+</nav>
+</body></html>

@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>AI Configuration &amp; Camera Setup - The Insightful Lens</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-tertiary-container": "#b4b2ff",
+                    "on-primary-container": "#8ebdf9",
+                    "primary": "#00355f",
+                    "on-surface": "#191c1e",
+                    "secondary-fixed": "#84f5ee",
+                    "primary-fixed-dim": "#a0c9ff",
+                    "tertiary-container": "#3728cf",
+                    "on-error": "#ffffff",
+                    "background": "#f7f9fb",
+                    "on-primary-fixed-variant": "#07497d",
+                    "on-primary-fixed": "#001c37",
+                    "surface-container-highest": "#e0e3e5",
+                    "error": "#ba1a1a",
+                    "on-secondary-fixed-variant": "#00504d",
+                    "surface-bright": "#f7f9fb",
+                    "on-surface-variant": "#42474f",
+                    "on-tertiary-fixed": "#0f0069",
+                    "on-background": "#191c1e",
+                    "surface-container-low": "#f2f4f6",
+                    "surface-container": "#eceef0",
+                    "outline-variant": "#c2c7d1",
+                    "surface": "#f7f9fb",
+                    "on-primary": "#ffffff",
+                    "primary-container": "#0f4c81",
+                    "surface-container-lowest": "#ffffff",
+                    "on-secondary-container": "#006f6a",
+                    "surface-variant": "#e0e3e5",
+                    "surface-container-high": "#e6e8ea",
+                    "surface-dim": "#d8dadc",
+                    "on-secondary-fixed": "#00201e",
+                    "surface-tint": "#2d6197",
+                    "inverse-surface": "#2d3133",
+                    "secondary-fixed-dim": "#66d8d2",
+                    "tertiary-fixed": "#e2dfff",
+                    "on-error-container": "#93000a",
+                    "error-container": "#ffdad6",
+                    "secondary-container": "#81f2eb",
+                    "inverse-on-surface": "#eff1f3",
+                    "secondary": "#006a66",
+                    "on-tertiary": "#ffffff",
+                    "inverse-primary": "#a0c9ff",
+                    "tertiary-fixed-dim": "#c3c0ff",
+                    "on-tertiary-fixed-variant": "#3323cc",
+                    "tertiary": "#1f00ae",
+                    "on-secondary": "#ffffff",
+                    "primary-fixed": "#d2e4ff",
+                    "outline": "#727780"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "fontFamily": {
+                    "headline": ["Manrope"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-overlay {
+            background: rgba(247, 249, 251, 0.6);
+            backdrop-filter: blur(24px);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body selection:bg-primary-container selection:text-white">
+<div class="flex min-h-screen">
+<!-- SideNavBar -->
+<aside class="h-screen w-72 left-0 sticky bg-slate-50 dark:bg-slate-950 flex flex-col p-4 gap-2 border-r border-slate-100 dark:border-slate-800 font-['Inter'] font-medium text-sm">
+<div class="mb-8 px-2 py-4">
+<h1 class="font-['Manrope'] font-extrabold text-sky-900 dark:text-sky-200 text-2xl tracking-tight">The Insightful Lens</h1>
+<p class="text-xs text-slate-500 mt-1 uppercase tracking-widest font-semibold">AI Classroom Observer</p>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:text-sky-800 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span>Live Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:text-sky-800 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+<span>Session Analytics</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:text-sky-800 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+<span>Student Profiles</span>
+</a>
+<!-- Active Navigation: AI Configuration -->
+<a class="flex items-center gap-3 px-4 py-3 bg-sky-100 dark:bg-sky-900/30 text-sky-900 dark:text-sky-100 font-semibold rounded-lg transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="settings_suggest">settings_suggest</span>
+<span>AI Configuration</span>
+</a>
+</nav>
+<div class="pt-4 border-t border-slate-200 dark:border-slate-800 space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:text-sky-800 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="help_outline">help_outline</span>
+<span>Help Center</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:text-sky-800 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+<span>Sign Out</span>
+</a>
+</div>
+</aside>
+<!-- Main Canvas -->
+<main class="flex-1 min-w-0 flex flex-col overflow-y-auto">
+<!-- TopAppBar -->
+<header class="w-full top-0 sticky bg-slate-50 dark:bg-slate-900 z-30 flex justify-between items-center h-16 px-6 font-['Manrope'] font-bold text-lg tracking-tight">
+<div class="flex items-center gap-4 flex-1">
+<div class="relative w-full max-w-md">
+<span class="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400" data-icon="search">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm font-normal focus:ring-2 focus:ring-primary/20 transition-all" placeholder="Search system settings..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 text-slate-500 hover:bg-slate-200/50 dark:hover:bg-slate-800 rounded-full transition-colors">
+<span class="material-symbols-outlined" data-icon="sensors">sensors</span>
+</button>
+<button class="p-2 text-slate-500 hover:bg-slate-200/50 dark:hover:bg-slate-800 rounded-full transition-colors">
+<span class="material-symbols-outlined" data-icon="videocam">videocam</span>
+</button>
+<button class="p-2 text-slate-500 hover:bg-slate-200/50 dark:hover:bg-slate-800 rounded-full transition-colors relative">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<div class="h-8 w-px bg-slate-200 dark:bg-slate-800 mx-2"></div>
+<div class="flex items-center gap-3">
+<span class="text-sm font-medium text-slate-700 dark:text-slate-300">Prof. Aris Thorne</span>
+<img alt="Professor Profile" class="w-10 h-10 rounded-full object-cover border-2 border-primary-container" data-alt="professional portrait of a middle-aged male professor with spectacles in a bright modern academic office setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD11mJ1gdiU2_HuvEUMpZw1ZOoKLctpYFbjBfQW-NUs_3CX8xJuXCFn0qn1uKg5JaBgpTj-puhY3V-ixkqoEbiK2ElHYBpdaelG3-74k_XosVou9hcVV2DNnTVgg4FXwRCdCsrfO34T_QwVBNXrpc6L8TO3eqAg24w2qi0WZVwyFoQvnQWZ31nzA8cgOglGdBbN71kXoCWlQxrrC8mESgmX0tBg0siQxbvEnoHbJQQoVIvszjhzX0iERKNkt9TvCd-r4z9B-Jvg3CGO"/>
+</div>
+</div>
+</header>
+<!-- Configuration Content -->
+<div class="p-8 max-w-7xl w-full mx-auto space-y-8">
+<!-- Hero Header -->
+<div class="flex justify-between items-end">
+<div>
+<h2 class="text-3xl font-headline font-bold text-primary mb-2">AI Configuration</h2>
+<p class="text-on-surface-variant max-w-2xl">Refine your classroom's digital twin. Adjust vision parameters, manage student recognition databases, and monitor hardware health in real-time.</p>
+</div>
+<div class="flex gap-3">
+<button class="px-6 py-2 bg-surface-container-high text-on-surface font-medium rounded-md hover:brightness-95 transition-all">Export Config</button>
+<button class="px-6 py-2 bg-gradient-to-br from-primary to-primary-container text-white font-medium rounded-md shadow-lg shadow-primary/20 active:scale-95 transition-all">Save Changes</button>
+</div>
+</div>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-12 gap-6">
+<!-- Camera Calibration & Live Preview (Main Section) -->
+<section class="col-span-12 lg:col-span-8 space-y-6">
+<div class="bg-surface-container-lowest p-6 rounded-xl relative overflow-hidden group">
+<div class="flex justify-between items-center mb-6">
+<h3 class="text-lg font-headline font-bold text-primary flex items-center gap-2">
+<span class="material-symbols-outlined text-primary-fixed-dim" data-icon="camera">camera</span>
+                                    Camera Calibration
+                                </h3>
+<div class="flex items-center gap-2">
+<span class="px-3 py-1 rounded-full bg-secondary-container text-on-secondary-container text-xs font-bold uppercase tracking-wider">Active: Feed 01</span>
+<button class="material-symbols-outlined p-2 text-on-surface-variant hover:bg-surface-container-high rounded-full" data-icon="more_horiz">more_horiz</button>
+</div>
+</div>
+<div class="relative aspect-video rounded-xl bg-slate-900 overflow-hidden">
+<img alt="Live Classroom Feed" class="w-full h-full object-cover opacity-80" data-alt="high-angle wide shot of a modern brightly lit university classroom with students seated at desks engaged in work" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDUF_tB6pfKbagf-q_LZkT-8XsSbbY-7SFXWioh0YGHMBRF7CSj8SvPZsNS89g5uec-KEoWUyGZt9BCgwO3oVvqzjUE5x4f7bmTMocZ7lYX17StYpkg5oQDqCnzlQfoueNfPzvZY0FYGs20rCtgeOjMiZANYCfBewdOm2KXJU2Zob0QwR8mhvCy0DYaye3t3an-i1lsOjPjTx_KKe3iS3neiLCNGM9Pm11LNZsvB5HHW-468cUig7RSO2NsnabrkUJ33oVa5IQCR0li"/>
+<!-- AI Overlay -->
+<div class="absolute inset-0 p-6 pointer-events-none">
+<div class="border-2 border-on-tertiary-container/40 absolute top-1/4 left-1/3 w-32 h-44 rounded-lg">
+<div class="absolute -top-8 left-0 glass-overlay px-2 py-1 rounded-md">
+<span class="text-[10px] font-bold text-tertiary">STUDENT_042</span>
+</div>
+</div>
+<div class="border-2 border-on-tertiary-container/40 absolute top-1/2 left-1/2 w-28 h-36 rounded-lg">
+<div class="absolute -top-8 left-0 glass-overlay px-2 py-1 rounded-md">
+<span class="text-[10px] font-bold text-tertiary">STUDENT_089</span>
+</div>
+</div>
+</div>
+<!-- Calibration Controls Overlay -->
+<div class="absolute bottom-6 left-6 right-6 flex justify-between items-center glass-overlay p-4 rounded-xl">
+<div class="flex gap-4">
+<div class="text-xs">
+<p class="text-slate-500 uppercase font-bold tracking-tighter">Exposure</p>
+<p class="text-primary font-bold">1/60s</p>
+</div>
+<div class="text-xs">
+<p class="text-slate-500 uppercase font-bold tracking-tighter">Focal Point</p>
+<p class="text-primary font-bold">4.2m</p>
+</div>
+<div class="text-xs">
+<p class="text-slate-500 uppercase font-bold tracking-tighter">Confidence</p>
+<p class="text-primary font-bold">98.4%</p>
+</div>
+</div>
+<div class="flex gap-2">
+<button class="bg-primary text-white p-2 rounded-lg hover:brightness-125 transition-all"><span class="material-symbols-outlined text-sm" data-icon="videocam">videocam</span></button>
+<button class="bg-surface-container-highest p-2 rounded-lg hover:brightness-95 transition-all"><span class="material-symbols-outlined text-sm" data-icon="refresh">refresh</span></button>
+</div>
+</div>
+</div>
+</div>
+<!-- KPI Definition -->
+<div class="bg-surface-container-lowest p-6 rounded-xl">
+<h3 class="text-lg font-headline font-bold text-primary mb-6">KPI Thresholds &amp; Sensitivity</h3>
+<div class="grid grid-cols-2 gap-8">
+<div class="space-y-6">
+<div>
+<div class="flex justify-between items-center mb-2">
+<label class="text-sm font-semibold text-on-surface">Focus Detection Sensitivity</label>
+<span class="text-xs font-bold text-primary">85%</span>
+</div>
+<input class="w-full h-1.5 bg-surface-container-high rounded-full appearance-none cursor-pointer accent-primary" type="range"/>
+<p class="text-[10px] text-on-surface-variant mt-2 italic">Higher sensitivity tracks micro-expressions but may increase false positives in low light.</p>
+</div>
+<div>
+<div class="flex justify-between items-center mb-2">
+<label class="text-sm font-semibold text-on-surface">Group Engagement Radius</label>
+<span class="text-xs font-bold text-primary">1.5m</span>
+</div>
+<input class="w-full h-1.5 bg-surface-container-high rounded-full appearance-none cursor-pointer accent-primary" type="range"/>
+</div>
+</div>
+<div class="space-y-6">
+<div>
+<div class="flex justify-between items-center mb-2">
+<label class="text-sm font-semibold text-on-surface">Distraction Time-to-Alert</label>
+<span class="text-xs font-bold text-primary">120s</span>
+</div>
+<input class="w-full h-1.5 bg-surface-container-high rounded-full appearance-none cursor-pointer accent-primary" type="range"/>
+</div>
+<div class="flex flex-col">
+<label class="text-sm font-semibold text-on-surface mb-2">Primary Recognition Model</label>
+<select class="bg-surface-container-low border-none rounded-lg text-sm py-2 px-3 focus:ring-2 focus:ring-primary/20">
+<option>Behavioral_v2.4_Stable</option>
+<option>Academic_Attention_Alpha</option>
+<option>Postural_Analysis_Lrg</option>
+</select>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Sidebar Stats & Management -->
+<aside class="col-span-12 lg:col-span-4 space-y-6">
+<!-- System Health -->
+<div class="bg-primary text-white p-6 rounded-xl">
+<h3 class="text-lg font-headline font-bold mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined" data-icon="health_and_safety">health_and_safety</span>
+                                System Health
+                            </h3>
+<div class="space-y-4">
+<div class="flex justify-between items-center">
+<span class="text-sm opacity-80">GPU Load</span>
+<span class="text-sm font-bold">42%</span>
+</div>
+<div class="w-full h-1 bg-white/20 rounded-full">
+<div class="w-[42%] h-full bg-secondary-fixed rounded-full"></div>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-sm opacity-80">Network Latency</span>
+<span class="text-sm font-bold">14ms</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-sm opacity-80">Edge Storage</span>
+<span class="text-sm font-bold">1.2 / 4 TB</span>
+</div>
+<div class="pt-2">
+<div class="bg-white/10 p-3 rounded-lg flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary-fixed" data-icon="check_circle">check_circle</span>
+<span class="text-xs font-medium">All vision nodes operational</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Student Database Management -->
+<div class="bg-surface-container-lowest p-6 rounded-xl">
+<div class="flex justify-between items-center mb-6">
+<h3 class="text-lg font-headline font-bold text-primary">Student Database</h3>
+<button class="text-primary text-xs font-bold hover:underline">View All</button>
+</div>
+<div class="space-y-4">
+<!-- Student Row -->
+<div class="flex items-center gap-3 p-2 hover:bg-surface-container rounded-lg transition-all">
+<img alt="Student 1" class="w-10 h-10 rounded-full object-cover" data-alt="close-up of a young woman smiling in a natural daylight setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB2O6HlUPV8Wm-wG3JeSo_vaKh5e2ccdHHQNNdymbXsE7wZMLij0qZGWAQyXfvLl7eZNEJTXFVNpIUpqn6-TLydLO5TsqIjgnymKvtQJ308O0Px1MMNQGj5LYWQriiqNaS2mX1Kja2_dq3AW-Qdh0XUWDlGeYaEtuDhCuoDFv10xM_6a7CZXuEcCunc3TA0KduAkj8-r_30_TUCCaSX48ix3h1Ymls_mPUk_WS_uh1G1JKxDg1pVSKrDqw5OzCJpLEUysnuzD5XVvy3"/>
+<div class="flex-1 min-w-0">
+<p class="text-sm font-bold text-on-surface truncate">Elara Vance</p>
+<p class="text-[10px] text-on-surface-variant">Profile Synced • 12/05</p>
+</div>
+<span class="material-symbols-outlined text-slate-400 cursor-pointer" data-icon="verified">verified</span>
+</div>
+<!-- Student Row -->
+<div class="flex items-center gap-3 p-2 hover:bg-surface-container rounded-lg transition-all">
+<img alt="Student 2" class="w-10 h-10 rounded-full object-cover" data-alt="portrait of a young man with curly hair against a soft studio background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuACiWJlyajfhhVApMcsC8CpJXWXkg2G-NkogvNCf0b2dcClJJZMfZHW5KVpsCDCDq-1AJRpfW6vYGF52AkMEQQJDQLsXgYFRFbPEn2zqf4bzNxi4WJghQE4e8wgtJP5zwGqwUBaccRsJ3oM1-Eml33g2GcfL56dI8jPXqCb5yU0i8rdIXcTSwTrdzqMOJt7ezgD-wfOqQ116zXcPa2d3pdwhlx40P-oPCijDOJrBEn8vbACtPVsd5Pgyfmg5MXWWxmkGdjDlrf8GZZR"/>
+<div class="flex-1 min-w-0">
+<p class="text-sm font-bold text-on-surface truncate">Julian Chen</p>
+<p class="text-[10px] text-on-surface-variant">Missing Bio-Ref</p>
+</div>
+<span class="material-symbols-outlined text-error cursor-pointer" data-icon="warning">warning</span>
+</div>
+<!-- Student Row -->
+<div class="flex items-center gap-3 p-2 hover:bg-surface-container rounded-lg transition-all">
+<img alt="Student 3" class="w-10 h-10 rounded-full object-cover" data-alt="headshot of a young woman with a calm expression in an outdoor setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC5QGWXJHZDuReFrHIZo7-pWS2sAhybzuiO4cUekwG5ZHcQlvskoYuubiEo1fWkf0ZjsuFolK5yGSRkeHpOq9StbQ0tuEoasbq5KKinVgKgrTLQRatfdJWJBRIsjLakwI2RJYAJXy3wbRAuZJYcooOHeaCgKuP1MMYcpekBL5-B4OYz-tsm0h0R34pQjbTN1b9Wyc6YNp1mEEWIxoKZ0yh1_5lkNOZyRAW7r38Qy53PXhkcwslENdPE3x3mtmlLimV1RgFv1l5sYAkS"/>
+<div class="flex-1 min-w-0">
+<p class="text-sm font-bold text-on-surface truncate">Sasha Ivanov</p>
+<p class="text-[10px] text-on-surface-variant">Profile Synced • 11/28</p>
+</div>
+<span class="material-symbols-outlined text-slate-400 cursor-pointer" data-icon="verified">verified</span>
+</div>
+<button class="w-full py-3 mt-2 border-2 border-dashed border-outline-variant rounded-xl text-on-surface-variant text-sm font-semibold flex items-center justify-center gap-2 hover:bg-surface-container-low transition-all">
+<span class="material-symbols-outlined text-sm" data-icon="person_add">person_add</span>
+                                    Import Student List
+                                </button>
+</div>
+</div>
+<!-- Notification Logic Card -->
+<div class="bg-surface-container-high p-6 rounded-xl">
+<h3 class="text-sm font-bold text-primary mb-4 uppercase tracking-widest">Alert Protocols</h3>
+<div class="space-y-3">
+<label class="flex items-center gap-3 cursor-pointer">
+<input checked="" class="rounded text-primary focus:ring-primary w-4 h-4" type="checkbox"/>
+<span class="text-sm font-medium">Silent In-App Badge</span>
+</label>
+<label class="flex items-center gap-3 cursor-pointer">
+<input checked="" class="rounded text-primary focus:ring-primary w-4 h-4" type="checkbox"/>
+<span class="text-sm font-medium">Wearable Vibration Alert</span>
+</label>
+<label class="flex items-center gap-3 cursor-pointer">
+<input class="rounded text-primary focus:ring-primary w-4 h-4" type="checkbox"/>
+<span class="text-sm font-medium">Weekly AI Summary Email</span>
+</label>
+</div>
+</div>
+</aside>
+</div>
+</div>
+</main>
+</div>
+</body></html>
