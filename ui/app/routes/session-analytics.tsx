@@ -1,142 +1,180 @@
-import type { Route } from "./+types/session-analytics";
+import { Sidebar } from "../components/Sidebar";
+import { useState, useMemo } from "react";
+import { AnalyticsStats } from "../components/analytics/AnalyticsStats";
+import { AnalyticsCharts } from "../components/analytics/AnalyticsCharts";
 
-export function meta({}: Route.MetaArgs) {
-  return [{ title: "Session Analytics - The Insightful Lens" }];
-}
+type FilterType = "sessions" | "weeks" | "custom";
+
+const mockHistoricalData = Array.from({ length: 150 }, (_, i) => {
+  const d = new Date();
+  // Đảm bảo không dính giờ/phút/giây để compare cho đúng ngày
+  d.setHours(0, 0, 0, 0);
+  d.setDate(d.getDate() - (149 - i));
+  const baseFocus = 65 + Math.random() * 25;
+  const baseEng = 70 + Math.random() * 20;
+  return {
+    timestamp: d.getTime(),
+    dateStr: d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, '0') + "-" + String(d.getDate()).padStart(2, '0'),
+    date: d.toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" }),
+    shortDate: d.toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit" }),
+    focus: Math.round(baseFocus),
+    engagement: Math.round(baseEng),
+    anomalies: Math.floor(Math.random() * 15),
+    attendance: Math.round(80 + Math.random() * 20),
+    participation: Math.round(50 + Math.random() * 30),
+    isSessionDay: Math.random() > 0.4, // Khoảng 60% số ngày trong 150 ngày qua có buổi học
+  };
+}).filter(day => day.isSessionDay);
 
 export default function SessionAnalytics() {
-  return (
-    <main className="bg-background text-on-surface font-body flex min-h-screen">
-      <aside className="h-screen w-72 left-0 sticky flex flex-col p-4 gap-2 border-r border-slate-100 bg-slate-50">
-        <div className="mb-8 px-2">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 rounded-xl bg-primary-container flex items-center justify-center text-on-primary-container">
-              <span className="material-symbols-outlined">visibility</span>
-            </div>
-            <div>
-              <h1 className="font-headline font-extrabold text-primary text-lg leading-tight">The Insightful Lens</h1>
-              <p className="text-xs text-slate-500">AI Classroom Observer</p>
-            </div>
-          </div>
-        </div>
-        <nav className="flex-1 space-y-1">
-          <a className="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-200 transition-all rounded-lg font-medium text-sm" href="/">
-            <span className="material-symbols-outlined">dashboard</span>
-            Live Dashboard
-          </a>
-          <a className="flex items-center gap-3 px-4 py-3 bg-sky-100 text-primary font-semibold rounded-lg text-sm" href="/session-analytics">
-            <span className="material-symbols-outlined">analytics</span>
-            Session Analytics
-          </a>
-          <a className="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-200 transition-all rounded-lg font-medium text-sm" href="/student-profiles">
-            <span className="material-symbols-outlined">group</span>
-            Student Profiles
-          </a>
-          <a className="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-200 transition-all rounded-lg font-medium text-sm" href="/ai-configuration">
-            <span className="material-symbols-outlined">settings_suggest</span>
-            AI Configuration
-          </a>
-        </nav>
-      </aside>
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [filterType, setFilterType] = useState<FilterType>("sessions");
+  const [sessionCount, setSessionCount] = useState<number>(10);
+  const [weekCount, setWeekCount] = useState<number>(4);
+  const [startDate, setStartDate] = useState<string>(() => {
+    const d = new Date(); 
+    d.setDate(d.getDate() - 14); 
+    return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, '0') + "-" + String(d.getDate()).padStart(2, '0');
+  });
+  const [endDate, setEndDate] = useState<string>(() => {
+    const d = new Date();
+    return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, '0') + "-" + String(d.getDate()).padStart(2, '0');
+  });
+  
+  const chartData = useMemo(() => {
+    if (filterType === "sessions") {
+      return mockHistoricalData.slice(-sessionCount);
+    } else if (filterType === "weeks") {
+      const cutoffTime = new Date();
+      cutoffTime.setHours(0,0,0,0);
+      cutoffTime.setDate(cutoffTime.getDate() - (weekCount * 7));
+      return mockHistoricalData.filter(d => d.timestamp >= cutoffTime.getTime());
+    } else {
+      const start = new Date(startDate).getTime();
+      const end = new Date(endDate).getTime() + (24 * 60 * 60 * 1000) - 1; // End of the end date
+      return mockHistoricalData.filter(d => d.timestamp >= start && d.timestamp <= end);
+    }
+  }, [filterType, sessionCount, weekCount, startDate, endDate]);
 
-      <section className="flex-1 overflow-y-auto">
-        <header className="w-full top-0 sticky z-10 bg-slate-50/80 backdrop-blur-md flex justify-between items-center h-16 px-8 border-b border-slate-100">
-          <div className="flex items-center gap-4">
-            <h2 className="font-headline font-bold text-lg tracking-tight text-primary">Post-Session Analysis</h2>
-            <span className="px-3 py-1 bg-surface-container text-outline text-[10px] font-bold rounded-full uppercase tracking-wider">Advanced Report</span>
+  const averages = useMemo(() => {
+    if (chartData.length === 0) return { focus: 0, eng: 0, anom: 0, att: 0 };
+    const sums = chartData.reduce((acc, curr) => ({
+      focus: acc.focus + curr.focus,
+      eng: acc.eng + curr.engagement,
+      anom: acc.anom + curr.anomalies,
+      att: acc.att + curr.attendance
+    }), { focus: 0, eng: 0, anom: 0, att: 0 });
+    return {
+      focus: Math.round(sums.focus / chartData.length),
+      eng: Math.round(sums.eng / chartData.length),
+      anom: sums.anom,
+      att: Math.round(sums.att / chartData.length)
+    };
+  }, [chartData]);
+
+  return (
+    <main className="bg-background text-on-surface font-body flex h-screen overflow-hidden">
+      <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} activeTab="analytics" />
+
+      <section className="flex-1 flex flex-col h-full overflow-y-auto">
+        <header className="flex justify-between items-center h-16 px-6 bg-slate-50 border-b border-slate-100 sticky top-0 z-20">
+          <div className="flex items-center gap-4 flex-1">
+            {!isSidebarOpen && (
+              <button onClick={() => setIsSidebarOpen(true)} className="p-2 text-slate-500 hover:bg-slate-200 rounded-lg transition-colors">
+                <span className="material-symbols-outlined">left_panel_open</span>
+              </button>
+            )}
+            <h1 className="font-bold text-xl text-slate-800 tracking-tight">Analytics Dashboard</h1>
           </div>
         </header>
 
-        <div className="p-8 max-w-7xl mx-auto space-y-8">
-          <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2 p-8 bg-surface-container-lowest rounded-xl shadow-sm border border-slate-100 min-h-[320px]">
-              <div className="flex items-center gap-2 text-primary font-bold mb-4">
-                <span className="material-symbols-outlined text-sm filled">auto_awesome</span>
-                <span className="text-xs uppercase tracking-widest font-headline">AI Performance Summary</span>
-              </div>
-              <h3 className="font-headline text-2xl font-bold text-on-surface mb-4">Session: Advanced Macroeconomics (Section B)</h3>
-              <p className="text-on-surface-variant leading-relaxed max-w-2xl mb-6">
-                Overall class engagement peaked during the Monetary Policy breakout session at 10:45 AM. AI detected a 22% increase
-                in collaborative sentiment compared to previous weeks.
-              </p>
-              <div className="flex gap-4">
-                <div className="flex items-center gap-2 bg-secondary-container/30 px-4 py-2 rounded-full">
-                  <span className="w-2 h-2 bg-secondary rounded-full"></span>
-                  <span className="text-xs font-semibold text-on-secondary-container">High Engagement</span>
-                </div>
-                <div className="flex items-center gap-2 bg-tertiary-container/10 px-4 py-2 rounded-full">
-                  <span className="w-2 h-2 bg-tertiary rounded-full"></span>
-                  <span className="text-xs font-semibold text-on-tertiary-fixed-variant">Concept Mastery: 88%</span>
-                </div>
-              </div>
-            </div>
-            <div className="bg-primary text-white rounded-xl p-8 flex flex-col justify-between shadow-lg" style={{ background: "linear-gradient(135deg, #00355f 0%, #0f4c81 100%)" }}>
-              <div>
-                <div className="text-white/60 text-xs font-bold uppercase tracking-widest mb-6">Critical Alerts</div>
-                <div className="space-y-4">
-                  <div className="flex gap-4 items-start">
-                    <span className="material-symbols-outlined text-error bg-white/10 p-2 rounded-lg">warning</span>
-                    <div>
-                      <div className="text-sm font-bold">Participation Gap</div>
-                      <div className="text-xs text-white/70">Rear cluster group remains silent for more than 20 minutes.</div>
-                    </div>
-                  </div>
-                  <div className="flex gap-4 items-start">
-                    <span className="material-symbols-outlined text-secondary-fixed bg-white/10 p-2 rounded-lg">psychology</span>
-                    <div>
-                      <div className="text-sm font-bold">Concept Friction</div>
-                      <div className="text-xs text-white/70">Liquidity Trap triggered confused facial signals.</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <button className="w-full py-3 bg-white/10 hover:bg-white/20 transition-colors text-xs font-bold rounded-lg border border-white/20 uppercase tracking-widest">
-                View Detailed Insights
-              </button>
-            </div>
-          </section>
+        <div className="p-6 max-w-screen-2xl mx-auto w-full space-y-6">
+          <div className="flex flex-col gap-2 mb-2">
+            <h2 className="text-2xl font-bold text-slate-800">Teaching Quality & Engagement</h2>
+            <p className="text-slate-500 text-sm">Aggregated metrics across historical sessions</p>
+          </div>
 
-          <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="bg-surface-container-lowest p-6 rounded-xl border border-slate-100">
-              <span className="text-xs font-bold text-slate-500 uppercase tracking-tighter mb-2 block">Sentiment Trend</span>
-              <div className="text-3xl font-headline font-extrabold text-primary mb-4">+14%</div>
-              <div className="h-16 w-full flex items-end gap-1">
-                <div className="w-full bg-primary/10 h-1/2 rounded-sm"></div>
-                <div className="w-full bg-primary/20 h-2/3 rounded-sm"></div>
-                <div className="w-full bg-primary/40 h-1/3 rounded-sm"></div>
-                <div className="w-full bg-primary/60 h-3/4 rounded-sm"></div>
-                <div className="w-full bg-primary h-full rounded-sm"></div>
-              </div>
+          <div className="flex flex-wrap items-end gap-5 p-5 bg-white rounded-2xl border border-slate-200 shadow-sm">
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Khung phân tích</label>
+              <select 
+                value={filterType} 
+                onChange={e => setFilterType(e.target.value as FilterType)} 
+                className="bg-slate-50 border border-slate-200 px-4 py-2.5 rounded-lg text-sm font-medium text-slate-700 outline-none focus:ring-2 focus:ring-primary/30 transition-all min-w-[200px] cursor-pointer"
+              >
+                <option value="sessions">Theo số buổi gần đây</option>
+                <option value="weeks">Theo số tuần gần đây</option>
+                <option value="custom">Tuỳ chỉnh thời gian</option>
+              </select>
             </div>
-            <div className="bg-surface-container-lowest p-6 rounded-xl border border-slate-100">
-              <span className="text-xs font-bold text-slate-500 uppercase tracking-tighter mb-4 block">Student Participation</span>
-              <div className="relative w-24 h-24 mx-auto mb-4">
-                <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
-                  <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#eceef0" strokeWidth="3"></path>
-                  <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#006a66" strokeDasharray="75, 100" strokeWidth="3"></path>
-                </svg>
-                <div className="absolute inset-0 flex items-center justify-center font-bold text-primary">75%</div>
+            
+            {filterType === "sessions" && (
+              <div className="flex flex-col gap-1.5 animate-in fade-in zoom-in duration-200 block">
+                <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Số buổi</label>
+                <select 
+                  value={sessionCount} 
+                  onChange={e => setSessionCount(Number(e.target.value))} 
+                  className="bg-slate-50 border border-slate-200 px-4 py-2.5 rounded-lg text-sm font-medium text-slate-700 outline-none focus:ring-2 focus:ring-primary/30 transition-all cursor-pointer"
+                >
+                  <option value={5}>5 buổi gần nhất</option>
+                  <option value={10}>10 buổi gần nhất</option>
+                  <option value={20}>20 buổi gần nhất</option>
+                  <option value={50}>50 buổi gần nhất</option>
+                  <option value={100}>100 buổi gần nhất</option>
+                </select>
               </div>
-              <p className="text-[10px] text-center text-slate-400">Active engagement threshold met</p>
-            </div>
-            <div className="bg-surface-container-lowest p-6 rounded-xl border border-slate-100 lg:col-span-2">
-              <div className="flex justify-between items-start mb-6">
-                <span className="text-xs font-bold text-slate-500 uppercase tracking-tighter">Peak Engagement Periods</span>
-                <div className="flex gap-2">
-                  <span className="w-2 h-2 rounded-full bg-primary"></span>
-                  <span className="w-2 h-2 rounded-full bg-secondary"></span>
+            )}
+
+            {filterType === "weeks" && (
+              <div className="flex flex-col gap-1.5 animate-in fade-in zoom-in duration-200 block">
+                <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Số tuần</label>
+                <select 
+                  value={weekCount} 
+                  onChange={e => setWeekCount(Number(e.target.value))} 
+                  className="bg-slate-50 border border-slate-200 px-4 py-2.5 rounded-lg text-sm font-medium text-slate-700 outline-none focus:ring-2 focus:ring-primary/30 transition-all cursor-pointer"
+                >
+                  <option value={1}>1 tuần gần nhất</option>
+                  <option value={2}>2 tuần gần nhất</option>
+                  <option value={4}>4 tuần (1 tháng)</option>
+                  <option value={8}>8 tuần (2 tháng)</option>
+                  <option value={12}>12 tuần (3 tháng)</option>
+                </select>
+              </div>
+            )}
+
+            {filterType === "custom" && (
+              <>
+                <div className="flex flex-col gap-1.5 animate-in fade-in zoom-in duration-200 block">
+                  <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Từ ngày</label>
+                  <input 
+                    type="date" 
+                    value={startDate} 
+                    onChange={e => setStartDate(e.target.value)} 
+                    className="bg-slate-50 border border-slate-200 px-4 py-2 rounded-lg text-sm font-medium text-slate-700 outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer" 
+                  />
                 </div>
-              </div>
-              <div className="grid grid-cols-6 h-24 items-end gap-4">
-                <div className="h-[20%] bg-surface-container-highest rounded-t-lg"></div>
-                <div className="h-[45%] bg-surface-container-highest rounded-t-lg"></div>
-                <div className="h-[90%] bg-primary rounded-t-lg"></div>
-                <div className="h-[100%] bg-secondary rounded-t-lg"></div>
-                <div className="h-[60%] bg-surface-container-highest rounded-t-lg"></div>
-                <div className="h-[30%] bg-surface-container-highest rounded-t-lg"></div>
-              </div>
+                <div className="flex flex-col gap-1.5 animate-in fade-in zoom-in duration-200 block">
+                  <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Đến ngày</label>
+                  <input 
+                    type="date" 
+                    value={endDate} 
+                    onChange={e => setEndDate(e.target.value)} 
+                    className="bg-slate-50 border border-slate-200 px-4 py-2 rounded-lg text-sm font-medium text-slate-700 outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer" 
+                  />
+                </div>
+              </>
+            )}
+            
+            <div className="flex-1"></div>
+            
+            <div className="bg-slate-50 px-4 py-2.5 rounded-lg border border-slate-200 text-sm font-medium text-slate-600">
+              Đang phân tích: <span className="font-bold text-primary">{chartData.length}</span> buổi học
             </div>
-          </section>
+          </div>
+
+          <AnalyticsStats averages={averages} />
+
+          <AnalyticsCharts chartData={chartData} />
         </div>
       </section>
     </main>
