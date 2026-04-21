@@ -6,4 +6,5 @@ export default [
 	route("session-analytics", "routes/session-analytics.tsx"),
 	route("student-profiles", "routes/student-profiles.tsx"),
 	route("ai-configuration", "routes/ai-configuration.tsx"),
+	route("school-overview", "routes/school-overview.tsx"),
 ] satisfies RouteConfig;

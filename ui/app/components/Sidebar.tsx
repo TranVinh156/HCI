@@ -1,6 +1,6 @@
 
 
-export type SidebarTab = "home" | "live" | "analytics" | "students" | "ai";
+export type SidebarTab = "home" | "live" | "analytics" | "students" | "ai" | "school";
 
 export function Sidebar({ 
   isOpen, 
@@ -64,6 +64,13 @@ export function Sidebar({
         >
           <span className="material-symbols-outlined">group</span>
           <span>Student Profiles</span>
+        </a>
+        <a 
+          className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ease-in-out ${activeTab === 'school' ? 'bg-sky-100 text-sky-900 font-semibold' : 'text-slate-600 hover:text-sky-800 hover:bg-slate-200'}`} 
+          href="/school-overview"
+        >
+          <span className="material-symbols-outlined">account_balance</span>
+          <span>School Overview</span>
         </a>
         <a 
           className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ease-in-out ${activeTab === 'ai' ? 'bg-sky-100 text-sky-900 font-semibold' : 'text-slate-600 hover:text-sky-800 hover:bg-slate-200'}`} 
