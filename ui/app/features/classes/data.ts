@@ -1,4 +1,4 @@
-export type ManagedClassStatus = "ONGOING" | "UPCOMING";
+export type ManagedClassStatus = "LIVE" | "UPCOMING";
 
 export type ManagedClass = {
   id: string;
@@ -21,7 +21,7 @@ export const ASSIGNED_CLASSES: ManagedClass[] = [
     room: "204",
     schedule: "Mon, Wed 09:30 - 11:00",
     studentCount: 32,
-    status: "ONGOING",
+    status: "LIVE",
     dayIndexes: [1, 3],
     startMinutes: 9 * 60 + 30,
     endMinutes: 11 * 60,

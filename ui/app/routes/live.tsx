@@ -558,11 +558,17 @@ export default function LiveDashboard() {
             <div className={`flex flex-col gap-6 transition-all duration-500 w-full col-span-12 ${isVideoFullscreen ? 'xl:col-span-12 flex-row flex-wrap' : 'xl:col-span-4'}`}>
               <EngagementChart metricsHistory={metricsHistory} isVideoFullscreen={isVideoFullscreen} />
               <ActivityBreakdown metricsHistory={metricsHistory} isVideoFullscreen={isVideoFullscreen} />
-              <DetectionStreamLog streamLogs={streamLogs} isVideoFullscreen={isVideoFullscreen} />
             </div>
           </div>
 
-          <IncidentSnapshots incidentLogs={incidentLogs} />
+          <section className="grid grid-cols-1 gap-4 rounded-2xl border border-slate-200 bg-slate-50/70 p-4 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
+            <DetectionStreamLog
+              streamLogs={streamLogs}
+              isVideoFullscreen={false}
+              className="h-[360px] min-h-0 bg-white"
+            />
+            <IncidentSnapshots incidentLogs={incidentLogs} className="h-[360px] min-h-0" />
+          </section>
         </div>
       </section>
     </main>

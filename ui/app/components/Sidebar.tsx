@@ -104,7 +104,6 @@ export function Sidebar({ activeTab }: { activeTab: SidebarTab }) {
         </div>
       </SidebarHeader>
 
-      <SidebarSeparator className="mx-4" />
 
       <SidebarContent className="px-3 py-3">
         <SidebarMenu className="gap-1">
