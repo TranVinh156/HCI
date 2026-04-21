@@ -37,12 +37,12 @@ export default function Home() {
     >
       <Card>
         <CardContent className="p-5">
-          <SectionHeading
-            title="Danh Sach Lop Duoc Phan Cong"
-            description="Chon lop hoc de mo live session va cac khung phan tich lien quan."
-            eyebrow={`${ASSIGNED_CLASSES.length} classes`}
-            className="mb-5"
-          />
+        <SectionHeading
+          title="Assigned Classes"
+          description="Select a class to open the live session and related analytics views."
+          eyebrow={`${ASSIGNED_CLASSES.length} classes`}
+          className="mb-5"
+        />
 
           <div className="grid grid-cols-1 gap-4 xl:grid-cols-2 2xl:grid-cols-3">
             {ASSIGNED_CLASSES.map((item) => {

@@ -42,19 +42,19 @@ const AUTH_STORAGE_KEY = "insightful-lens-auth-session";
 const ROLE_META: Record<AccountRole, RoleMeta> = {
   student: {
     label: "Student",
-    description: "Sinh vien truy cap thong tin lop hoc va phien hoc.",
+    description: "Students access class information and session records.",
   },
   teacher: {
     label: "Teacher",
-    description: "Giang vien quan sat lop hoc va phan tich theo tiet hoc.",
+    description: "Teachers monitor classrooms and analyze lessons.",
   },
   faculty: {
     label: "Faculty",
-    description: "Khoa vien theo doi tong quan cac lop thuoc don vi.",
+    description: "Faculty teams track the overall status of classes in their unit.",
   },
   student_affair_officer: {
     label: "Student Affair Officer",
-    description: "Can bo cong tac sinh vien theo doi tinh hinh hoc tap.",
+    description: "Student affairs staff monitor learning conditions and student progress.",
   },
 };
 
@@ -136,7 +136,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (!password.trim()) {
           return {
             ok: false,
-            error: "Mat khau duoc phep bat ky, nhung khong nen de trong.",
+            error: "Any password is allowed, but it should not be empty.",
           };
         }
 
@@ -144,8 +144,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (!role) {
           return {
             ok: false,
-            error:
-              "Username hop le hien tai chi gom: student, teacher, faculty, student_affair_officer.",
+            error: "Valid usernames currently include only: student, teacher, faculty, student_affair_officer.",
           };
         }
 
@@ -158,7 +157,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (!password.trim()) {
           return {
             ok: false,
-            error: "Mat khau duoc phep bat ky, nhung khong nen de trong.",
+            error: "Any password is allowed, but it should not be empty.",
           };
         }
 
@@ -166,8 +165,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (!role) {
           return {
             ok: false,
-            error:
-              "Dang ky tam thoi chi ho tro username bang loai tai khoan: student, teacher, faculty, student_affair_officer.",
+            error: "Temporary registration only supports usernames matching these account types: student, teacher, faculty, student_affair_officer.",
           };
         }
 

@@ -6,9 +6,9 @@ export function AnalyticsCharts({ chartData }: { chartData: any[] }) {
   if (chartData.length === 0) {
     return (
       <Card className="p-12 text-center">
-          <span className="material-symbols-outlined text-6xl text-slate-300 mb-4">analytics</span>
-          <h3 className="text-xl font-bold text-slate-700">Không có dữ liệu</h3>
-          <p className="mt-2 text-slate-500">Không tìm thấy dữ liệu buổi học nào trong khoảng thời gian phân tích đã chọn.</p>
+        <span className="material-symbols-outlined text-6xl text-slate-300 mb-4">analytics</span>
+          <h3 className="text-xl font-bold text-slate-700">No data available</h3>
+          <p className="mt-2 text-slate-500">No session data was found for the selected analysis range.</p>
       </Card>
     );
   }

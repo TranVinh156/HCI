@@ -148,8 +148,8 @@ export function Sidebar({ activeTab }: { activeTab: SidebarTab }) {
               onClick={logout}
               variant="ghost"
               size="icon-sm"
-              aria-label="Dang xuat"
-              title="Dang xuat"
+              aria-label="Logout"
+              title="Logout"
             >
               <span className="material-symbols-outlined text-sm">logout</span>
             </Button>

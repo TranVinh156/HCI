@@ -81,17 +81,17 @@ export function OverviewDashboard({
     >
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         <MetricCard
-          label="Tổng số lớp"
+          label="Total classes"
           value={overview.groupStats.reduce((total, group) => total + group.classCount, 0)}
           icon="class"
           iconBgClassName="bg-sky-50"
           iconClassName="text-sky-500"
         />
-        <MetricCard label="Tổng sinh viên" value={overview.totalStudents} icon="groups" iconBgClassName="bg-emerald-50" iconClassName="text-emerald-500" />
-        <MetricCard label="Tổng buổi học" value={overview.totalSessions} icon="event_note" iconBgClassName="bg-violet-50" iconClassName="text-violet-500" />
-        <MetricCard label="TB Tương tác" value={overview.averageEngagement} unit="%" icon="insights" iconBgClassName="bg-sky-50" iconClassName="text-sky-500" />
-        <MetricCard label="TB Tập trung" value={overview.averageFocus} unit="/100" icon="psychology" iconBgClassName="bg-amber-50" iconClassName="text-amber-500" />
-        <MetricCard label="Cảnh báo (tổng)" value={overview.totalAnomalies} icon="warning" iconBgClassName="bg-rose-50" iconClassName="text-rose-500" />
+        <MetricCard label="Total students" value={overview.totalStudents} icon="groups" iconBgClassName="bg-emerald-50" iconClassName="text-emerald-500" />
+        <MetricCard label="Total sessions" value={overview.totalSessions} icon="event_note" iconBgClassName="bg-violet-50" iconClassName="text-violet-500" />
+        <MetricCard label="Avg engagement" value={overview.averageEngagement} unit="%" icon="insights" iconBgClassName="bg-sky-50" iconClassName="text-sky-500" />
+        <MetricCard label="Avg focus" value={overview.averageFocus} unit="/100" icon="psychology" iconBgClassName="bg-amber-50" iconClassName="text-amber-500" />
+        <MetricCard label="Total alerts" value={overview.totalAnomalies} icon="warning" iconBgClassName="bg-rose-50" iconClassName="text-rose-500" />
       </div>
 
       <div className="bg-gradient-to-br from-sky-600 to-indigo-700 rounded-2xl p-6 text-white shadow-lg">
@@ -149,7 +149,7 @@ export function OverviewDashboard({
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-slate-800 truncate">{group.name}</p>
-                <p className="text-xs text-slate-500">{group.classCount} lớp · TB {group.score}/100</p>
+                <p className="text-xs text-slate-500">{group.classCount} classes · Avg {group.score}/100</p>
               </div>
               <div className="flex items-center gap-2">
                 {index === 0 && <span className="text-lg">🏆</span>}
@@ -192,9 +192,9 @@ export function OverviewDashboard({
                     contentStyle={{ borderRadius: "10px", border: "1px solid #e2e8f0", boxShadow: "0 4px 12px rgba(0,0,0,0.08)" }}
                   />
                   <Legend iconType="circle" wrapperStyle={{ fontSize: "12px", paddingTop: "8px" }} />
-                  <Bar dataKey="Tương tác" fill="#0ea5e9" radius={[4, 4, 0, 0]} isAnimationActive={false} />
-                  <Bar dataKey="Tập trung" fill="#10b981" radius={[4, 4, 0, 0]} isAnimationActive={false} />
-                  <Bar dataKey="Điểm danh" fill="#f59e0b" radius={[4, 4, 0, 0]} isAnimationActive={false} />
+                  <Bar dataKey="Engagement" fill="#0ea5e9" radius={[4, 4, 0, 0]} isAnimationActive={false} />
+                  <Bar dataKey="Focus" fill="#10b981" radius={[4, 4, 0, 0]} isAnimationActive={false} />
+                  <Bar dataKey="Attendance" fill="#f59e0b" radius={[4, 4, 0, 0]} isAnimationActive={false} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -243,7 +243,7 @@ export function OverviewDashboard({
               )}
             </h3>
             <p className="text-xs text-slate-400 mt-0.5">
-              {overview.filteredClasses.length} lớp · Nhấn tiêu đề cột để sắp xếp
+              {overview.filteredClasses.length} classes · Click a column header to sort
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -275,8 +275,8 @@ export function OverviewDashboard({
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-slate-50 border-b border-slate-100">
-                <th className="text-left px-5 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Lớp</th>
-                <th className="text-left px-5 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Giảng viên</th>
+                <th className="text-left px-5 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Class</th>
+                <th className="text-left px-5 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Instructor</th>
                 <th className="text-left px-5 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider hidden md:table-cell">
                   {overview.labels.groupLabelShort}
                 </th>
@@ -288,7 +288,7 @@ export function OverviewDashboard({
                   onClick={() => overview.toggleSort("avgEngagement")}
                 >
                   <span className="flex items-center justify-center gap-1">
-                    Tương tác
+                    Engagement
                     <SortIcon activeSortKey={overview.sortKey} currentSortKey="avgEngagement" isDescending={overview.sortDesc} />
                   </span>
                 </th>
@@ -297,7 +297,7 @@ export function OverviewDashboard({
                   onClick={() => overview.toggleSort("avgFocus")}
                 >
                   <span className="flex items-center justify-center gap-1">
-                    Tập trung
+                    Focus
                     <SortIcon activeSortKey={overview.sortKey} currentSortKey="avgFocus" isDescending={overview.sortDesc} />
                   </span>
                 </th>
@@ -306,7 +306,7 @@ export function OverviewDashboard({
                   onClick={() => overview.toggleSort("avgAttendance")}
                 >
                   <span className="flex items-center justify-center gap-1">
-                    Điểm danh
+                    Attendance
                     <SortIcon activeSortKey={overview.sortKey} currentSortKey="avgAttendance" isDescending={overview.sortDesc} />
                   </span>
                 </th>
@@ -315,11 +315,11 @@ export function OverviewDashboard({
                   onClick={() => overview.toggleSort("totalAnomalies")}
                 >
                   <span className="flex items-center justify-center gap-1">
-                    Cảnh báo
+                    Alerts
                     <SortIcon activeSortKey={overview.sortKey} currentSortKey="totalAnomalies" isDescending={overview.sortDesc} />
                   </span>
                 </th>
-                <th className="text-center px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Đánh giá</th>
+                <th className="text-center px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Rating</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
@@ -338,7 +338,7 @@ export function OverviewDashboard({
                     <td className="px-5 py-3.5">
                       <p className="font-bold text-sky-800 text-xs">{item.code}</p>
                       <p className="text-slate-700 font-medium text-sm">{item.subject}</p>
-                      <p className="text-xs text-slate-400">{item.sessionsHeld} buổi</p>
+                      <p className="text-xs text-slate-400">{item.sessionsHeld} sessions</p>
                     </td>
                     <td className="px-5 py-3.5">
                       <p className="text-slate-700 text-sm">{item.teacher}</p>
@@ -428,22 +428,22 @@ export function OverviewDashboard({
               <div>
                 <h4 className="text-sm font-bold text-slate-800">{group.shortName}</h4>
                 <p className="text-xs text-slate-400">
-                  {group.classCount} lớp · {group.studentCount} SV
+                  {group.classCount} classes · {group.studentCount} students
                 </p>
               </div>
             </div>
             <div className="space-y-2 text-xs">
               <div className="flex justify-between">
-                <span className="text-slate-500">Điểm trung bình</span>
+                <span className="text-slate-500">Average score</span>
                 <span className="font-bold text-slate-800">{group.score}/100</span>
               </div>
               <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
                 <div className="h-full rounded-full transition-all" style={{ width: `${group.score}%`, backgroundColor: group.color }} />
               </div>
               <div className="flex justify-between pt-1">
-                <span className="text-emerald-600 font-semibold">{group.excellentCount} lớp xuất sắc</span>
+                <span className="text-emerald-600 font-semibold">{group.excellentCount} excellent classes</span>
                 {group.needsWorkCount > 0 && (
-                  <span className="text-rose-500 font-semibold">{group.needsWorkCount} cần cải thiện</span>
+                  <span className="text-rose-500 font-semibold">{group.needsWorkCount} need improvement</span>
                 )}
               </div>
             </div>

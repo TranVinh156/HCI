@@ -32,7 +32,7 @@ export default function LoginRoute() {
 
     const result = login(username, password);
     if (!result.ok) {
-      setError(result.error ?? "Khong the dang nhap voi thong tin hien tai.");
+      setError(result.error ?? "Unable to sign in with the current credentials.");
       return;
     }
 
@@ -47,13 +47,13 @@ export default function LoginRoute() {
           The Insightful Lens
         </Badge>
         <CardTitle className="font-headline text-3xl font-extrabold tracking-tight text-slate-800">
-          Dang nhap he thong
+          Sign in
         </CardTitle>
         <CardDescription className="text-sm text-slate-500">
-          Username hop le: <span className="font-semibold text-slate-700">student</span>,{" "}
+          Valid usernames: <span className="font-semibold text-slate-700">student</span>,{" "}
           <span className="font-semibold text-slate-700">teacher</span>,{" "}
           <span className="font-semibold text-slate-700">faculty</span>,{" "}
-          <span className="font-semibold text-slate-700">student_affair_officer</span>. Mat khau nhap bat ky.
+          <span className="font-semibold text-slate-700">student_affair_officer</span>. Any password is accepted.
         </CardDescription>
       </CardHeader>
 
@@ -93,7 +93,7 @@ export default function LoginRoute() {
             type="password"
             value={password}
             onChange={(event) => setPassword(event.target.value)}
-            placeholder="Nhap bat ky mat khau nao"
+            placeholder="Enter any password"
           />
         </label>
 
@@ -108,11 +108,11 @@ export default function LoginRoute() {
           className="w-full"
         >
           <span className="material-symbols-outlined text-base">login</span>
-          Dang nhap
+          Sign in
         </Button>
       </form>
 
-      <p className="mt-5 text-xs text-slate-500">Tai khoan demo duoc cap san theo role username.</p>
+      <p className="mt-5 text-xs text-slate-500">Demo accounts are pre-seeded by role username.</p>
       </CardContent>
     </Card>
   );

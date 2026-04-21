@@ -8,7 +8,7 @@ export function meta() {
     { title: "School Overview - The Insightful Lens" },
     {
       name: "description",
-      content: "Thống kê chất lượng giảng dạy theo phạm vi nhà trường hoặc khoa viện.",
+      content: "Teaching quality statistics across the school or a specific faculty.",
     },
   ];
 }

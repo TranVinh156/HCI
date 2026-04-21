@@ -12,7 +12,7 @@ type FilterType = "sessions" | "weeks" | "custom";
 
 const mockHistoricalData = Array.from({ length: 150 }, (_, i) => {
   const d = new Date();
-  // Đảm bảo không dính giờ/phút/giây để compare cho đúng ngày
+  // Zero out time so date comparisons are stable.
   d.setHours(0, 0, 0, 0);
   d.setDate(d.getDate() - (149 - i));
   const baseFocus = 65 + Math.random() * 25;
@@ -20,14 +20,14 @@ const mockHistoricalData = Array.from({ length: 150 }, (_, i) => {
   return {
     timestamp: d.getTime(),
     dateStr: d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, '0') + "-" + String(d.getDate()).padStart(2, '0'),
-    date: d.toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" }),
-    shortDate: d.toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit" }),
+    date: d.toLocaleDateString("en-US", { day: "2-digit", month: "2-digit", year: "numeric" }),
+    shortDate: d.toLocaleDateString("en-US", { day: "2-digit", month: "2-digit" }),
     focus: Math.round(baseFocus),
     engagement: Math.round(baseEng),
     anomalies: Math.floor(Math.random() * 15),
     attendance: Math.round(80 + Math.random() * 20),
     participation: Math.round(50 + Math.random() * 30),
-    isSessionDay: Math.random() > 0.4, // Khoảng 60% số ngày trong 150 ngày qua có buổi học
+    isSessionDay: Math.random() > 0.4, // Roughly 60% of the last 150 days include a session.
   };
 }).filter(day => day.isSessionDay);
 
@@ -109,48 +109,48 @@ export default function SessionAnalytics() {
       <Card>
         <CardContent className="flex flex-wrap items-end gap-5 p-5">
         <div className="flex flex-col gap-1.5">
-          <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Khung phân tích</label>
+          <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Analysis scope</label>
           <select
             value={filterType}
             onChange={(e) => setFilterType(e.target.value as FilterType)}
             className="bg-slate-50 border border-slate-200 px-4 py-2.5 rounded-lg text-sm font-medium text-slate-700 outline-none focus:ring-2 focus:ring-primary/30 transition-all min-w-[200px] cursor-pointer"
           >
-            <option value="sessions">Theo số buổi gần đây</option>
-            <option value="weeks">Theo số tuần gần đây</option>
-            <option value="custom">Tuỳ chỉnh thời gian</option>
+            <option value="sessions">Recent sessions</option>
+            <option value="weeks">Recent weeks</option>
+            <option value="custom">Custom range</option>
           </select>
         </div>
 
         {filterType === "sessions" && (
           <div className="flex flex-col gap-1.5 animate-in fade-in zoom-in duration-200 block">
-            <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Số buổi</label>
+            <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Session count</label>
             <select
               value={sessionCount}
               onChange={(e) => setSessionCount(Number(e.target.value))}
               className="bg-slate-50 border border-slate-200 px-4 py-2.5 rounded-lg text-sm font-medium text-slate-700 outline-none focus:ring-2 focus:ring-primary/30 transition-all cursor-pointer"
             >
-              <option value={5}>5 buổi gần nhất</option>
-              <option value={10}>10 buổi gần nhất</option>
-              <option value={20}>20 buổi gần nhất</option>
-              <option value={50}>50 buổi gần nhất</option>
-              <option value={100}>100 buổi gần nhất</option>
+              <option value={5}>Last 5 sessions</option>
+              <option value={10}>Last 10 sessions</option>
+              <option value={20}>Last 20 sessions</option>
+              <option value={50}>Last 50 sessions</option>
+              <option value={100}>Last 100 sessions</option>
             </select>
           </div>
         )}
 
         {filterType === "weeks" && (
           <div className="flex flex-col gap-1.5 animate-in fade-in zoom-in duration-200 block">
-            <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Số tuần</label>
+            <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Weeks</label>
             <select
               value={weekCount}
               onChange={(e) => setWeekCount(Number(e.target.value))}
               className="bg-slate-50 border border-slate-200 px-4 py-2.5 rounded-lg text-sm font-medium text-slate-700 outline-none focus:ring-2 focus:ring-primary/30 transition-all cursor-pointer"
             >
-              <option value={1}>1 tuần gần nhất</option>
-              <option value={2}>2 tuần gần nhất</option>
-              <option value={4}>4 tuần (1 tháng)</option>
-              <option value={8}>8 tuần (2 tháng)</option>
-              <option value={12}>12 tuần (3 tháng)</option>
+              <option value={1}>Last 1 week</option>
+              <option value={2}>Last 2 weeks</option>
+              <option value={4}>4 weeks (1 month)</option>
+              <option value={8}>8 weeks (2 months)</option>
+              <option value={12}>12 weeks (3 months)</option>
             </select>
           </div>
         )}
@@ -158,7 +158,7 @@ export default function SessionAnalytics() {
         {filterType === "custom" && (
           <>
             <div className="flex flex-col gap-1.5 animate-in fade-in zoom-in duration-200 block">
-              <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Từ ngày</label>
+              <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">From</label>
               <input
                 type="date"
                 value={startDate}
@@ -167,7 +167,7 @@ export default function SessionAnalytics() {
               />
             </div>
             <div className="flex flex-col gap-1.5 animate-in fade-in zoom-in duration-200 block">
-              <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Đến ngày</label>
+              <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">To</label>
               <input
                 type="date"
                 value={endDate}
@@ -181,7 +181,7 @@ export default function SessionAnalytics() {
         <div className="flex-1"></div>
 
         <Badge variant="secondary" className="rounded-lg px-4 py-2.5 text-sm font-medium text-slate-600">
-          Đang phân tích: <span className="font-bold text-primary">{chartData.length}</span> buổi học
+          Currently analyzing: <span className="font-bold text-primary">{chartData.length}</span> sessions
         </Badge>
         </CardContent>
       </Card>

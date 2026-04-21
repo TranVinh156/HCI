@@ -176,30 +176,30 @@ export function useOverviewDashboard({
 
   const comparisonChartData = groupStats.map((group) => ({
     name: group.shortName,
-    "Tương tác": group.avgEngagement,
-    "Tập trung": group.avgFocus,
-    "Điểm danh": group.avgAttendance,
+    Engagement: group.avgEngagement,
+    Focus: group.avgFocus,
+    Attendance: group.avgAttendance,
   }));
 
   const radarData = [
     {
-      metric: "Tương tác",
+      metric: "Engagement",
       ...Object.fromEntries(groupStats.map((group) => [group.shortName, group.avgEngagement])),
     },
     {
-      metric: "Tập trung",
+      metric: "Focus",
       ...Object.fromEntries(groupStats.map((group) => [group.shortName, group.avgFocus])),
     },
     {
-      metric: "Điểm danh",
+      metric: "Attendance",
       ...Object.fromEntries(groupStats.map((group) => [group.shortName, group.avgAttendance])),
     },
     {
-      metric: "Chất lượng",
+      metric: "Quality",
       ...Object.fromEntries(groupStats.map((group) => [group.shortName, group.score])),
     },
     {
-      metric: "Ít sự cố",
+      metric: "Few incidents",
       ...Object.fromEntries(
         groupStats.map((group) => {
           const safeScore =
@@ -213,34 +213,34 @@ export function useOverviewDashboard({
   const labels =
     mode === "school"
       ? {
-          pageTitle: "Tổng quan Nhà trường",
-          pageBadge: "HK1 · 2024–2025",
+          pageTitle: "School Overview",
+          pageBadge: "Semester 1 · 2024–2025",
           pageBadgeIcon: "account_balance",
-          groupLabel: "Khoa / Viện",
-          groupLabelShort: "Khoa",
-          groupRankingTitle: "Xếp hạng Khoa / Viện",
-          compareTitle: "So sánh Chỉ số theo Khoa",
-          radarTitle: "Biểu đồ Radar – Chất lượng Đa chiều",
-          topTitle: "Chúc mừng – Top lớp học xuất sắc!",
-          topDescription: "Những lớp dẫn đầu về chất lượng giảng dạy kỳ này",
-          tableTitle: "Danh sách Lớp học",
-          summaryTitle: "Tổng quan theo khoa / viện",
-          allFilterLabel: "Tất cả",
+          groupLabel: "Faculty / School",
+          groupLabelShort: "Faculty",
+          groupRankingTitle: "Faculty / School Ranking",
+          compareTitle: "Faculty Metrics Comparison",
+          radarTitle: "Radar Chart - Multidimensional Quality",
+          topTitle: "Congratulations - Top Performing Classes!",
+          topDescription: "The classes leading teaching quality this term",
+          tableTitle: "Class List",
+          summaryTitle: "Faculty / school summary",
+          allFilterLabel: "All",
         }
       : {
-          pageTitle: `Tổng quan ${facultyContext?.name ?? "Khoa"}`,
-          pageBadge: `${facultyContext?.shortName ?? "KHOA"} · Faculty Scope`,
+          pageTitle: `Overview ${facultyContext?.name ?? "Faculty"}`,
+          pageBadge: `${facultyContext?.shortName ?? "FAC"} · Faculty Scope`,
           pageBadgeIcon: "domain",
-          groupLabel: "Bộ môn",
-          groupLabelShort: "Bộ môn",
-          groupRankingTitle: "Xếp hạng Bộ môn",
-          compareTitle: "So sánh Chỉ số theo Bộ môn",
-          radarTitle: "Biểu đồ Radar – Chất lượng trong khoa",
-          topTitle: "Top lớp học nổi bật trong khoa",
-          topDescription: "Các lớp đang dẫn đầu chất lượng giảng dạy trong phạm vi khoa",
-          tableTitle: "Danh sách Lớp thuộc khoa",
-          summaryTitle: "Tổng quan theo bộ môn",
-          allFilterLabel: "Tất cả bộ môn",
+          groupLabel: "Department",
+          groupLabelShort: "Department",
+          groupRankingTitle: "Department Ranking",
+          compareTitle: "Department Metrics Comparison",
+          radarTitle: "Radar Chart - In-faculty Quality",
+          topTitle: "Top Classes in the Faculty",
+          topDescription: "Classes leading teaching quality within the faculty scope",
+          tableTitle: "Faculty Class List",
+          summaryTitle: "Department summary",
+          allFilterLabel: "All departments",
         };
 
   function toggleSort(nextSortKey: OverviewSortKey) {
