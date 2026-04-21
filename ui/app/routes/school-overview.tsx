@@ -418,8 +418,8 @@ export default function SchoolOverview() {
     const classes = ALL_CLASSES.filter((c) => c.facultyId === f.id);
     return {
       name: f.shortName,
-      "Mức độ tập trung": avg(classes.map((c) => c.avgEngagement)),
-      "Điểm tập trung": avg(classes.map((c) => c.avgFocus)),
+      "Tương tác": avg(classes.map((c) => c.avgEngagement)),
+      "Tập trung": avg(classes.map((c) => c.avgFocus)),
       "Điểm danh": avg(classes.map((c) => c.avgAttendance)),
       color: f.color,
     };
@@ -588,8 +588,8 @@ export default function SchoolOverview() {
                         contentStyle={{ borderRadius: "10px", border: "1px solid #e2e8f0", boxShadow: "0 4px 12px rgba(0,0,0,0.08)" }}
                       />
                       <Legend iconType="circle" wrapperStyle={{ fontSize: "12px", paddingTop: "8px" }} />
-                      <Bar dataKey="Mức độ tập trung" fill="#0ea5e9" radius={[4, 4, 0, 0]} isAnimationActive={false} />
-                      <Bar dataKey="Điểm tập trung" fill="#10b981" radius={[4, 4, 0, 0]} isAnimationActive={false} />
+                      <Bar dataKey="Tương tác" fill="#0ea5e9" radius={[4, 4, 0, 0]} isAnimationActive={false} />
+                      <Bar dataKey="Tập trung" fill="#10b981" radius={[4, 4, 0, 0]} isAnimationActive={false} />
                       <Bar dataKey="Điểm danh" fill="#f59e0b" radius={[4, 4, 0, 0]} isAnimationActive={false} />
                     </BarChart>
                   </ResponsiveContainer>
