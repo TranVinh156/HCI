@@ -1,10 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Link, useSearchParams } from "react-router";
-import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar, Cell } from "recharts";
+import { useSearchParams } from "react-router";
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
 import { EngagementChart, ActivityBreakdown } from "../components/live/Charts";
 import { DetectionStreamLog } from "../components/live/DetectionStreamLog";
 import { IncidentSnapshots } from "../components/live/IncidentSnapshots";
+import { LiveSessionHeader } from "../components/live/LiveSessionHeader";
 import { useSidebarLayout } from "../components/layout/sidebar-layout-context";
+import { SidebarTrigger } from "../components/ui/sidebar";
+import { getAssignedClassByCode, type ManagedClass } from "../features/classes/data";
 
 type DetectionStatus = "FOCUSED" | "DISTRACTED" | "CONFUSED";
 
@@ -27,16 +30,6 @@ type StreamLog = {
   snapshotUrl?: string;
 };
 
-type AssignedClass = {
-  code: string;
-  subject: string;
-  room: string;
-  schedule: string;
-  dayIndexes: number[];
-  startMinutes: number;
-  endMinutes: number;
-};
-
 type PlaybackSession = {
   id: string;
   label: string;
@@ -45,45 +38,6 @@ type PlaybackSession = {
 };
 
 const STUDENTS = ["Leo M.", "Sarah J.", "Ahmed K.", "Nora P.", "Mina T.", "Quang N."];
-
-const ASSIGNED_CLASSES: AssignedClass[] = [
-  {
-    code: "ECON-402",
-    subject: "Advanced Macroeconomics",
-    room: "Room 204",
-    schedule: "Mon, Wed 09:30 - 11:00",
-    dayIndexes: [1, 3],
-    startMinutes: 9 * 60 + 30,
-    endMinutes: 11 * 60,
-  },
-  {
-    code: "STAT-211",
-    subject: "Applied Statistics",
-    room: "Room 112",
-    schedule: "Tue, Thu 13:15 - 14:45",
-    dayIndexes: [2, 4],
-    startMinutes: 13 * 60 + 15,
-    endMinutes: 14 * 60 + 45,
-  },
-  {
-    code: "BA-305",
-    subject: "Business Analytics Lab",
-    room: "Lab A3",
-    schedule: "Fri 08:00 - 10:30",
-    dayIndexes: [5],
-    startMinutes: 8 * 60,
-    endMinutes: 10 * 60 + 30,
-  },
-  {
-    code: "FIN-320",
-    subject: "Corporate Finance",
-    room: "Room 305",
-    schedule: "Tue 08:30 - 11:00",
-    dayIndexes: [2],
-    startMinutes: 8 * 60 + 30,
-    endMinutes: 11 * 60,
-  },
-];
 
 const STATUS_STYLES: Record<DetectionStatus, { stroke: string; badge: string }> = {
   FOCUSED: { stroke: "#3b82f6", badge: "#dbeafe" },
@@ -103,7 +57,7 @@ function formatMinutesToClock(totalMinutes: number) {
   return `${hours}:${minutes}`;
 }
 
-function isInClassSlot(selectedClass: AssignedClass, now: Date) {
+function isInClassSlot(selectedClass: ManagedClass, now: Date) {
   const today = now.getDay();
   const currentMinutes = now.getHours() * 60 + now.getMinutes();
   return (
@@ -113,7 +67,7 @@ function isInClassSlot(selectedClass: AssignedClass, now: Date) {
   );
 }
 
-function buildPlaybackSessions(selectedClass: AssignedClass, now: Date): PlaybackSession[] {
+function buildPlaybackSessions(selectedClass: ManagedClass, now: Date): PlaybackSession[] {
   const sessions: PlaybackSession[] = [];
   const probe = new Date(now);
 
@@ -176,7 +130,7 @@ type MetricData = {
 export default function LiveDashboard() {
   const [searchParams] = useSearchParams();
   const selectedClassCode = searchParams.get("class") ?? "ECON-402";
-  const selectedClass = ASSIGNED_CLASSES.find((item) => item.code === selectedClassCode) ?? ASSIGNED_CLASSES[0];
+  const selectedClass = getAssignedClassByCode(selectedClassCode);
   const [currentTime, setCurrentTime] = useState(() => new Date());
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -417,21 +371,16 @@ export default function LiveDashboard() {
     if (isNaN(time)) return "00:00";
     return `${padTime(time / 60)}:${padTime(time % 60)}`;
   };
-  const { isSidebarOpen, openSidebar } = useSidebarLayout();
+  const { isSidebarOpen } = useSidebarLayout();
 
   return (
     <main className="bg-background text-on-surface font-body flex flex-col h-full overflow-hidden">
       <section className="flex-1 flex flex-col overflow-hidden">
         <header className="w-full top-0 sticky flex justify-between items-center h-16 px-6 bg-slate-50 border-b border-slate-100 z-10">
           <div className="flex items-center gap-4 flex-1">
+            <SidebarTrigger className="md:hidden" aria-label="Open sidebar" />
             {!isSidebarOpen && (
-              <button
-                onClick={openSidebar}
-                className="p-2 rounded-lg text-slate-500 hover:text-slate-700 hover:bg-slate-200 transition-colors"
-                aria-label="Show sidebar"
-              >
-                <span className="material-symbols-outlined">left_panel_open</span>
-              </button>
+              <SidebarTrigger className="hidden md:inline-flex" aria-label="Show sidebar" />
             )}
             <div className="relative w-96">
               <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
@@ -443,14 +392,6 @@ export default function LiveDashboard() {
             </div>
           </div>
           <div className="flex items-center gap-6">
-            <div
-              className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold ${
-                isLiveMode ? "bg-emerald-100 text-emerald-700 animate-pulse" : "bg-amber-100 text-amber-700"
-              }`}
-            >
-              <span className="material-symbols-outlined text-sm filled">sensors</span>
-              {isLiveMode ? "LIVE FEED ACTIVE" : "PLAYBACK MODE"}
-            </div>
             <div className="flex items-center gap-4">
               <button className="text-slate-500 hover:bg-slate-200/50 p-2 rounded-full transition-colors">
                 <span className="material-symbols-outlined">videocam</span>
@@ -480,62 +421,16 @@ export default function LiveDashboard() {
         )}
 
         <div className="flex-1 overflow-y-auto p-6 flex flex-col gap-6">
-          <div className="flex flex-col gap-4">
-            <div className="flex items-start justify-between gap-4">
-              <div className="min-w-0">
-                <h2 className="font-headline font-bold text-3xl text-primary tracking-tight">Classroom Engagement Metrics</h2>
-                <div className="flex flex-wrap items-center gap-3 mt-3 mb-2 text-xs font-medium">
-                  <span className="bg-slate-100 text-slate-600 px-2 py-1 rounded-md">Duration: <span className="font-bold text-slate-900">01:24:05</span></span>
-                  <span className="bg-slate-100 text-slate-600 px-2 py-1 rounded-md">Students: <span className="font-bold text-slate-900">28/32</span></span>
-                  <span className="bg-sky-50 text-sky-700 px-2 py-1 rounded-md border border-sky-100">AI Logs: <span className="font-bold text-sky-900">142</span></span>
-                  <span className="bg-rose-50 text-rose-700 px-2 py-1 rounded-md border border-rose-100">Anomalies: <span className="font-bold text-rose-900">{warningCount}</span></span>
-                </div>
-                <p className="text-on-surface-variant text-sm mt-1">
-                  {selectedClass.code} • {selectedClass.room} • {selectedClass.subject}
-                </p>
-                {!isLiveMode && timelineSelection === "live-now" && (
-                  <p className="text-xs mt-2 text-amber-700 font-semibold">
-                    Outside current class time. Showing playback for session window {sessionWindow} ({selectedClass.schedule}).
-                  </p>
-                )}
-                {!isLiveMode && selectedPlaybackSession && (
-                  <p className="text-xs mt-2 text-sky-700 font-semibold">Playback session: {selectedPlaybackSession.label}</p>
-                )}
-              </div>
-              <Link
-                to="/"
-                className="inline-flex shrink-0 items-center justify-center gap-2 bg-surface-container-high px-3 py-2 rounded-md text-on-surface hover:bg-slate-200 transition-colors"
-                title="Back to Class Management"
-              >
-                <span className="material-symbols-outlined text-[20px]">arrow_back</span>
-                <span className="text-sm font-medium">Back</span>
-              </Link>
-            </div>
-            <div className="flex items-center justify-end gap-3 flex-wrap">
-              <div className="flex items-center gap-2 mr-2">
-                <span className="material-symbols-outlined text-slate-500" title="Session Timeline">history</span>
-                <select
-                  value={timelineSelection}
-                  onChange={(event) => setTimelineSelection(event.target.value)}
-                  className="bg-slate-100 border border-slate-300 rounded-md px-3 py-2 text-sm text-slate-700 min-w-48 outline-none focus:ring-2 focus:ring-primary/50"
-                  title="Session Timeline"
-                >
-                  <option value="live-now">Live now</option>
-                  {playbackSessions.map((session) => (
-                    <option key={session.id} value={session.id}>
-                      Playback: {session.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <button 
-                className="inline-flex items-center justify-center bg-linear-to-br from-primary to-primary-container text-on-primary w-10 h-10 rounded-md hover:opacity-90 active:scale-95 transition-all"
-                title="Export Session"
-              >
-                <span className="material-symbols-outlined text-[20px]">download</span>
-              </button>
-            </div>
-          </div>
+          <LiveSessionHeader
+            selectedClass={selectedClass}
+            isLiveMode={isLiveMode}
+            selectedPlaybackLabel={selectedPlaybackSession?.label}
+            timelineSelection={timelineSelection}
+            playbackSessions={playbackSessions}
+            sessionWindow={sessionWindow}
+            warningCount={warningCount}
+            onTimelineChange={setTimelineSelection}
+          />
 
           <div className="grid grid-cols-12 gap-6 flex-1 w-full transition-all duration-500">
             <div className={`self-start relative rounded-xl bg-black shadow-sm border border-slate-800 flex flex-col overflow-hidden transition-all duration-500 col-span-12 ${isVideoFullscreen ? 'h-[85vh]' : 'xl:col-span-8'}`}>
@@ -574,7 +469,7 @@ export default function LiveDashboard() {
               </div>
 
               {/* Bottom Custom Playback Bar (Static below video) */}
-              <div className="p-4 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] bg-slate-900 border-t border-slate-800 w-full shrink-0">
+              <div className="p-4 bg-slate-900 border-t  w-full shrink-0">
                 <div className="flex flex-col gap-3 w-full">
                   
                   {/* Timeline with intervals */}
@@ -623,31 +518,16 @@ export default function LiveDashboard() {
                   {/* Controls Row */}
                   <div className="flex items-center justify-between text-white/90 mt-2 px-2">
                     <div className="flex items-center gap-6">
-                      <button className="hover:text-white transition-colors">
-                        <span className="material-symbols-outlined text-[24px]">video_camera_front</span>
-                      </button>
                       <button onClick={() => setIsVideoMuted(!isVideoMuted)} className="hover:text-white transition-colors">
                         <span className="material-symbols-outlined text-[24px]">
                           {isVideoMuted ? 'volume_off' : 'volume_up'}
                         </span>
                       </button>
-                      <button className="hover:text-white transition-colors">
-                        <span className="material-symbols-outlined text-[24px]">grid_view</span>
-                      </button>
                     </div>
 
                     <div className="flex items-center gap-6">
-                      <button className="hover:text-white transition-colors">
-                        <span className="material-symbols-outlined text-[24px]">list_alt</span>
-                      </button>
-                      <button className="hover:text-white transition-colors">
-                        <span className="material-symbols-outlined text-[24px]">calendar_month</span>
-                      </button>
                       
                       <div className="flex items-center gap-4 ml-4">
-                        <button onClick={() => skipTime(-10)} className="hover:text-white transition-colors text-white/50 pointer-events-none">
-                          <span className="material-symbols-outlined text-[28px]">skip_previous</span>
-                        </button>
                         <button onClick={() => skipTime(-10)} className="hover:text-white transition-colors">
                           <span className="material-symbols-outlined text-[28px]">fast_rewind</span>
                         </button>
@@ -656,9 +536,6 @@ export default function LiveDashboard() {
                         </button>
                         <button onClick={() => skipTime(10)} className="hover:text-white transition-colors">
                           <span className="material-symbols-outlined text-[28px]">fast_forward</span>
-                        </button>
-                        <button onClick={() => skipTime(10)} className="hover:text-white transition-colors text-white/50 pointer-events-none">
-                          <span className="material-symbols-outlined text-[28px]">skip_next</span>
                         </button>
                       </div>
                     </div>

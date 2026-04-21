@@ -1,4 +1,5 @@
 import { AreaChart, Area, BarChart, Bar, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
+import { Card } from "../ui/card";
 
 type MetricData = {
   time: string;
@@ -11,7 +12,7 @@ type MetricData = {
 
 export function EngagementChart({ metricsHistory, isVideoFullscreen }: { metricsHistory: MetricData[], isVideoFullscreen: boolean }) {
   return (
-    <div className={`bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/15 flex flex-col h-64 ${isVideoFullscreen ? 'flex-1 min-w-[300px]' : 'w-full'}`}>
+    <Card className={`flex h-64 flex-col bg-surface-container-lowest p-6 ${isVideoFullscreen ? "flex-1 min-w-[300px]" : "w-full"}`}>
       <div className="flex justify-between items-start mb-2">
         <h3 className="text-on-surface-variant text-sm font-medium">Engagement & Focus Trend</h3>
         <span className="material-symbols-outlined text-primary">monitoring</span>
@@ -37,15 +38,15 @@ export function EngagementChart({ metricsHistory, isVideoFullscreen }: { metrics
             <Area type="monotone" dataKey="engagement" stroke="#0ea5e9" fillOpacity={1} fill="url(#colorEngagement)" name="Engagement (%)" strokeWidth={2} isAnimationActive={false} />
             <Area type="monotone" dataKey="focus" stroke="#10b981" fillOpacity={1} fill="url(#colorFocus)" name="Focus Score" strokeWidth={2} isAnimationActive={false} />
           </AreaChart>
-        </ResponsiveContainer>
+          </ResponsiveContainer>
       </div>
-    </div>
+    </Card>
   );
 }
 
 export function ActivityBreakdown({ metricsHistory, isVideoFullscreen }: { metricsHistory: MetricData[], isVideoFullscreen: boolean }) {
   return (
-    <div className={`bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/15 flex flex-col h-64 ${isVideoFullscreen ? 'flex-1 min-w-[300px]' : 'w-full'}`}>
+    <Card className={`flex h-64 flex-col bg-surface-container-lowest p-6 ${isVideoFullscreen ? "flex-1 min-w-[300px]" : "w-full"}`}>
       <div className="flex justify-between items-start mb-2">
         <h3 className="text-on-surface-variant text-sm font-medium">Activity Breakdown</h3>
         <span className="material-symbols-outlined text-secondary">donut_large</span>
@@ -82,6 +83,6 @@ export function ActivityBreakdown({ metricsHistory, isVideoFullscreen }: { metri
         <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-amber-500"></span>DISTRACTED</span>
         <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-rose-500"></span>CONFUSED</span>
       </div>
-    </div>
+    </Card>
   );
 }

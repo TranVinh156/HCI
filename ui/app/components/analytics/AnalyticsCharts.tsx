@@ -1,22 +1,26 @@
 import { AreaChart, Area, BarChart, Bar, LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from "recharts";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../ui/card";
+import { Badge } from "../ui/badge";
 
 export function AnalyticsCharts({ chartData }: { chartData: any[] }) {
   if (chartData.length === 0) {
     return (
-      <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center shadow-sm">
+      <Card className="p-12 text-center">
           <span className="material-symbols-outlined text-6xl text-slate-300 mb-4">analytics</span>
           <h3 className="text-xl font-bold text-slate-700">Không có dữ liệu</h3>
-          <p className="text-slate-500 mt-2">Không tìm thấy dữ liệu buổi học nào trong khoảng thời gian phân tích đã chọn.</p>
-      </div>
+          <p className="mt-2 text-slate-500">Không tìm thấy dữ liệu buổi học nào trong khoảng thời gian phân tích đã chọn.</p>
+      </Card>
     );
   }
 
   return (
     <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-      <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm xl:col-span-2 h-[420px] flex flex-col">
-        <div className="flex justify-between items-center mb-6">
+      <Card className="xl:col-span-2 flex h-[420px] flex-col p-6">
+        <div className="mb-6 flex items-center justify-between">
           <h3 className="text-base font-bold text-slate-800">Historical Engagement & Focus</h3>
-          <span className="text-xs font-semibold text-slate-500 bg-slate-100 px-3 py-1 rounded-full">Trend Analysis</span>
+          <Badge variant="secondary" className="rounded-full px-3 py-1 text-xs font-semibold text-slate-500">
+            Trend Analysis
+          </Badge>
         </div>
         <div className="flex-1 w-full -ml-4">
           <ResponsiveContainer width="100%" height="100%">
@@ -44,10 +48,10 @@ export function AnalyticsCharts({ chartData }: { chartData: any[] }) {
             </AreaChart>
           </ResponsiveContainer>
         </div>
-      </div>
+      </Card>
 
       <div className="grid grid-rows-2 gap-6 h-[420px]">
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col">
+        <Card className="flex flex-col p-6">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-sm font-bold text-slate-800">Anomalies Detected / Session</h3>
           </div>
@@ -62,9 +66,9 @@ export function AnalyticsCharts({ chartData }: { chartData: any[] }) {
               </BarChart>
             </ResponsiveContainer>
           </div>
-        </div>
+        </Card>
 
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col">
+        <Card className="flex flex-col p-6">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-sm font-bold text-slate-800">Participation Rate</h3>
           </div>
@@ -79,7 +83,7 @@ export function AnalyticsCharts({ chartData }: { chartData: any[] }) {
               </LineChart>
             </ResponsiveContainer>
           </div>
-        </div>
+        </Card>
       </div>
     </div>
   );

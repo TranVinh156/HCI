@@ -1,14 +1,13 @@
 import { Navigate, Outlet } from "react-router";
 import { useAuth } from "../auth";
+import { LoadingBlock } from "~/components/layout/LoadingBlock";
 
 export default function AuthLayout() {
   const { isAuthenticated, isHydrated } = useAuth();
 
   if (!isHydrated) {
     return (
-      <main className="min-h-screen bg-background flex items-center justify-center">
-        <img src="/vnu-uet.jpg" alt="VNU UET logo" className="w-24 h-24 rounded-2xl object-cover" />
-      </main>
+      <LoadingBlock />
     );
   }
 

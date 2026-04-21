@@ -17,7 +17,7 @@ export function IncidentSnapshots({ incidentLogs }: { incidentLogs: StreamLog[] 
       </h3>
       <div className="flex gap-4 overflow-x-auto pb-4 snap-x">
         {incidentLogs.map((log) => (
-          <div key={log.id} className="min-w-[280px] max-w-[280px] bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm snap-start shrink-0 flex flex-col group">
+          <div key={log.id} className="min-w-[280px] max-w-[280px] rounded-xl border border-slate-200 bg-white shadow-sm snap-start shrink-0 flex flex-col group overflow-hidden">
             <div className="relative h-40 bg-slate-100 overflow-hidden">
               <img src={log.snapshotUrl} alt="Incident snapshot" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-3">
@@ -25,8 +25,8 @@ export function IncidentSnapshots({ incidentLogs }: { incidentLogs: StreamLog[] 
               </div>
             </div>
             <div className="p-4 flex flex-col gap-2">
-              <span className={`self-start text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                log.level === 'EMERGENCY' ? 'bg-rose-600 text-white animate-pulse' : 'bg-amber-100 text-amber-700'
+              <span className={`self-start rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                log.level === "EMERGENCY" ? "animate-pulse bg-rose-600 text-white" : "bg-amber-100 text-amber-700"
               }`}>
                 {log.level}
               </span>

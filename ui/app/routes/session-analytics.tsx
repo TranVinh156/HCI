@@ -5,6 +5,8 @@ import { AnalyticsCharts } from "../components/analytics/AnalyticsCharts";
 import { DashboardShell } from "../components/dashboard/DashboardShell";
 import { SectionHeading } from "../components/dashboard/SectionHeading";
 import { useAuth } from "../auth";
+import { Card, CardContent } from "../components/ui/card";
+import { Badge } from "../components/ui/badge";
 
 type FilterType = "sessions" | "weeks" | "custom";
 
@@ -87,7 +89,7 @@ export default function SessionAnalytics() {
         isClassManagementFlow ? (
           <Link
             to="/"
-            className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition-colors"
+            className="inline-flex h-10 items-center gap-2 rounded-lg border border-slate-200 bg-surface-container-lowest px-3 py-2 text-xs font-semibold text-slate-700 transition-colors hover:bg-surface-container"
           >
             <span className="material-symbols-outlined text-sm">arrow_back</span>
             Back to Class Management
@@ -104,7 +106,8 @@ export default function SessionAnalytics() {
         }
       />
 
-      <div className="flex flex-wrap items-end gap-5 p-5 bg-white rounded-2xl border border-slate-200 shadow-sm">
+      <Card>
+        <CardContent className="flex flex-wrap items-end gap-5 p-5">
         <div className="flex flex-col gap-1.5">
           <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Khung phân tích</label>
           <select
@@ -177,10 +180,11 @@ export default function SessionAnalytics() {
 
         <div className="flex-1"></div>
 
-        <div className="bg-slate-50 px-4 py-2.5 rounded-lg border border-slate-200 text-sm font-medium text-slate-600">
+        <Badge variant="secondary" className="rounded-lg px-4 py-2.5 text-sm font-medium text-slate-600">
           Đang phân tích: <span className="font-bold text-primary">{chartData.length}</span> buổi học
-        </div>
-      </div>
+        </Badge>
+        </CardContent>
+      </Card>
 
       <AnalyticsStats averages={averages} />
 

@@ -1,3 +1,6 @@
+import { Card } from "../ui/card";
+import { cn } from "../../lib/utils";
+
 type MetricCardProps = {
   label: string;
   value: number | string;
@@ -22,7 +25,7 @@ export function MetricCard({
   className,
 }: MetricCardProps) {
   return (
-    <div className={`bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-[box-shadow] ${className ?? ""}`}>
+    <Card className={cn("p-5 hover:shadow-md transition-[box-shadow]", className)}>
       <div className="flex justify-between items-center mb-3">
         <h3 className="text-slate-500 font-bold text-xs uppercase tracking-wider">{label}</h3>
         <div className={`p-2 rounded-lg ${iconBgClassName}`}>
@@ -36,6 +39,6 @@ export function MetricCard({
       </div>
 
       {helper && <p className="mt-3 text-xs text-slate-400">{helper}</p>}
-    </div>
+    </Card>
   );
 }

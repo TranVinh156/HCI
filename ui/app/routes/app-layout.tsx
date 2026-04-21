@@ -3,6 +3,8 @@ import { Sidebar, type SidebarTab } from "../components/Sidebar";
 import { SidebarLayoutProvider } from "../components/layout/sidebar-layout-context";
 import { useAuth } from "../auth";
 import { useState } from "react";
+import { SidebarInset, SidebarProvider } from "../components/ui/sidebar";
+import { LoadingBlock } from "~/components/layout/LoadingBlock";
 
 function getActiveTab(pathname: string): SidebarTab {
   if (pathname === "/student-profiles") return "students";
@@ -18,9 +20,7 @@ export default function AppLayout() {
 
   if (!isHydrated) {
     return (
-      <main className="min-h-screen bg-background flex items-center justify-center">
-        <img src="/vnu-uet.jpg" alt="VNU UET logo" className="w-24 h-24 rounded-2xl object-cover" />
-      </main>
+      <LoadingBlock />
     );
   }
 
@@ -30,17 +30,15 @@ export default function AppLayout() {
   }
 
   return (
-    <SidebarLayoutProvider
-      value={{
-        isSidebarOpen,
-        openSidebar: () => setIsSidebarOpen(true),
-        closeSidebar: () => setIsSidebarOpen(false),
-      }}
-    >
-      <main className="bg-background text-on-surface font-body flex overflow-hidden min-h-screen">
+    <SidebarProvider open={isSidebarOpen} onOpenChange={setIsSidebarOpen} className="min-h-screen bg-background">
+      <SidebarLayoutProvider
+        value={{
+          isSidebarOpen,
+          openSidebar: () => setIsSidebarOpen(true),
+          closeSidebar: () => setIsSidebarOpen(false),
+        }}
+      >
         <Sidebar
-          isOpen={isSidebarOpen}
-          onClose={() => setIsSidebarOpen(false)}
           activeTab={
             location.pathname === "/session-analytics"
               ? user?.role === "faculty" || user?.role === "student_affair_officer"
@@ -49,10 +47,10 @@ export default function AppLayout() {
               : getActiveTab(location.pathname)
           }
         />
-        <div className="flex-1 min-w-0">
+        <SidebarInset className="min-w-0">
           <Outlet />
-        </div>
-      </main>
-    </SidebarLayoutProvider>
+        </SidebarInset>
+      </SidebarLayoutProvider>
+    </SidebarProvider>
   );
 }

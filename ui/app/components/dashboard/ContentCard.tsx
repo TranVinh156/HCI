@@ -1,4 +1,6 @@
 import type { ReactNode } from "react";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../ui/card";
+import { cn } from "../../lib/utils";
 
 type ContentCardProps = {
   title?: string;
@@ -20,21 +22,21 @@ export function ContentCard({
   titleClassName,
 }: ContentCardProps) {
   return (
-    <section className={`bg-white rounded-2xl border border-slate-200 shadow-sm ${className ?? ""}`}>
+    <Card className={className}>
       {(title || description || action) && (
-        <div className="flex items-start justify-between gap-4 p-5 border-b border-slate-100">
+        <CardHeader className="flex-row items-start justify-between gap-4 border-b border-slate-100 p-5">
           <div className="space-y-1">
             {title && (
-              <h3 className={`font-headline font-bold text-lg text-primary ${titleClassName ?? ""}`}>{title}</h3>
+              <CardTitle className={cn("font-headline text-lg text-primary", titleClassName)}>{title}</CardTitle>
             )}
-            {description && <p className="text-sm text-slate-500">{description}</p>}
+            {description && <CardDescription>{description}</CardDescription>}
           </div>
 
           {action && <div className="shrink-0">{action}</div>}
-        </div>
+        </CardHeader>
       )}
 
-      <div className={bodyClassName ?? "p-5"}>{children}</div>
-    </section>
+      <CardContent className={bodyClassName ?? "p-5"}>{children}</CardContent>
+    </Card>
   );
 }

@@ -1,6 +1,10 @@
 import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 import { ACCOUNT_ROLES, getRoleMeta, useAuth } from "../auth";
+import { Badge } from "../components/ui/badge";
+import { Button } from "../components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
+import { Input } from "../components/ui/input";
 
 export function meta() {
   return [
@@ -37,59 +41,59 @@ export default function LoginRoute() {
   }
 
   return (
-    <section className="w-full max-w-xl rounded-2xl border border-slate-200 bg-white p-7 shadow-sm sm:p-8">
-      <div className="mb-6 space-y-2">
-        <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-slate-500">The Insightful Lens</p>
-        <h1 className="font-headline text-3xl font-extrabold tracking-tight text-slate-800">Dang nhap he thong</h1>
-        <p className="text-sm text-slate-500">
+    <Card className="w-full max-w-xl overflow-hidden">
+      <CardHeader className="space-y-3 border-b border-slate-100 bg-slate-50/60 p-7 sm:p-8">
+        <Badge variant="secondary" className="self-start rounded-full px-3 py-1 text-[10px] uppercase tracking-[0.24em]">
+          The Insightful Lens
+        </Badge>
+        <CardTitle className="font-headline text-3xl font-extrabold tracking-tight text-slate-800">
+          Dang nhap he thong
+        </CardTitle>
+        <CardDescription className="text-sm text-slate-500">
           Username hop le: <span className="font-semibold text-slate-700">student</span>,{" "}
           <span className="font-semibold text-slate-700">teacher</span>,{" "}
           <span className="font-semibold text-slate-700">faculty</span>,{" "}
           <span className="font-semibold text-slate-700">student_affair_officer</span>. Mat khau nhap bat ky.
-        </p>
-      </div>
+        </CardDescription>
+      </CardHeader>
 
-      <div className="mb-5 grid gap-2 sm:grid-cols-2">
+      <CardContent className="space-y-5 p-7 sm:p-8">
+        <div className="grid gap-2 sm:grid-cols-2">
         {ACCOUNT_ROLES.map((role) => {
           const meta = getRoleMeta(role);
           const isActive = username === role;
           return (
-            <button
+            <Button
               key={role}
               type="button"
               onClick={() => setUsername(role)}
-              className={`rounded-xl border px-3 py-2.5 text-left transition ${
-                isActive
-                  ? "border-sky-300 bg-sky-50"
-                  : "border-slate-200 bg-slate-50 hover:border-sky-200 hover:bg-sky-50/60"
-              }`}
+              variant={isActive ? "secondary" : "outline"}
+              className="h-auto flex-col items-start gap-0 rounded-xl px-3 py-2.5"
             >
               <p className="text-sm font-semibold text-slate-800">{meta.label}</p>
               <p className="mt-0.5 text-xs text-slate-500">{role}</p>
-            </button>
+            </Button>
           );
         })}
-      </div>
+        </div>
 
       <form className="space-y-4" onSubmit={handleSubmit}>
         <label className="block space-y-2">
           <span className="text-sm font-medium text-slate-700">Username</span>
-          <input
+          <Input
             value={username}
             onChange={(event) => setUsername(event.target.value)}
             placeholder="student | teacher | faculty | student_affair_officer"
-            className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-sky-300 focus:ring-2 focus:ring-sky-200"
           />
         </label>
 
         <label className="block space-y-2">
           <span className="text-sm font-medium text-slate-700">Password</span>
-          <input
+          <Input
             type="password"
             value={password}
             onChange={(event) => setPassword(event.target.value)}
             placeholder="Nhap bat ky mat khau nao"
-            className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-sky-300 focus:ring-2 focus:ring-sky-200"
           />
         </label>
 
@@ -99,16 +103,17 @@ export default function LoginRoute() {
           </div>
         )}
 
-        <button
+        <Button
           type="submit"
-          className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-linear-to-br from-primary to-primary-container text-on-primary px-4 py-2.5 text-sm font-semibold transition hover:opacity-90 active:scale-[0.99]"
+          className="w-full"
         >
           <span className="material-symbols-outlined text-base">login</span>
           Dang nhap
-        </button>
+        </Button>
       </form>
 
       <p className="mt-5 text-xs text-slate-500">Tai khoan demo duoc cap san theo role username.</p>
-    </section>
+      </CardContent>
+    </Card>
   );
 }

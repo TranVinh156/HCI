@@ -19,6 +19,8 @@ import { ContentCard } from "../../components/dashboard/ContentCard";
 import { useVirtualRows } from "../../components/dashboard/useVirtualRows";
 import { qualityRating } from "./data";
 import { type OverviewMode, type OverviewSortKey, useOverviewDashboard } from "./useOverviewDashboard";
+import { Badge } from "../../components/ui/badge";
+import { Button } from "../../components/ui/button";
 
 const TABLE_VIEWPORT_HEIGHT = 520;
 const TABLE_ROW_HEIGHT = 88;
@@ -71,10 +73,10 @@ export function OverviewDashboard({
     <DashboardShell
       title={overview.labels.pageTitle}
       rightSlot={
-        <div className="flex items-center gap-2 px-3 py-1.5 bg-violet-100 text-violet-700 rounded-full text-xs font-bold">
+        <Badge variant="secondary" className="gap-2 rounded-full px-3 py-1.5 text-violet-700">
           <span className="material-symbols-outlined text-sm">{overview.labels.pageBadgeIcon}</span>
           {overview.labels.pageBadge}
-        </div>
+        </Badge>
       }
     >
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
@@ -174,9 +176,13 @@ export function OverviewDashboard({
           ))}
         </div>
 
-        <div className="xl:col-span-3 grid grid-rows-2 gap-6">
-          <ContentCard title={overview.labels.compareTitle} className="flex flex-col" bodyClassName="flex-1 -ml-2 p-5 pt-0">
-            <div className="flex-1">
+        <div className="xl:col-span-3 grid gap-6 xl:grid-rows-2">
+          <ContentCard
+            title={overview.labels.compareTitle}
+            className="flex min-h-[320px] flex-col"
+            bodyClassName="flex-1 p-5 pt-0"
+          >
+            <div className="h-[260px] w-full xl:h-full xl:min-h-[240px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={overview.comparisonChartData} margin={{ top: 0, right: 0, left: 0, bottom: 0 }} barSize={16}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
@@ -194,8 +200,12 @@ export function OverviewDashboard({
             </div>
           </ContentCard>
 
-          <ContentCard title={overview.labels.radarTitle} className="flex flex-col" bodyClassName="flex-1 p-5 pt-0">
-            <div className="flex-1">
+          <ContentCard
+            title={overview.labels.radarTitle}
+            className="flex min-h-[320px] flex-col"
+            bodyClassName="flex-1 p-5 pt-0"
+          >
+            <div className="h-[260px] w-full xl:h-full xl:min-h-[240px]">
               <ResponsiveContainer width="100%" height="100%">
                 <RadarChart data={overview.radarData}>
                   <PolarGrid stroke="#e2e8f0" />
@@ -237,26 +247,23 @@ export function OverviewDashboard({
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <button
+            <Button
               onClick={() => overview.setActiveGroup("all")}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                overview.activeGroup === "all" ? "bg-sky-600 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-              }`}
+              variant={overview.activeGroup === "all" ? "default" : "secondary"}
+              size="sm"
             >
               {overview.labels.allFilterLabel}
-            </button>
+            </Button>
             {overview.groupStats.map((group) => (
-              <button
+              <Button
                 key={group.id}
                 onClick={() => overview.setActiveGroup(overview.activeGroup === group.id ? "all" : group.id)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                  overview.activeGroup === group.id
-                    ? "bg-sky-600 text-white"
-                    : `${group.bgColor} ${group.textColor} hover:opacity-80`
-                }`}
+                variant={overview.activeGroup === group.id ? "default" : "secondary"}
+                size="sm"
+                className={overview.activeGroup === group.id ? "" : `${group.bgColor} ${group.textColor}`}
               >
                 {group.shortName}
-              </button>
+              </Button>
             ))}
           </div>
         </div>

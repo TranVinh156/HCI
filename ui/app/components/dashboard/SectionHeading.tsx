@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { Badge } from "../ui/badge";
 
 type SectionHeadingProps = {
   title: string;
@@ -19,7 +20,9 @@ export function SectionHeading({
     <div className={`flex flex-col gap-4 md:flex-row md:items-end md:justify-between ${className ?? ""}`}>
       <div className="space-y-2">
         {eyebrow && (
-          <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-slate-500">{eyebrow}</p>
+          <Badge variant="secondary" className="self-start rounded-full px-3 py-1 text-[10px] uppercase tracking-[0.24em]">
+            {eyebrow}
+          </Badge>
         )}
         <div className="space-y-1">
           <h2 className="text-2xl font-bold text-slate-800">{title}</h2>
