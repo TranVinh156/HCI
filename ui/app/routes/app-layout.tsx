@@ -1,9 +1,10 @@
 import { Navigate, Outlet, useLocation } from "react-router";
 import { Sidebar, type SidebarTab } from "../components/Sidebar";
 import { SidebarLayoutProvider } from "../components/layout/sidebar-layout-context";
+import { AppBreadcrumbs } from "../components/layout/AppBreadcrumbs";
 import { useAuth } from "../auth";
 import { useState } from "react";
-import { SidebarInset, SidebarProvider } from "../components/ui/sidebar";
+import { SidebarInset, SidebarProvider, SidebarTrigger } from "../components/ui/sidebar";
 import { LoadingBlock } from "~/components/layout/LoadingBlock";
 
 function getActiveTab(pathname: string): SidebarTab {
@@ -48,6 +49,12 @@ export default function AppLayout() {
           }
         />
         <SidebarInset className="min-w-0">
+          <div className="sticky top-0 z-30 border-b border-border/70 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/75">
+            <div className="flex h-14 items-center gap-3 px-4 sm:px-6">
+              <SidebarTrigger className="shrink-0 border border-border bg-background shadow-sm" aria-label="Toggle sidebar" />
+              <AppBreadcrumbs pathname={location.pathname} search={location.search} />
+            </div>
+          </div>
           <Outlet />
         </SidebarInset>
       </SidebarLayoutProvider>

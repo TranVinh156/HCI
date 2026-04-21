@@ -11,17 +11,7 @@ export function meta({}: Route.MetaArgs) {
 
 export default function StudentProfiles() {
   return (
-    <DashboardShell
-      title="Student Profiles"
-      rightSlot={
-        <div className="flex items-center gap-3 rounded-xl bg-slate-100 px-4 py-2 text-sm text-slate-400">
-          <span className="material-symbols-outlined text-slate-500">search</span>
-          <span>Search student observations...</span>
-        </div>
-      }
-      contentWidthClassName="max-w-7xl"
-      contentClassName="space-y-8"
-    >
+    <DashboardShell contentWidthClassName="max-w-7xl" contentClassName="space-y-8">
       <section className="flex flex-col items-start gap-8 md:flex-row">
         <div className="relative group">
           <Avatar className="h-48 w-48 rounded-2xl border border-slate-200 shadow-sm">

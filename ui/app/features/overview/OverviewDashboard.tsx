@@ -70,15 +70,13 @@ export function OverviewDashboard({
   }, [overview.filteredClasses, virtualRows.endIndex, virtualRows.startIndex]);
 
   return (
-    <DashboardShell
-      title={overview.labels.pageTitle}
-      rightSlot={
+    <DashboardShell>
+      <div className="flex justify-end">
         <Badge variant="secondary" className="gap-2 rounded-full px-3 py-1.5 text-violet-700">
           <span className="material-symbols-outlined text-sm">{overview.labels.pageBadgeIcon}</span>
           {overview.labels.pageBadge}
         </Badge>
-      }
-    >
+      </div>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         <MetricCard
           label="Total classes"

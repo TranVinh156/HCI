@@ -1,10 +1,9 @@
 import { useMemo, useState } from "react";
-import { Link, useSearchParams } from "react-router";
+import { useSearchParams } from "react-router";
 import { AnalyticsStats } from "../components/analytics/AnalyticsStats";
 import { AnalyticsCharts } from "../components/analytics/AnalyticsCharts";
 import { DashboardShell } from "../components/dashboard/DashboardShell";
 import { SectionHeading } from "../components/dashboard/SectionHeading";
-import { useAuth } from "../auth";
 import { Card, CardContent } from "../components/ui/card";
 import { Badge } from "../components/ui/badge";
 
@@ -32,10 +31,8 @@ const mockHistoricalData = Array.from({ length: 150 }, (_, i) => {
 }).filter(day => day.isSessionDay);
 
 export default function SessionAnalytics() {
-  const { user } = useAuth();
   const [searchParams] = useSearchParams();
   const classCode = searchParams.get("class")?.trim() ?? "";
-  const isClassManagementFlow = user?.role === "teacher" || user?.role === "student";
 
   const [filterType, setFilterType] = useState<FilterType>("sessions");
   const [sessionCount, setSessionCount] = useState<number>(10);
@@ -82,21 +79,7 @@ export default function SessionAnalytics() {
   }, [chartData]);
 
   return (
-    <DashboardShell
-      title={classCode ? `Session Analytics - ${classCode}` : "Analytics Dashboard"}
-      subtitle={classCode ? "Class Management child view" : undefined}
-      rightSlot={
-        isClassManagementFlow ? (
-          <Link
-            to="/"
-            className="inline-flex h-10 items-center gap-2 rounded-lg border border-slate-200 bg-surface-container-lowest px-3 py-2 text-xs font-semibold text-slate-700 transition-colors hover:bg-surface-container"
-          >
-            <span className="material-symbols-outlined text-sm">arrow_back</span>
-            Back to Class Management
-          </Link>
-        ) : undefined
-      }
-    >
+    <DashboardShell>
       <SectionHeading
         title="Teaching Quality & Engagement"
         description={

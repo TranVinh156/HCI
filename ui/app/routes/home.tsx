@@ -2,7 +2,6 @@ import { Link } from "react-router";
 import { DashboardShell } from "../components/dashboard/DashboardShell";
 import { SectionHeading } from "../components/dashboard/SectionHeading";
 import { ASSIGNED_CLASSES, type ManagedClass } from "../features/classes/data";
-import { useAuth } from "../auth";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
@@ -17,24 +16,8 @@ export function meta() {
 }
 
 export default function Home() {
-  const { user } = useAuth();
-  const pageTitle = user?.role === "teacher" ? "Assigned Classes" : "Classroom Workspace";
-  const bannerLabel =
-    user?.role === "teacher"
-      ? "SELECT A CLASS TO OPEN LIVE SESSION"
-      : `SIGNED IN AS ${user?.username.toUpperCase() ?? "USER"}`;
-
   return (
-    <DashboardShell
-      title={pageTitle}
-      subtitle={user ? `${user.label} workspace` : undefined}
-      rightSlot={
-        <Badge variant="secondary" className="gap-2 rounded-full px-3 py-1 text-sky-700">
-          <span className="material-symbols-outlined text-sm">school</span>
-          {bannerLabel}
-        </Badge>
-      }
-    >
+    <DashboardShell>
       <Card>
         <CardContent className="p-5">
         <SectionHeading

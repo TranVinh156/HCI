@@ -5,8 +5,6 @@ import { EngagementChart, ActivityBreakdown } from "../components/live/Charts";
 import { DetectionStreamLog } from "../components/live/DetectionStreamLog";
 import { IncidentSnapshots } from "../components/live/IncidentSnapshots";
 import { LiveSessionHeader } from "../components/live/LiveSessionHeader";
-import { useSidebarLayout } from "../components/layout/sidebar-layout-context";
-import { SidebarTrigger } from "../components/ui/sidebar";
 import { getAssignedClassByCode, type ManagedClass } from "../features/classes/data";
 
 type DetectionStatus = "FOCUSED" | "DISTRACTED" | "CONFUSED";
@@ -371,39 +369,9 @@ export default function LiveDashboard() {
     if (isNaN(time)) return "00:00";
     return `${padTime(time / 60)}:${padTime(time % 60)}`;
   };
-  const { isSidebarOpen } = useSidebarLayout();
-
   return (
     <main className="bg-background text-on-surface font-body flex flex-col h-full overflow-hidden">
       <section className="flex-1 flex flex-col overflow-hidden">
-        <header className="w-full top-0 sticky flex justify-between items-center h-16 px-6 bg-slate-50 border-b border-slate-100 z-10">
-          <div className="flex items-center gap-4 flex-1">
-            <SidebarTrigger className="md:hidden" aria-label="Open sidebar" />
-            {!isSidebarOpen && (
-              <SidebarTrigger className="hidden md:inline-flex" aria-label="Show sidebar" />
-            )}
-            <div className="relative w-96">
-              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
-              <input
-                className="w-full bg-slate-100 border-none rounded-full py-2 pl-10 pr-4 focus:ring-2 ring-primary text-sm"
-                placeholder="Search students or metrics..."
-                type="text"
-              />
-            </div>
-          </div>
-          <div className="flex items-center gap-6">
-            <div className="flex items-center gap-4">
-              <button className="text-slate-500 hover:bg-slate-200/50 p-2 rounded-full transition-colors">
-                <span className="material-symbols-outlined">videocam</span>
-              </button>
-              <button className="text-slate-500 hover:bg-slate-200/50 p-2 rounded-full transition-colors relative">
-                <span className="material-symbols-outlined">notifications</span>
-                <span className="absolute top-2 right-2 w-2 h-2 bg-error rounded-full"></span>
-              </button>
-            </div>
-          </div>
-        </header>
-
         {emergencyLog && (
           <div className="absolute top-20 left-1/2 -translate-x-1/2 z-50 bg-rose-600 text-white px-6 py-3 rounded-lg shadow-xl shadow-rose-600/30 flex items-center gap-4 animate-in slide-in-from-top-4 fade-in duration-300">
             <span className="material-symbols-outlined text-3xl animate-pulse">warning</span>

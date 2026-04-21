@@ -5,7 +5,6 @@ import { KeyValueList } from "../components/dashboard/KeyValueList";
 import { SectionHeading } from "../components/dashboard/SectionHeading";
 import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
-import { Input } from "../components/ui/input";
 import { Badge } from "../components/ui/badge";
 
 export function meta({}: Route.MetaArgs) {
@@ -21,21 +20,7 @@ export default function AIConfiguration() {
   ];
 
   return (
-    <DashboardShell
-      title="AI Configuration"
-      rightSlot={
-        <div className="relative w-full max-w-md">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400">search</span>
-          <Input
-            className="pl-10 pr-4 bg-slate-100 border-none focus-visible:ring-primary/20"
-            placeholder="Search system settings..."
-            type="text"
-          />
-        </div>
-      }
-      contentWidthClassName="max-w-7xl"
-      contentClassName="space-y-8"
-    >
+    <DashboardShell contentWidthClassName="max-w-7xl" contentClassName="space-y-8">
       <SectionHeading
         title="AI Configuration"
         description="Refine your classroom digital twin and camera setup."
