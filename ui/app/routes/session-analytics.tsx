@@ -1,7 +1,10 @@
-import { Sidebar } from "../components/Sidebar";
-import { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
+import { Link, useSearchParams } from "react-router";
 import { AnalyticsStats } from "../components/analytics/AnalyticsStats";
 import { AnalyticsCharts } from "../components/analytics/AnalyticsCharts";
+import { DashboardShell } from "../components/dashboard/DashboardShell";
+import { SectionHeading } from "../components/dashboard/SectionHeading";
+import { useAuth } from "../auth";
 
 type FilterType = "sessions" | "weeks" | "custom";
 
@@ -27,7 +30,11 @@ const mockHistoricalData = Array.from({ length: 150 }, (_, i) => {
 }).filter(day => day.isSessionDay);
 
 export default function SessionAnalytics() {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const { user } = useAuth();
+  const [searchParams] = useSearchParams();
+  const classCode = searchParams.get("class")?.trim() ?? "";
+  const isClassManagementFlow = user?.role === "teacher" || user?.role === "student";
+
   const [filterType, setFilterType] = useState<FilterType>("sessions");
   const [sessionCount, setSessionCount] = useState<number>(10);
   const [weekCount, setWeekCount] = useState<number>(4);
@@ -73,110 +80,111 @@ export default function SessionAnalytics() {
   }, [chartData]);
 
   return (
-    <main className="bg-background text-on-surface font-body flex h-screen overflow-hidden">
-      <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} activeTab="analytics" />
+    <DashboardShell
+      title={classCode ? `Session Analytics - ${classCode}` : "Analytics Dashboard"}
+      subtitle={classCode ? "Class Management child view" : undefined}
+      rightSlot={
+        isClassManagementFlow ? (
+          <Link
+            to="/"
+            className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition-colors"
+          >
+            <span className="material-symbols-outlined text-sm">arrow_back</span>
+            Back to Class Management
+          </Link>
+        ) : undefined
+      }
+    >
+      <SectionHeading
+        title="Teaching Quality & Engagement"
+        description={
+          classCode
+            ? `Aggregated metrics for ${classCode} across historical sessions`
+            : "Aggregated metrics across historical sessions"
+        }
+      />
 
-      <section className="flex-1 flex flex-col h-full overflow-y-auto">
-        <header className="flex justify-between items-center h-16 px-6 bg-slate-50 border-b border-slate-100 sticky top-0 z-20">
-          <div className="flex items-center gap-4 flex-1">
-            {!isSidebarOpen && (
-              <button onClick={() => setIsSidebarOpen(true)} className="p-2 text-slate-500 hover:bg-slate-200 rounded-lg transition-colors">
-                <span className="material-symbols-outlined">left_panel_open</span>
-              </button>
-            )}
-            <h1 className="font-bold text-xl text-slate-800 tracking-tight">Analytics Dashboard</h1>
-          </div>
-        </header>
-
-        <div className="p-6 max-w-screen-2xl mx-auto w-full space-y-6">
-          <div className="flex flex-col gap-2 mb-2">
-            <h2 className="text-2xl font-bold text-slate-800">Teaching Quality & Engagement</h2>
-            <p className="text-slate-500 text-sm">Aggregated metrics across historical sessions</p>
-          </div>
-
-          <div className="flex flex-wrap items-end gap-5 p-5 bg-white rounded-2xl border border-slate-200 shadow-sm">
-            <div className="flex flex-col gap-1.5">
-              <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Khung phân tích</label>
-              <select 
-                value={filterType} 
-                onChange={e => setFilterType(e.target.value as FilterType)} 
-                className="bg-slate-50 border border-slate-200 px-4 py-2.5 rounded-lg text-sm font-medium text-slate-700 outline-none focus:ring-2 focus:ring-primary/30 transition-all min-w-[200px] cursor-pointer"
-              >
-                <option value="sessions">Theo số buổi gần đây</option>
-                <option value="weeks">Theo số tuần gần đây</option>
-                <option value="custom">Tuỳ chỉnh thời gian</option>
-              </select>
-            </div>
-            
-            {filterType === "sessions" && (
-              <div className="flex flex-col gap-1.5 animate-in fade-in zoom-in duration-200 block">
-                <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Số buổi</label>
-                <select 
-                  value={sessionCount} 
-                  onChange={e => setSessionCount(Number(e.target.value))} 
-                  className="bg-slate-50 border border-slate-200 px-4 py-2.5 rounded-lg text-sm font-medium text-slate-700 outline-none focus:ring-2 focus:ring-primary/30 transition-all cursor-pointer"
-                >
-                  <option value={5}>5 buổi gần nhất</option>
-                  <option value={10}>10 buổi gần nhất</option>
-                  <option value={20}>20 buổi gần nhất</option>
-                  <option value={50}>50 buổi gần nhất</option>
-                  <option value={100}>100 buổi gần nhất</option>
-                </select>
-              </div>
-            )}
-
-            {filterType === "weeks" && (
-              <div className="flex flex-col gap-1.5 animate-in fade-in zoom-in duration-200 block">
-                <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Số tuần</label>
-                <select 
-                  value={weekCount} 
-                  onChange={e => setWeekCount(Number(e.target.value))} 
-                  className="bg-slate-50 border border-slate-200 px-4 py-2.5 rounded-lg text-sm font-medium text-slate-700 outline-none focus:ring-2 focus:ring-primary/30 transition-all cursor-pointer"
-                >
-                  <option value={1}>1 tuần gần nhất</option>
-                  <option value={2}>2 tuần gần nhất</option>
-                  <option value={4}>4 tuần (1 tháng)</option>
-                  <option value={8}>8 tuần (2 tháng)</option>
-                  <option value={12}>12 tuần (3 tháng)</option>
-                </select>
-              </div>
-            )}
-
-            {filterType === "custom" && (
-              <>
-                <div className="flex flex-col gap-1.5 animate-in fade-in zoom-in duration-200 block">
-                  <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Từ ngày</label>
-                  <input 
-                    type="date" 
-                    value={startDate} 
-                    onChange={e => setStartDate(e.target.value)} 
-                    className="bg-slate-50 border border-slate-200 px-4 py-2 rounded-lg text-sm font-medium text-slate-700 outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer" 
-                  />
-                </div>
-                <div className="flex flex-col gap-1.5 animate-in fade-in zoom-in duration-200 block">
-                  <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Đến ngày</label>
-                  <input 
-                    type="date" 
-                    value={endDate} 
-                    onChange={e => setEndDate(e.target.value)} 
-                    className="bg-slate-50 border border-slate-200 px-4 py-2 rounded-lg text-sm font-medium text-slate-700 outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer" 
-                  />
-                </div>
-              </>
-            )}
-            
-            <div className="flex-1"></div>
-            
-            <div className="bg-slate-50 px-4 py-2.5 rounded-lg border border-slate-200 text-sm font-medium text-slate-600">
-              Đang phân tích: <span className="font-bold text-primary">{chartData.length}</span> buổi học
-            </div>
-          </div>
-
-          <AnalyticsStats averages={averages} />
-
-          <AnalyticsCharts chartData={chartData} />
+      <div className="flex flex-wrap items-end gap-5 p-5 bg-white rounded-2xl border border-slate-200 shadow-sm">
+        <div className="flex flex-col gap-1.5">
+          <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Khung phân tích</label>
+          <select
+            value={filterType}
+            onChange={(e) => setFilterType(e.target.value as FilterType)}
+            className="bg-slate-50 border border-slate-200 px-4 py-2.5 rounded-lg text-sm font-medium text-slate-700 outline-none focus:ring-2 focus:ring-primary/30 transition-all min-w-[200px] cursor-pointer"
+          >
+            <option value="sessions">Theo số buổi gần đây</option>
+            <option value="weeks">Theo số tuần gần đây</option>
+            <option value="custom">Tuỳ chỉnh thời gian</option>
+          </select>
         </div>
-      </section>
-    </main>
+
+        {filterType === "sessions" && (
+          <div className="flex flex-col gap-1.5 animate-in fade-in zoom-in duration-200 block">
+            <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Số buổi</label>
+            <select
+              value={sessionCount}
+              onChange={(e) => setSessionCount(Number(e.target.value))}
+              className="bg-slate-50 border border-slate-200 px-4 py-2.5 rounded-lg text-sm font-medium text-slate-700 outline-none focus:ring-2 focus:ring-primary/30 transition-all cursor-pointer"
+            >
+              <option value={5}>5 buổi gần nhất</option>
+              <option value={10}>10 buổi gần nhất</option>
+              <option value={20}>20 buổi gần nhất</option>
+              <option value={50}>50 buổi gần nhất</option>
+              <option value={100}>100 buổi gần nhất</option>
+            </select>
+          </div>
+        )}
+
+        {filterType === "weeks" && (
+          <div className="flex flex-col gap-1.5 animate-in fade-in zoom-in duration-200 block">
+            <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Số tuần</label>
+            <select
+              value={weekCount}
+              onChange={(e) => setWeekCount(Number(e.target.value))}
+              className="bg-slate-50 border border-slate-200 px-4 py-2.5 rounded-lg text-sm font-medium text-slate-700 outline-none focus:ring-2 focus:ring-primary/30 transition-all cursor-pointer"
+            >
+              <option value={1}>1 tuần gần nhất</option>
+              <option value={2}>2 tuần gần nhất</option>
+              <option value={4}>4 tuần (1 tháng)</option>
+              <option value={8}>8 tuần (2 tháng)</option>
+              <option value={12}>12 tuần (3 tháng)</option>
+            </select>
+          </div>
+        )}
+
+        {filterType === "custom" && (
+          <>
+            <div className="flex flex-col gap-1.5 animate-in fade-in zoom-in duration-200 block">
+              <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Từ ngày</label>
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                className="bg-slate-50 border border-slate-200 px-4 py-2 rounded-lg text-sm font-medium text-slate-700 outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer"
+              />
+            </div>
+            <div className="flex flex-col gap-1.5 animate-in fade-in zoom-in duration-200 block">
+              <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Đến ngày</label>
+              <input
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                className="bg-slate-50 border border-slate-200 px-4 py-2 rounded-lg text-sm font-medium text-slate-700 outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer"
+              />
+            </div>
+          </>
+        )}
+
+        <div className="flex-1"></div>
+
+        <div className="bg-slate-50 px-4 py-2.5 rounded-lg border border-slate-200 text-sm font-medium text-slate-600">
+          Đang phân tích: <span className="font-bold text-primary">{chartData.length}</span> buổi học
+        </div>
+      </div>
+
+      <AnalyticsStats averages={averages} />
+
+      <AnalyticsCharts chartData={chartData} />
+    </DashboardShell>
   );
 }
