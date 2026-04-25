@@ -110,7 +110,7 @@ export default function AdminRoute() {
                       {item.description}
                     </p>
                   </div>
-                  <Button asChild variant="outline" className="h-10 rounded-xl">
+                  <Button asChild className="h-10 rounded-xl">
                     <Link to={item.to}>
                       Open
                       <ArrowRight className="size-4" />
