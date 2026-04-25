@@ -1,6 +1,7 @@
 import { ArrowRight } from "lucide-react";
 import { Link, useParams } from "react-router";
 
+import { CameraPractice } from "~/components/learning/camera-practice";
 import { LessonCard } from "~/components/learning/lesson-card";
 import { Mascot } from "~/components/learning/mascot";
 import { StudentShell } from "~/components/learning/student-shell";
@@ -31,9 +32,10 @@ export default function LessonRoute() {
         </div>
         <Mascot compact mood="coach" message="Watch the hands and face, then replay the sign if you need." />
       </div>
-      <div className="mx-auto max-w-3xl">
+      <div className="mx-auto max-w-3xl space-y-5">
         <LessonCard lesson={lesson} />
-        <Button asChild className="mt-5 h-14 w-full rounded-2xl text-lg font-black">
+        <CameraPractice lesson={lesson} />
+        <Button asChild className="h-14 w-full rounded-2xl text-lg font-black">
           <Link to={`/quiz/${lesson.id}`}>
             Practice
             <ArrowRight className="size-5" />

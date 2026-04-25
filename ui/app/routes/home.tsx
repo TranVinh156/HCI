@@ -1,4 +1,4 @@
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, LogIn, LogOut, UserPlus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router";
 
@@ -6,15 +6,18 @@ import { Mascot } from "~/components/learning/mascot";
 import { Avatar, AvatarFallback } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
+import { isLoggedIn, logoutMock } from "~/lib/auth";
 import { profiles } from "~/lib/learning-data";
 import { readProgress, selectProfile } from "~/lib/progress";
 
 export default function HomeRoute() {
   const navigate = useNavigate();
   const [selectedId, setSelectedId] = useState(profiles[0]?.id ?? "");
+  const [loggedIn, setLoggedIn] = useState(false);
 
   useEffect(() => {
     setSelectedId(readProgress().selectedProfileId);
+    setLoggedIn(isLoggedIn());
   }, []);
 
   function chooseProfile(profileId: string) {
@@ -22,8 +25,14 @@ export default function HomeRoute() {
     navigate("/learn");
   }
 
+  function handleLogout() {
+    logoutMock();
+    setLoggedIn(false);
+    navigate("/login");
+  }
+
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top,#dff8ff,transparent_36%),linear-gradient(180deg,#eefcff,#ffffff)] px-4 py-8 text-slate-900">
+    <main className="min-h-screen bg-cyan-50 px-4 py-8 text-slate-900">
       <div className="mx-auto flex min-h-[calc(100vh-4rem)] max-w-5xl flex-col justify-center gap-8">
         <div className="text-center">
           <div className="mx-auto mb-4 grid size-20 place-items-center rounded-[2rem] bg-sky-600 text-2xl font-black text-white shadow-lg shadow-sky-200">
@@ -47,7 +56,7 @@ export default function HomeRoute() {
             >
               <CardContent className="flex flex-col items-center gap-4 p-5 text-center">
                 <button type="button" onClick={() => setSelectedId(profile.id)}>
-                  <Avatar className="size-24 bg-gradient-to-br from-cyan-300 to-sky-600 text-white">
+                  <Avatar className="size-24 bg-sky-600 text-white">
                     <AvatarFallback className="bg-transparent text-4xl font-black text-white">
                       {profile.avatar}
                     </AvatarFallback>
@@ -71,12 +80,35 @@ export default function HomeRoute() {
           ))}
         </div>
         <div className="text-center">
-          <Link
-            to="/admin"
-            className="text-sm font-bold text-cyan-700 underline-offset-4 hover:underline"
-          >
-            Open admin
-          </Link>
+          <div className="flex flex-wrap items-center justify-center gap-2">
+            {loggedIn ? (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleLogout}
+                className="h-11 rounded-2xl"
+              >
+                <LogOut className="size-4" />
+                Logout
+              </Button>
+            ) : (
+              <Button asChild variant="outline" className="h-11 rounded-2xl">
+                <Link to="/login">
+                  <LogIn className="size-4" />
+                  Login
+                </Link>
+              </Button>
+            )}
+            <Button asChild variant="outline" className="h-11 rounded-2xl">
+              <Link to="/register">
+                <UserPlus className="size-4" />
+                Register
+              </Link>
+            </Button>
+            <Button asChild variant="link" className="h-11 text-cyan-700">
+              <Link to="/admin">Open admin</Link>
+            </Button>
+          </div>
         </div>
       </div>
     </main>

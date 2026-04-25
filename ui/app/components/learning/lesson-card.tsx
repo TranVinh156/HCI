@@ -30,7 +30,7 @@ export function LessonCard({ lesson }: LessonCardProps) {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-5">
-        <div className="rounded-[1.5rem] border border-sky-100 bg-gradient-to-br from-sky-50 to-cyan-50 p-5 text-center">
+        <div className="rounded-[1.5rem] border border-sky-100 bg-cyan-50 p-5 text-center">
           <div className="mx-auto mb-3 grid size-16 place-items-center rounded-full bg-white text-sky-700 shadow-sm">
             <Video className="size-8" />
           </div>

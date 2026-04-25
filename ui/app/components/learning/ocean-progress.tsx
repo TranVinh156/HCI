@@ -19,7 +19,7 @@ export function OceanProgress({ value, label, className }: OceanProgressProps) {
       ) : null}
       <div className="h-4 overflow-hidden rounded-full bg-cyan-100 ring-1 ring-cyan-200">
         <div
-          className="h-full rounded-full bg-gradient-to-r from-cyan-500 to-sky-600 transition-all duration-500"
+          className="h-full rounded-full bg-sky-600 transition-all duration-500"
           style={{ width: `${safeValue}%` }}
         />
       </div>

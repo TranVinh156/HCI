@@ -18,7 +18,7 @@ export function Mascot({ message, mood = "hello", compact }: MascotProps) {
         compact ? "max-w-md" : "max-w-2xl"
       )}
     >
-      <div className="grid size-16 shrink-0 place-items-center rounded-full bg-gradient-to-br from-cyan-300 to-sky-500 text-lg font-black text-white shadow-inner">
+      <div className="grid size-16 shrink-0 place-items-center rounded-full bg-sky-500 text-lg font-black text-white shadow-inner">
         {face}
       </div>
       <div className="min-w-0">

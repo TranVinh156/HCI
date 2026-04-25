@@ -1,4 +1,13 @@
-import { ArrowRight, Flame, Star, Zap } from "lucide-react";
+import {
+  ArrowRight,
+  BookOpen,
+  Dumbbell,
+  Flame,
+  MessageCircle,
+  Sparkles,
+  Star,
+  Zap,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
 
@@ -15,6 +24,33 @@ import {
 } from "~/components/ui/card";
 import { getSelectedProfile, readProgress, type ProgressState } from "~/lib/progress";
 import { lessons, topics } from "~/lib/learning-data";
+
+const mainActions = [
+  {
+    title: "Learn by topic",
+    description: "Pick a topic and follow the lesson path.",
+    to: "/topics",
+    icon: BookOpen,
+  },
+  {
+    title: "Communication",
+    description: "Practice useful daily sentences in context.",
+    to: "/communication",
+    icon: MessageCircle,
+  },
+  {
+    title: "Practice",
+    description: "Answer quick visual quizzes and review signs.",
+    to: "/practice",
+    icon: Dumbbell,
+  },
+  {
+    title: "Talk with Sami",
+    description: "Try simple mascot-guided conversation prompts.",
+    to: "/mascot",
+    icon: Sparkles,
+  },
+];
 
 export default function LearnRoute() {
   const [progress, setProgress] = useState<ProgressState>(() => readProgress());
@@ -35,7 +71,7 @@ export default function LearnRoute() {
     <StudentShell>
       <div className="grid gap-6 lg:grid-cols-[1.3fr_0.7fr]">
         <section className="space-y-5">
-          <div className="rounded-[2rem] bg-gradient-to-br from-sky-600 to-cyan-500 p-6 text-white shadow-xl shadow-cyan-100">
+          <div className="rounded-[2rem] bg-sky-600 p-6 text-white shadow-xl shadow-cyan-100">
             <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className="text-sm font-black uppercase text-cyan-100">
@@ -78,6 +114,30 @@ export default function LearnRoute() {
               </div>
             </CardContent>
           </Card>
+
+          <section>
+            <h2 className="mb-3 text-2xl font-black">Start a mode</h2>
+            <div className="grid gap-4 sm:grid-cols-2">
+              {mainActions.map((action) => {
+                const Icon = action.icon;
+                return (
+                  <Link
+                    key={action.to}
+                    to={action.to}
+                    className="rounded-[1.5rem] bg-white p-5 shadow-sm ring-1 ring-cyan-100 transition hover:-translate-y-1"
+                  >
+                    <div className="mb-4 grid size-12 place-items-center rounded-2xl bg-cyan-100 text-cyan-800">
+                      <Icon className="size-6" />
+                    </div>
+                    <h3 className="text-xl font-black">{action.title}</h3>
+                    <p className="mt-1 text-sm font-semibold text-slate-500">
+                      {action.description}
+                    </p>
+                  </Link>
+                );
+              })}
+            </div>
+          </section>
 
           <section>
             <div className="mb-3 flex items-center justify-between">

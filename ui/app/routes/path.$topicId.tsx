@@ -23,32 +23,41 @@ export default function PathRoute() {
 
   return (
     <StudentShell>
-      <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-        <div>
-          <p className="text-sm font-black uppercase text-cyan-700">
-            Learning path
-          </p>
-          <h1 className="text-4xl font-black">{topic.title}</h1>
+      <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div className="min-w-0">
+              <p className="text-sm font-black uppercase text-cyan-700">
+                Learning path
+              </p>
+              <h1 className="text-4xl font-black">{topic.title}</h1>
+            </div>
+            <Button
+              asChild
+              variant="outline"
+              className="h-11 w-fit shrink-0 rounded-2xl"
+            >
+              <Link to="/topics">Back to topics</Link>
+            </Button>
+          </div>
           <p className="mt-2 max-w-2xl font-semibold text-slate-600">
             {topic.description}
           </p>
         </div>
         <Mascot compact mood="coach" message="Take it one node at a time. The next lesson unlocks after this one." />
       </div>
-      <div className="relative mx-auto max-w-3xl space-y-8 rounded-[2rem] bg-cyan-50/70 p-6">
+      <div className="relative mx-auto max-w-2xl rounded-[2rem] bg-cyan-50/70 p-5 sm:p-6">
         {lessons.map((lesson, index) => (
           <PathNode
             key={lesson.id}
             lessonId={lesson.id}
             title={lesson.title}
             index={index}
+            isLast={index === lessons.length - 1}
             status={getLessonStatus(lesson.id, topic.lessonIds, progress)}
           />
         ))}
       </div>
-      <Button asChild variant="outline" className="mt-6 h-11 rounded-2xl">
-        <Link to="/topics">Back to topics</Link>
-      </Button>
     </StudentShell>
   );
 }

@@ -1,6 +1,19 @@
-import { BookOpen, Home, Shield, User } from "lucide-react";
-import { Link, NavLink } from "react-router";
+import {
+  BookOpen,
+  Dumbbell,
+  Home,
+  LogIn,
+  LogOut,
+  MessageCircle,
+  Shield,
+  Sparkles,
+  User,
+} from "lucide-react";
+import { useEffect, useState } from "react";
+import { Link, NavLink, useNavigate } from "react-router";
 
+import { Button } from "~/components/ui/button";
+import { isLoggedIn, logoutMock } from "~/lib/auth";
 import { cn } from "~/lib/utils";
 
 type StudentShellProps = {
@@ -10,13 +23,29 @@ type StudentShellProps = {
 const navItems = [
   { to: "/learn", label: "Home", icon: Home },
   { to: "/topics", label: "Learn", icon: BookOpen },
+  { to: "/communication", label: "Talk", icon: MessageCircle },
+  { to: "/practice", label: "Practice", icon: Dumbbell },
+  { to: "/mascot", label: "Sami", icon: Sparkles },
   { to: "/profile", label: "Profile", icon: User },
   { to: "/admin", label: "Admin", icon: Shield },
 ];
 
 export function StudentShell({ children }: StudentShellProps) {
+  const navigate = useNavigate();
+  const [loggedIn, setLoggedIn] = useState(false);
+
+  useEffect(() => {
+    setLoggedIn(isLoggedIn());
+  }, []);
+
+  function handleLogout() {
+    logoutMock();
+    setLoggedIn(false);
+    navigate("/login");
+  }
+
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,#dff8ff,transparent_34%),linear-gradient(180deg,#eefcff_0%,#f8feff_46%,#ffffff_100%)] text-slate-900">
+    <div className="min-h-screen bg-cyan-50 text-slate-900">
       <header className="sticky top-0 z-20 border-b border-cyan-100 bg-white/85 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
           <Link to="/learn" className="flex items-center gap-2">
@@ -46,6 +75,30 @@ export function StudentShell({ children }: StudentShellProps) {
                 </NavLink>
               );
             })}
+            {loggedIn ? (
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={handleLogout}
+                className="flex h-10 items-center gap-1 rounded-xl px-3 text-sm font-black text-cyan-800"
+              >
+                <LogOut className="size-4" />
+                <span className="hidden sm:inline">Logout</span>
+              </Button>
+            ) : (
+              <NavLink
+                to="/login"
+                className={({ isActive }) =>
+                  cn(
+                    "flex h-10 items-center gap-1 rounded-xl px-3 text-sm font-black text-cyan-800 transition",
+                    isActive && "bg-white shadow-sm"
+                  )
+                }
+              >
+                <LogIn className="size-4" />
+                <span className="hidden sm:inline">Login</span>
+              </NavLink>
+            )}
           </nav>
         </div>
       </header>

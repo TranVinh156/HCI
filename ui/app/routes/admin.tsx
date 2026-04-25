@@ -1,11 +1,54 @@
-import { BarChart3, BookOpen, GraduationCap, Users } from "lucide-react";
+import { ArrowRight, BarChart3, BookOpen, ClipboardCheck, GraduationCap, Sparkles, Users } from "lucide-react";
 import { useMemo, useState } from "react";
+import { Link } from "react-router";
 
 import { AdminShell } from "~/components/admin/admin-shell";
 import { AdminTable } from "~/components/admin/admin-table";
 import { StatCard } from "~/components/admin/stat-card";
+import { Badge } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
+import { Card, CardContent } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
-import { lessons, profiles, topics } from "~/lib/learning-data";
+import { lessons, profiles, quizzes, topics } from "~/lib/learning-data";
+
+const adminShortcuts = [
+  {
+    title: "Manage students",
+    description: "Review profiles, guardians, progress, and class status.",
+    to: "/admin/students",
+    icon: Users,
+  },
+  {
+    title: "Edit topics",
+    description: "Organize learning paths, topic order, and visibility.",
+    to: "/admin/topics",
+    icon: BookOpen,
+  },
+  {
+    title: "Build lessons",
+    description: "Maintain signs, hints, difficulty, and reward values.",
+    to: "/admin/lessons",
+    icon: GraduationCap,
+  },
+  {
+    title: "Quiz bank",
+    description: "Check questions, answers, and practice coverage.",
+    to: "/admin/quizzes",
+    icon: ClipboardCheck,
+  },
+  {
+    title: "Reports",
+    description: "Inspect completion, accuracy, and weak lessons.",
+    to: "/admin/reports",
+    icon: BarChart3,
+  },
+  {
+    title: "Mascot scripts",
+    description: "Tune feedback lines and coaching behavior.",
+    to: "/admin/mascot",
+    icon: Sparkles,
+  },
+];
 
 export default function AdminRoute() {
   const [query, setQuery] = useState("");
@@ -20,7 +63,7 @@ export default function AdminRoute() {
   );
 
   return (
-    <AdminShell>
+    <AdminShell title="Learning dashboard" subtitle="Overview">
       <div className="space-y-5">
         <div className="grid gap-4 md:grid-cols-4">
           <StatCard
@@ -42,10 +85,61 @@ export default function AdminRoute() {
             icon={GraduationCap}
           />
           <StatCard
+            label="Quiz questions"
+            value={String(quizzes.length)}
+            detail="Two checks per lesson"
+            icon={ClipboardCheck}
+          />
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {adminShortcuts.map((item) => {
+            const Icon = item.icon;
+            return (
+              <Card key={item.to} className="rounded-xl border-sky-100 py-0 shadow-sm">
+                <CardContent className="flex h-full flex-col gap-4 p-5">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="grid size-11 place-items-center rounded-xl bg-cyan-50 text-cyan-700">
+                      <Icon className="size-5" />
+                    </div>
+                    <Badge className="bg-sky-100 text-sky-800">Route ready</Badge>
+                  </div>
+                  <div className="grow">
+                    <h2 className="text-lg font-black">{item.title}</h2>
+                    <p className="mt-1 text-sm font-semibold text-slate-500">
+                      {item.description}
+                    </p>
+                  </div>
+                  <Button asChild variant="outline" className="h-10 rounded-xl">
+                    <Link to={item.to}>
+                      Open
+                      <ArrowRight className="size-4" />
+                    </Link>
+                  </Button>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-3">
+          <StatCard
             label="Completion"
             value="68%"
             detail="Weekly sample data"
             icon={BarChart3}
+          />
+          <StatCard
+            label="Average accuracy"
+            value="84%"
+            detail="Across all quizzes"
+            icon={ClipboardCheck}
+          />
+          <StatCard
+            label="Mascot prompts"
+            value="12"
+            detail="Reusable coaching lines"
+            icon={Sparkles}
           />
         </div>
 
@@ -68,7 +162,7 @@ export default function AdminRoute() {
 
         <div className="grid gap-5 xl:grid-cols-2">
           <AdminTable
-            title="Students"
+            title="Recent students"
             data={profiles}
             columns={[
               { key: "name", header: "Name", render: (item) => item.name },
@@ -81,7 +175,7 @@ export default function AdminRoute() {
             ]}
           />
           <AdminTable
-            title="Topics"
+            title="Topic status"
             data={topics}
             columns={[
               { key: "title", header: "Topic", render: (item) => item.title },
@@ -108,7 +202,11 @@ export default function AdminRoute() {
           data={filteredLessons}
           columns={[
             { key: "title", header: "Lesson", render: (item) => item.title },
-            { key: "phrase", header: "Word/Phrase", render: (item) => item.phrase },
+            {
+              key: "phrase",
+              header: "Word/Phrase",
+              render: (item) => item.phrase,
+            },
             {
               key: "type",
               header: "Type",
