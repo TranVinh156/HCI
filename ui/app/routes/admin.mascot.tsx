@@ -40,7 +40,7 @@ export default function AdminMascotRoute() {
         <Card className="rounded-xl border-slate-200 py-0">
           <CardContent className="flex flex-col gap-4 p-5 md:flex-row md:items-center md:justify-between">
             <div className="flex items-center gap-4">
-              <div className="grid size-14 place-items-center rounded-full bg-sky-600 text-lg font-black text-white">
+              <div className="grid size-14 place-items-center rounded-full bg-primary text-lg font-black text-white">
                 ^_^
               </div>
               <div>
@@ -60,7 +60,7 @@ export default function AdminMascotRoute() {
         <div className="grid gap-4 md:grid-cols-3">
           <Card className="rounded-xl border-slate-200 py-0">
             <CardContent className="p-5">
-              <Sparkles className="size-7 text-cyan-700" />
+              <Sparkles className="size-7 text-primary" />
               <p className="mt-3 text-3xl font-black">4</p>
               <p className="text-sm font-bold text-slate-500">Script moments</p>
             </CardContent>

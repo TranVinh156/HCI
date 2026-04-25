@@ -94,8 +94,8 @@ function SidebarNav({
             end={item.end}
             className={({ isActive }) =>
               cn(
-                "flex h-[3.75rem] w-full items-center gap-5 rounded-2xl border-2 border-transparent px-5 text-left text-base font-black uppercase tracking-normal text-slate-500 transition hover:bg-sky-50 hover:text-sky-600",
-                isActive && "border-sky-300 bg-sky-100 text-sky-500"
+                "flex h-[3.75rem] w-full items-center gap-5 rounded-2xl border-2 border-transparent px-5 text-left text-base font-black uppercase tracking-normal text-slate-500 transition hover:bg-primary/10 hover:text-primary",
+                isActive && "border-primary/40 bg-primary/10 text-primary"
               )
             }
           >
@@ -124,7 +124,7 @@ function SidebarAuthAction({
           type="button"
           variant="ghost"
           onClick={onLogout}
-          className="h-[3.25rem] w-full justify-start gap-5 rounded-2xl px-5 text-base font-black uppercase text-slate-500 hover:text-sky-600"
+          className="h-[3.25rem] w-full justify-start gap-5 rounded-2xl px-5 text-base font-black uppercase text-slate-500 hover:text-primary"
         >
           <span className="grid size-9 place-items-center rounded-xl bg-rose-100 text-rose-500">
             <LogOut className="size-6 stroke-[3]" />
@@ -136,8 +136,8 @@ function SidebarAuthAction({
           to="/login"
           className={({ isActive }) =>
             cn(
-              "flex h-[3.25rem] items-center gap-5 rounded-2xl border-2 border-transparent px-5 text-base font-black uppercase text-slate-500 transition hover:bg-sky-50 hover:text-sky-600",
-              isActive && "border-sky-300 bg-sky-100 text-sky-500"
+              "flex h-[3.25rem] items-center gap-5 rounded-2xl border-2 border-transparent px-5 text-base font-black uppercase text-slate-500 transition hover:bg-primary/10 hover:text-primary",
+              isActive && "border-primary/40 bg-primary/10 text-primary"
             )
           }
         >
@@ -222,7 +222,7 @@ function MobileSidebarNav({
             className={({ isActive }) =>
               cn(
                 "flex h-11 shrink-0 items-center gap-2 rounded-xl border-2 border-transparent px-3 text-sm font-black uppercase text-slate-500",
-                isActive && "border-sky-300 bg-sky-100 text-sky-500"
+                isActive && "border-primary/40 bg-primary/10 text-primary"
               )
             }
           >

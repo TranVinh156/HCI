@@ -82,7 +82,7 @@ export default function LearnRoute() {
               <OceanProgress value={completion} label="Overall progress" />
               <div className="flex flex-col gap-3 rounded-[1.5rem] p-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <p className="text-sm font-bold text-cyan-700">Next lesson</p>
+                  <p className="text-sm font-bold text-primary">Next lesson</p>
                   <h2 className="text-2xl font-black">{nextLesson.title}</h2>
                 </div>
                 <Button asChild className="h-12 rounded-2xl text-base font-black">
@@ -106,7 +106,7 @@ export default function LearnRoute() {
                     to={action.to}
                     className="rounded-[1.5rem] bg-white p-5 ring-1 ring-slate-200 transition hover:-translate-y-1"
                   >
-                    <div className="mb-4 grid size-12 place-items-center rounded-2xl text-cyan-800">
+                    <div className="mb-4 grid size-12 place-items-center rounded-2xl text-primary">
                       <Icon className="size-6" />
                     </div>
                     <h3 className="text-xl font-black">{action.title}</h3>
@@ -122,7 +122,7 @@ export default function LearnRoute() {
           <section>
             <div className="mb-3 flex items-center justify-between">
               <h2 className="text-2xl font-black">Topics</h2>
-              <Link className="text-sm font-black text-cyan-700" to="/topics">
+              <Link className="text-sm font-black text-primary" to="/topics">
                 View all
               </Link>
             </div>
@@ -133,7 +133,7 @@ export default function LearnRoute() {
                   to={`/path/${topic.id}`}
                   className="rounded-[1.5rem] bg-white p-5 ring-1 ring-slate-200 transition hover:-translate-y-1"
                 >
-                  <p className="text-sm font-black uppercase text-cyan-700">
+                  <p className="text-sm font-black uppercase text-primary">
                     {topic.lessonIds.length} lessons
                   </p>
                   <h3 className="mt-2 text-2xl font-black">{topic.title}</h3>

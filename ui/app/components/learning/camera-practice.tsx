@@ -100,7 +100,7 @@ export function CameraPractice({ lesson }: CameraPracticeProps) {
     idle: {
       title: "Mirror practice",
       text: `Try "${lesson.phrase}" while looking at yourself in the mirror view.`,
-      className: "text-cyan-800",
+      className: "text-primary",
       icon: Sparkles,
     },
     checking: {
@@ -147,7 +147,7 @@ export function CameraPractice({ lesson }: CameraPracticeProps) {
               sample.
             </CardDescription>
           </div>
-          <Badge className="h-8 bg-cyan-100 px-3 text-cyan-800">
+          <Badge className="h-8 bg-primary/10 px-3 text-primary">
             Prototype feedback
           </Badge>
         </div>
@@ -189,7 +189,7 @@ export function CameraPractice({ lesson }: CameraPracticeProps) {
             </div>
 
             <div className="rounded-[1.5rem] p-4">
-              <p className="mb-2 text-sm font-black uppercase text-cyan-700">
+              <p className="mb-2 text-sm font-black uppercase text-primary">
                 Practice checklist
               </p>
               <ul className="space-y-2">
@@ -243,7 +243,7 @@ export function CameraPractice({ lesson }: CameraPracticeProps) {
             type="button"
             variant="outline"
             onClick={() => setFeedback("idle")}
-            className="h-12 rounded-2xl border-cyan-200 font-black text-cyan-800"
+            className="h-12 rounded-2xl border-primary/30 font-black text-primary"
           >
             <RotateCcw className="size-5" />
             Try again

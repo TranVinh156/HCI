@@ -75,7 +75,7 @@ export const topics: Topic[] = [
     title: "Family",
     description: "Parents, siblings, and warm everyday greetings.",
     icon: "Home",
-    color: "bg-sky-100 text-sky-800",
+    color: "bg-primary/10 text-primary",
     lessonIds: ["hello-family", "mother", "father"],
   },
   {
@@ -83,7 +83,7 @@ export const topics: Topic[] = [
     title: "Colors",
     description: "Recognize colors through visuals and signs.",
     icon: "Palette",
-    color: "text-cyan-800",
+    color: "text-primary",
     lessonIds: ["blue", "yellow", "red"],
   },
   {

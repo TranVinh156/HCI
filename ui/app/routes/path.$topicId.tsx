@@ -27,7 +27,7 @@ export default function PathRoute() {
         <div className="min-w-0 flex-1">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div className="min-w-0">
-              <p className="text-sm font-black uppercase text-cyan-700">
+              <p className="text-sm font-black uppercase text-primary">
                 Learning path
               </p>
               <h1 className="text-4xl font-black">{topic.title}</h1>

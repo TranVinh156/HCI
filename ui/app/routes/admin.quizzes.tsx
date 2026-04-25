@@ -14,7 +14,7 @@ export default function AdminQuizzesRoute() {
         <div className="grid gap-4 md:grid-cols-3">
           <Card className="rounded-xl border-slate-200 py-0">
             <CardContent className="p-5">
-              <ClipboardCheck className="size-7 text-cyan-700" />
+              <ClipboardCheck className="size-7 text-primary" />
               <p className="mt-3 text-3xl font-black">{quizzes.length}</p>
               <p className="text-sm font-bold text-slate-500">Questions</p>
             </CardContent>
@@ -64,7 +64,7 @@ export default function AdminQuizzesRoute() {
               key: "type",
               header: "Type",
               render: (item) => (
-                <Badge className="bg-cyan-100 text-cyan-800">{item.type}</Badge>
+                <Badge className="bg-primary/10 text-primary">{item.type}</Badge>
               ),
             },
             { key: "answer", header: "Answer", render: (item) => item.answer },

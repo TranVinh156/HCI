@@ -99,10 +99,10 @@ export default function AdminRoute() {
               <Card key={item.to} className="rounded-xl border-slate-200 py-0">
                 <CardContent className="flex h-full flex-col gap-4 p-5">
                   <div className="flex items-start justify-between gap-3">
-                    <div className="grid size-11 place-items-center rounded-xl text-cyan-700">
+                    <div className="grid size-11 place-items-center rounded-xl text-primary">
                       <Icon className="size-5" />
                     </div>
-                    <Badge className="bg-sky-100 text-sky-800">Route ready</Badge>
+                    <Badge className="bg-primary/10 text-primary">Route ready</Badge>
                   </div>
                   <div className="grow">
                     <h2 className="text-lg font-black">{item.title}</h2>

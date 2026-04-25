@@ -28,7 +28,7 @@ export default function RegisterRoute() {
     <main className="min-h-screen px-4 py-8 text-slate-900">
       <div className="mx-auto flex min-h-[calc(100vh-4rem)] max-w-md flex-col justify-center">
         <Link to="/" className="mx-auto mb-6 flex items-center gap-2">
-          <div className="grid size-11 place-items-center rounded-2xl bg-sky-600 text-lg font-black text-white">
+          <div className="grid size-11 place-items-center rounded-2xl bg-primary text-lg font-black text-white">
             SO
           </div>
           <span className="text-xl font-black">SignOcean</span>
@@ -101,7 +101,7 @@ export default function RegisterRoute() {
 
             <div className="mt-5 text-center text-sm font-bold">
               Already have a demo account?{" "}
-              <Link className="text-cyan-700 hover:underline" to="/login">
+              <Link className="text-primary hover:underline" to="/login">
                 Log in
               </Link>
             </div>

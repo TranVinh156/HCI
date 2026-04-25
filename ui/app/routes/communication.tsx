@@ -39,12 +39,12 @@ export default function CommunicationRoute() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="rounded-2xl p-4">
-                <p className="text-xs font-black uppercase text-cyan-700">
+                <p className="text-xs font-black uppercase text-primary">
                   Sentence parts
                 </p>
                 <div className="mt-2 flex flex-wrap gap-2">
                   {lesson.phrase.split(" ").map((word) => (
-                    <Badge key={word} className="bg-white text-cyan-800">
+                    <Badge key={word} className="bg-white text-primary">
                       {word}
                     </Badge>
                   ))}

@@ -31,7 +31,7 @@ export default function MascotRoute() {
       <div className="grid gap-4 lg:grid-cols-[0.8fr_1.2fr]">
         <Card className="rounded-[2rem] border-slate-200 bg-white">
           <CardContent className="p-6 text-center">
-            <div className="mx-auto grid size-28 place-items-center rounded-full bg-sky-500 text-2xl font-black text-white">
+            <div className="mx-auto grid size-28 place-items-center rounded-full bg-primary/100 text-2xl font-black text-white">
               ^_^
             </div>
             <h2 className="mt-4 text-2xl font-black">Sami</h2>
@@ -39,7 +39,7 @@ export default function MascotRoute() {
               Basic virtual buddy for encouragement and guided practice.
             </p>
             <div className="mt-5 flex flex-wrap justify-center gap-2">
-              <Badge className="bg-cyan-100 text-cyan-800">Greeting</Badge>
+              <Badge className="bg-primary/10 text-primary">Greeting</Badge>
               <Badge className="bg-emerald-100 text-emerald-800">Feedback</Badge>
               <Badge className="bg-amber-100 text-amber-800">Rewards</Badge>
             </div>
@@ -57,7 +57,7 @@ export default function MascotRoute() {
               >
                 <CardContent className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex items-start gap-4">
-                    <div className="grid size-12 place-items-center rounded-2xl text-cyan-700">
+                    <div className="grid size-12 place-items-center rounded-2xl text-primary">
                       <MessageCircle className="size-6" />
                     </div>
                     <div>

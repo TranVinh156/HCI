@@ -25,7 +25,7 @@ export default function LessonRoute() {
     <StudentShell>
       <div className="mb-5 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <p className="text-sm font-black uppercase text-cyan-700">
+          <p className="text-sm font-black uppercase text-primary">
             {topic?.title}
           </p>
           <h1 className="text-4xl font-black">{lesson.title}</h1>

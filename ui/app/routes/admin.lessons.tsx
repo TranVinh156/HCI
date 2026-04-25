@@ -66,7 +66,7 @@ export default function AdminLessonsRoute() {
               key: "type",
               header: "Type",
               render: (item) => (
-                <Badge className="bg-cyan-100 text-cyan-800">
+                <Badge className="bg-primary/10 text-primary">
                   {item.type === "communication" ? "Communication" : "Vocabulary"}
                 </Badge>
               ),

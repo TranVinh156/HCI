@@ -68,7 +68,7 @@ export default function AdminStudentsRoute() {
           </Card>
           <Card className="rounded-xl border-slate-200 py-0">
             <CardContent className="p-5">
-              <Mail className="size-7 text-cyan-600" />
+              <Mail className="size-7 text-primary" />
               <p className="mt-3 text-3xl font-black">3</p>
               <p className="text-sm font-bold text-slate-500">Guardian links</p>
             </CardContent>

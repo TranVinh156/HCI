@@ -37,7 +37,7 @@ export function RewardSummary({ progress, correct, total }: RewardSummaryProps) 
       </div>
       <div className="rounded-[1.5rem] bg-white p-5 ring-1 ring-slate-200 sm:col-span-3">
         <div className="mb-3 flex items-center gap-2 text-lg font-black text-slate-900">
-          <Award className="size-5 text-cyan-600" />
+          <Award className="size-5 text-primary" />
           Badges
         </div>
         <div className="flex flex-wrap gap-2">

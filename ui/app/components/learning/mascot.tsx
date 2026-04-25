@@ -18,11 +18,11 @@ export function Mascot({ message, mood = "hello", compact }: MascotProps) {
         compact ? "max-w-md" : "max-w-2xl"
       )}
     >
-      <div className="grid size-16 shrink-0 place-items-center rounded-full bg-sky-500 text-lg font-black text-white">
+      <div className="grid size-16 shrink-0 place-items-center rounded-full bg-primary text-lg font-black text-white">
         {face}
       </div>
       <div className="min-w-0">
-        <div className="flex items-center gap-1 text-xs font-bold uppercase tracking-wide text-cyan-700">
+        <div className="flex items-center gap-1 text-xs font-bold uppercase tracking-wide text-primary">
           <Sparkles className="size-3.5" />
           Sami
         </div>

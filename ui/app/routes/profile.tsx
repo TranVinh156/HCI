@@ -41,7 +41,7 @@ export default function ProfileRoute() {
     <StudentShell>
       <div className="grid gap-6 lg:grid-cols-[0.75fr_1.25fr]">
         <aside className="rounded-[2rem] bg-white p-6 text-center ring-1 ring-slate-200">
-          <Avatar className="mx-auto size-28 bg-sky-600 text-white">
+          <Avatar className="mx-auto size-28 bg-primary text-white">
             <AvatarFallback className="bg-transparent text-5xl font-black text-white">
               {profile?.avatar}
             </AvatarFallback>
@@ -68,7 +68,7 @@ export default function ProfileRoute() {
                   key={item.label}
                   className="rounded-[1.5rem] bg-white p-5 ring-1 ring-slate-200"
                 >
-                  <Icon className="size-7 text-cyan-700" />
+                  <Icon className="size-7 text-primary" />
                   <p className="mt-3 text-3xl font-black">{item.value}</p>
                   <p className="text-sm font-bold text-slate-500">{item.label}</p>
                 </div>
@@ -98,7 +98,7 @@ export default function ProfileRoute() {
           </div>
           <div className="rounded-[1.5rem] bg-white p-5 ring-1 ring-slate-200">
             <div className="mb-4 flex items-center gap-2">
-              <Clock className="size-5 text-cyan-700" />
+              <Clock className="size-5 text-primary" />
               <h2 className="text-xl font-black">Learning history</h2>
             </div>
             <div className="space-y-3">
