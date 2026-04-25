@@ -115,7 +115,7 @@ export default function ProfileRoute() {
                     return (
                       <div
                         key={attempt.lessonId}
-                        className="flex flex-col gap-2 rounded-2xl bg-cyan-50 p-4 sm:flex-row sm:items-center sm:justify-between"
+                        className="flex flex-col gap-2 rounded-2xl p-4 sm:flex-row sm:items-center sm:justify-between"
                       >
                         <div>
                           <p className="font-black text-slate-900">

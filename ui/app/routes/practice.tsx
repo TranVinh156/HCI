@@ -52,7 +52,7 @@ export default function PracticeRoute() {
             >
               <CardHeader>
                 <div className="mb-3 flex items-center justify-between gap-3">
-                  <div className="grid size-14 place-items-center rounded-2xl bg-cyan-50 text-3xl">
+                  <div className="grid size-14 place-items-center rounded-2xl text-3xl">
                     {lesson.visual}
                   </div>
                   <Badge

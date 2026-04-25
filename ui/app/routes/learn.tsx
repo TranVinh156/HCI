@@ -71,7 +71,7 @@ export default function LearnRoute() {
     <StudentShell>
       <div className="grid gap-6 lg:grid-cols-[1.3fr_0.7fr]">
         <section className="space-y-5">
-          <div className="rounded-[2rem] bg-sky-600 p-6 text-white shadow-xl shadow-cyan-100">
+          <div className="rounded-[2rem] bg-sky-600 p-6 text-white ">
             <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className="text-sm font-black uppercase text-cyan-100">
@@ -100,7 +100,7 @@ export default function LearnRoute() {
             </CardHeader>
             <CardContent className="space-y-5">
               <OceanProgress value={completion} label="Overall progress" />
-              <div className="flex flex-col gap-3 rounded-[1.5rem] bg-cyan-50 p-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex flex-col gap-3 rounded-[1.5rem] p-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <p className="text-sm font-bold text-cyan-700">Next lesson</p>
                   <h2 className="text-2xl font-black">{nextLesson.title}</h2>
@@ -126,7 +126,7 @@ export default function LearnRoute() {
                     to={action.to}
                     className="rounded-[1.5rem] bg-white p-5 shadow-sm ring-1 ring-cyan-100 transition hover:-translate-y-1"
                   >
-                    <div className="mb-4 grid size-12 place-items-center rounded-2xl bg-cyan-100 text-cyan-800">
+                    <div className="mb-4 grid size-12 place-items-center rounded-2xl text-cyan-800">
                       <Icon className="size-6" />
                     </div>
                     <h3 className="text-xl font-black">{action.title}</h3>

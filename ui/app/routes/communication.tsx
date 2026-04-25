@@ -46,7 +46,7 @@ export default function CommunicationRoute() {
             className="rounded-[2rem] border-cyan-100 bg-white shadow-sm"
           >
             <CardHeader>
-              <div className="mb-3 grid size-16 place-items-center rounded-2xl bg-cyan-50 text-4xl">
+              <div className="mb-3 grid size-16 place-items-center rounded-2xl text-4xl">
                 {lesson.visual}
               </div>
               <CardTitle className="text-2xl font-black">
@@ -57,7 +57,7 @@ export default function CommunicationRoute() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="rounded-2xl bg-cyan-50 p-4">
+              <div className="rounded-2xl p-4">
                 <p className="text-xs font-black uppercase text-cyan-700">
                   Sentence parts
                 </p>

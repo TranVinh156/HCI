@@ -31,7 +31,7 @@ export default function LoginRoute() {
   }
 
   return (
-    <main className="min-h-screen bg-cyan-50 px-4 py-8 text-slate-900">
+    <main className="min-h-screen px-4 py-8 text-slate-900">
       <div className="mx-auto flex min-h-[calc(100vh-4rem)] max-w-md flex-col justify-center">
         <Link to="/" className="mx-auto mb-6 flex items-center gap-2">
           <div className="grid size-11 place-items-center rounded-2xl bg-sky-600 text-lg font-black text-white">

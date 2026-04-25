@@ -72,7 +72,7 @@ export default function QuizRoute() {
           }
         />
         <section className="rounded-[2rem] bg-white p-5 shadow-xl shadow-cyan-100/60">
-          <div className="mb-5 rounded-[1.5rem] bg-cyan-50 p-5 text-center">
+          <div className="mb-5 rounded-[1.5rem] p-5 text-center">
             <p className="text-sm font-black uppercase text-cyan-700">
               {lesson.title}
             </p>

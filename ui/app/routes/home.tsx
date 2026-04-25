@@ -32,7 +32,7 @@ export default function HomeRoute() {
   }
 
   return (
-    <main className="min-h-screen bg-cyan-50 px-4 py-8 text-slate-900">
+    <main className="min-h-screen px-4 py-8 text-slate-900">
       <div className="mx-auto flex min-h-[calc(100vh-4rem)] max-w-5xl flex-col justify-center gap-8">
         <div className="text-center">
           <div className="mx-auto mb-4 grid size-20 place-items-center rounded-[2rem] bg-sky-600 text-2xl font-black text-white shadow-lg shadow-sky-200">

@@ -76,7 +76,7 @@ export default function MascotRoute() {
               >
                 <CardContent className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex items-start gap-4">
-                    <div className="grid size-12 place-items-center rounded-2xl bg-cyan-50 text-cyan-700">
+                    <div className="grid size-12 place-items-center rounded-2xl text-cyan-700">
                       <MessageCircle className="size-6" />
                     </div>
                     <div>

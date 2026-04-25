@@ -83,7 +83,7 @@ export const topics: Topic[] = [
     title: "Colors",
     description: "Recognize colors through visuals and signs.",
     icon: "Palette",
-    color: "bg-cyan-100 text-cyan-800",
+    color: "text-cyan-800",
     lessonIds: ["blue", "yellow", "red"],
   },
   {

@@ -19,7 +19,7 @@ export function LessonCard({ lesson }: LessonCardProps) {
   return (
     <Card className="rounded-[2rem] border-cyan-100 bg-white/95 shadow-xl shadow-cyan-100/70">
       <CardHeader className="text-center">
-        <div className="mx-auto mb-3 grid size-32 place-items-center rounded-[2rem] bg-cyan-50 text-7xl ring-1 ring-cyan-100">
+        <div className="mx-auto mb-3 grid size-32 place-items-center rounded-[2rem] text-7xl ring-1 ring-cyan-100">
           {lesson.visual}
         </div>
         <CardTitle className="text-3xl font-black text-slate-900">
@@ -30,7 +30,7 @@ export function LessonCard({ lesson }: LessonCardProps) {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-5">
-        <div className="rounded-[1.5rem] border border-sky-100 bg-cyan-50 p-5 text-center">
+        <div className="rounded-[1.5rem] border border-sky-100 p-5 text-center">
           <div className="mx-auto mb-3 grid size-16 place-items-center rounded-full bg-white text-sky-700 shadow-sm">
             <Video className="size-8" />
           </div>

@@ -18,7 +18,7 @@ export function StatCard({ label, value, detail, icon: Icon }: StatCardProps) {
           <p className="text-sm font-bold text-slate-500">{label}</p>
           <p className="mt-2 text-3xl font-black text-slate-900">{value}</p>
         </div>
-        <div className="grid size-12 place-items-center rounded-xl bg-cyan-50 text-cyan-700">
+        <div className="grid size-12 place-items-center rounded-xl text-cyan-700">
           <Icon className="size-6" />
         </div>
       </div>

@@ -45,7 +45,7 @@ export function StudentShell({ children }: StudentShellProps) {
   }
 
   return (
-    <div className="min-h-screen bg-cyan-50 text-slate-900">
+    <div className="min-h-screen text-slate-900">
       <header className="sticky top-0 z-20 border-b border-cyan-100 bg-white/85 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
           <Link to="/learn" className="flex items-center gap-2">
@@ -56,7 +56,7 @@ export function StudentShell({ children }: StudentShellProps) {
               SignOcean
             </span>
           </Link>
-          <nav className="flex items-center gap-1 rounded-2xl bg-cyan-50 p-1">
+          <nav className="flex items-center gap-1 rounded-2xl p-1">
             {navItems.map((item) => {
               const Icon = item.icon;
               return (

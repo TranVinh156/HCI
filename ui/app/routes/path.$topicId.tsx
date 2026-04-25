@@ -46,7 +46,7 @@ export default function PathRoute() {
         </div>
         <Mascot compact mood="coach" message="Take it one node at a time. The next lesson unlocks after this one." />
       </div>
-      <div className="relative mx-auto max-w-2xl rounded-[2rem] bg-cyan-50/70 p-5 sm:p-6">
+      <div className="relative mx-auto max-w-2xl rounded-[2rem] p-5 sm:p-6">
         {lessons.map((lesson, index) => (
           <PathNode
             key={lesson.id}

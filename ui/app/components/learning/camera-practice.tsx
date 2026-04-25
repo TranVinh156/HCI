@@ -100,7 +100,7 @@ export function CameraPractice({ lesson }: CameraPracticeProps) {
     idle: {
       title: "Mirror practice",
       text: `Try "${lesson.phrase}" while looking at yourself in the mirror view.`,
-      className: "bg-cyan-50 text-cyan-800",
+      className: "text-cyan-800",
       icon: Sparkles,
     },
     checking: {
@@ -188,7 +188,7 @@ export function CameraPractice({ lesson }: CameraPracticeProps) {
               </div>
             </div>
 
-            <div className="rounded-[1.5rem] bg-cyan-50 p-4">
+            <div className="rounded-[1.5rem] p-4">
               <p className="mb-2 text-sm font-black uppercase text-cyan-700">
                 Practice checklist
               </p>
