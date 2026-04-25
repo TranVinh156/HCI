@@ -158,7 +158,7 @@ export default function LearnRoute() {
                 key={stat.label}
                 className="flex items-center gap-4 rounded-[1.5rem] bg-white p-5 ring-1 ring-slate-200"
               >
-                <div className="grid size-12 place-items-center rounded-2xl bg-amber-100 text-amber-700">
+                <div className="grid size-12 place-items-center rounded-2xl text-emerald-500 bg-emerald-50">
                   <Icon className="size-6" />
                 </div>
                 <div>
