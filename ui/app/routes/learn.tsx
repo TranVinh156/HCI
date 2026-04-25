@@ -11,7 +11,6 @@ import {
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
 
-import { Mascot } from "~/components/learning/mascot";
 import { OceanProgress } from "~/components/learning/ocean-progress";
 import { StudentShell } from "~/components/learning/student-shell";
 import { Button } from "~/components/ui/button";
@@ -59,7 +58,6 @@ export default function LearnRoute() {
     setProgress(readProgress());
   }, []);
 
-  const profile = getSelectedProfile(progress);
   const completion = Math.round(
     (progress.completedLessonIds.length / lessons.length) * 100
   );
@@ -71,25 +69,7 @@ export default function LearnRoute() {
     <StudentShell>
       <div className="grid gap-6 lg:grid-cols-[1.3fr_0.7fr]">
         <section className="space-y-5">
-          <div className="rounded-[2rem] bg-sky-600 p-6 text-white ">
-            <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <p className="text-sm font-black uppercase text-cyan-100">
-                  Hello {profile?.name}
-                </p>
-                <h1 className="mt-2 text-4xl font-black">
-                  Ready to learn a new sign?
-                </h1>
-              </div>
-              <Mascot
-                compact
-                mood="hello"
-                message="I will learn with you one small lesson at a time."
-              />
-            </div>
-          </div>
-
-          <Card className="rounded-[2rem] bg-white shadow-sm">
+          <Card className="rounded-[2rem] bg-white">
             <CardHeader>
               <CardTitle className="text-2xl font-black">
                 Continue learning
@@ -124,7 +104,7 @@ export default function LearnRoute() {
                   <Link
                     key={action.to}
                     to={action.to}
-                    className="rounded-[1.5rem] bg-white p-5 shadow-sm ring-1 ring-cyan-100 transition hover:-translate-y-1"
+                    className="rounded-[1.5rem] bg-white p-5 ring-1 ring-slate-200 transition hover:-translate-y-1"
                   >
                     <div className="mb-4 grid size-12 place-items-center rounded-2xl text-cyan-800">
                       <Icon className="size-6" />
@@ -151,7 +131,7 @@ export default function LearnRoute() {
                 <Link
                   key={topic.id}
                   to={`/path/${topic.id}`}
-                  className="rounded-[1.5rem] bg-white p-5 shadow-sm ring-1 ring-cyan-100 transition hover:-translate-y-1"
+                  className="rounded-[1.5rem] bg-white p-5 ring-1 ring-slate-200 transition hover:-translate-y-1"
                 >
                   <p className="text-sm font-black uppercase text-cyan-700">
                     {topic.lessonIds.length} lessons
@@ -176,7 +156,7 @@ export default function LearnRoute() {
             return (
               <div
                 key={stat.label}
-                className="flex items-center gap-4 rounded-[1.5rem] bg-white p-5 shadow-sm ring-1 ring-cyan-100"
+                className="flex items-center gap-4 rounded-[1.5rem] bg-white p-5 ring-1 ring-slate-200"
               >
                 <div className="grid size-12 place-items-center rounded-2xl bg-amber-100 text-amber-700">
                   <Icon className="size-6" />

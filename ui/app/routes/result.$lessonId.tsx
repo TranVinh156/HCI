@@ -34,8 +34,8 @@ export default function ResultRoute() {
           mood="success"
           message={`You completed "${lesson.title}". Here is your reward!`}
         />
-        <div className="rounded-[2rem] p-8 shadow-xl shadow-cyan-100">
-          <div className="mx-auto grid size-28 place-items-center rounded-full bg-white text-6xl shadow-sm">
+        <div className="rounded-[2rem] p-8">
+          <div className="mx-auto grid size-28 place-items-center rounded-full bg-white text-6xl">
             🎉
           </div>
           <h1 className="mt-5 text-4xl font-black">Wonderful!</h1>

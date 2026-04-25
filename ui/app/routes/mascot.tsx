@@ -1,7 +1,6 @@
 import { ArrowRight, MessageCircle, Sparkles } from "lucide-react";
 import { Link } from "react-router";
 
-import { Mascot } from "~/components/learning/mascot";
 import { StudentShell } from "~/components/learning/student-shell";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
@@ -29,26 +28,8 @@ const prompts = [
 export default function MascotRoute() {
   return (
     <StudentShell>
-      <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-        <div>
-          <p className="text-sm font-black uppercase text-cyan-700">
-            Virtual character
-          </p>
-          <h1 className="text-4xl font-black">Talk with Sami</h1>
-          <p className="mt-2 max-w-2xl font-semibold text-slate-600">
-            Basic mascot interactions for greetings, coaching, and simple
-            feedback.
-          </p>
-        </div>
-        <Mascot
-          compact
-          mood="hello"
-          message="I can guide the lesson, ask small questions, and celebrate wins."
-        />
-      </div>
-
       <div className="grid gap-4 lg:grid-cols-[0.8fr_1.2fr]">
-        <Card className="rounded-[2rem] border-cyan-100 bg-white shadow-sm">
+        <Card className="rounded-[2rem] border-slate-200 bg-white">
           <CardContent className="p-6 text-center">
             <div className="mx-auto grid size-28 place-items-center rounded-full bg-sky-500 text-2xl font-black text-white">
               ^_^
@@ -72,7 +53,7 @@ export default function MascotRoute() {
             return (
               <Card
                 key={prompt.lessonId}
-                className="rounded-[1.5rem] border-cyan-100 bg-white shadow-sm"
+                className="rounded-[1.5rem] border-slate-200 bg-white"
               >
                 <CardContent className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex items-start gap-4">

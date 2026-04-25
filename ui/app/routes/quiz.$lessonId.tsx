@@ -71,7 +71,7 @@ export default function QuizRoute() {
               : "Choose the answer that matches the sign you just learned."
           }
         />
-        <section className="rounded-[2rem] bg-white p-5 shadow-xl shadow-cyan-100/60">
+        <section className="rounded-[2rem] bg-white p-5">
           <div className="mb-5 rounded-[1.5rem] p-5 text-center">
             <p className="text-sm font-black uppercase text-cyan-700">
               {lesson.title}

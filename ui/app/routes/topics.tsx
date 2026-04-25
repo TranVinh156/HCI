@@ -8,17 +8,11 @@ import { topics } from "~/lib/learning-data";
 export default function TopicsRoute() {
   return (
     <StudentShell>
-      <div className="mb-6">
-        <p className="text-sm font-black uppercase text-cyan-700">
-          Choose a topic
-        </p>
-        <h1 className="text-4xl font-black">What should we learn today?</h1>
-      </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {topics.map((topic) => (
           <article
             key={topic.id}
-            className="rounded-[2rem] bg-white p-5 shadow-sm ring-1 ring-cyan-100"
+            className="rounded-[2rem] bg-white p-5 ring-1 ring-slate-200"
           >
             <div className={`mb-5 rounded-[1.5rem] p-4 ${topic.color}`}>
               <p className="text-sm font-black uppercase">

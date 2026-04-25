@@ -135,7 +135,7 @@ export function CameraPractice({ lesson }: CameraPracticeProps) {
   const FeedbackIcon = currentFeedback.icon;
 
   return (
-    <Card className="rounded-[2rem] border-cyan-100 bg-white/95 shadow-xl shadow-cyan-100/60">
+    <Card className="rounded-[2rem] border-slate-200 bg-white/95">
       <CardHeader>
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
@@ -154,7 +154,7 @@ export function CameraPractice({ lesson }: CameraPracticeProps) {
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
-          <div className="relative aspect-[4/3] overflow-hidden rounded-[1.5rem] border border-cyan-100 bg-slate-950">
+          <div className="relative aspect-[4/3] overflow-hidden rounded-[1.5rem] border border-slate-200 bg-slate-950">
             <video
               ref={videoRef}
               autoPlay

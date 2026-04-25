@@ -96,7 +96,7 @@ export default function AdminRoute() {
           {adminShortcuts.map((item) => {
             const Icon = item.icon;
             return (
-              <Card key={item.to} className="rounded-xl border-sky-100 py-0 shadow-sm">
+              <Card key={item.to} className="rounded-xl border-slate-200 py-0">
                 <CardContent className="flex h-full flex-col gap-4 p-5">
                   <div className="flex items-start justify-between gap-3">
                     <div className="grid size-11 place-items-center rounded-xl text-cyan-700">
@@ -143,7 +143,7 @@ export default function AdminRoute() {
           />
         </div>
 
-        <section className="rounded-xl border border-sky-100 bg-white p-4 shadow-sm">
+        <section className="rounded-xl border border-slate-200 bg-white p-4">
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div>
               <h2 className="text-lg font-black">Search content</h2>

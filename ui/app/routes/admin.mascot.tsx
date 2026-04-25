@@ -37,7 +37,7 @@ export default function AdminMascotRoute() {
   return (
     <AdminShell title="Mascot" subtitle="Virtual coach scripts">
       <div className="space-y-5">
-        <Card className="rounded-xl border-sky-100 py-0 shadow-sm">
+        <Card className="rounded-xl border-slate-200 py-0">
           <CardContent className="flex flex-col gap-4 p-5 md:flex-row md:items-center md:justify-between">
             <div className="flex items-center gap-4">
               <div className="grid size-14 place-items-center rounded-full bg-sky-600 text-lg font-black text-white">
@@ -58,21 +58,21 @@ export default function AdminMascotRoute() {
         </Card>
 
         <div className="grid gap-4 md:grid-cols-3">
-          <Card className="rounded-xl border-sky-100 py-0 shadow-sm">
+          <Card className="rounded-xl border-slate-200 py-0">
             <CardContent className="p-5">
               <Sparkles className="size-7 text-cyan-700" />
               <p className="mt-3 text-3xl font-black">4</p>
               <p className="text-sm font-bold text-slate-500">Script moments</p>
             </CardContent>
           </Card>
-          <Card className="rounded-xl border-sky-100 py-0 shadow-sm">
+          <Card className="rounded-xl border-slate-200 py-0">
             <CardContent className="p-5">
               <MessageSquare className="size-7 text-emerald-600" />
               <p className="mt-3 text-3xl font-black">3</p>
               <p className="text-sm font-bold text-slate-500">Moods</p>
             </CardContent>
           </Card>
-          <Card className="rounded-xl border-sky-100 py-0 shadow-sm">
+          <Card className="rounded-xl border-slate-200 py-0">
             <CardContent className="p-5">
               <Play className="size-7 text-amber-600" />
               <p className="mt-3 text-3xl font-black">1</p>

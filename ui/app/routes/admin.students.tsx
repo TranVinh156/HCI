@@ -32,7 +32,7 @@ export default function AdminStudentsRoute() {
   return (
     <AdminShell title="Students" subtitle="Profiles and progress">
       <div className="space-y-5">
-        <Card className="rounded-xl border-sky-100 py-0 shadow-sm">
+        <Card className="rounded-xl border-slate-200 py-0">
           <CardContent className="flex flex-col gap-3 p-4 md:flex-row md:items-center md:justify-between">
             <div>
               <h2 className="text-lg font-black">Student roster</h2>
@@ -59,21 +59,21 @@ export default function AdminStudentsRoute() {
         </Card>
 
         <div className="grid gap-4 md:grid-cols-3">
-          <Card className="rounded-xl border-sky-100 py-0 shadow-sm">
+          <Card className="rounded-xl border-slate-200 py-0">
             <CardContent className="p-5">
               <ShieldCheck className="size-7 text-emerald-600" />
               <p className="mt-3 text-3xl font-black">2</p>
               <p className="text-sm font-bold text-slate-500">On track</p>
             </CardContent>
           </Card>
-          <Card className="rounded-xl border-sky-100 py-0 shadow-sm">
+          <Card className="rounded-xl border-slate-200 py-0">
             <CardContent className="p-5">
               <Mail className="size-7 text-cyan-600" />
               <p className="mt-3 text-3xl font-black">3</p>
               <p className="text-sm font-bold text-slate-500">Guardian links</p>
             </CardContent>
           </Card>
-          <Card className="rounded-xl border-sky-100 py-0 shadow-sm">
+          <Card className="rounded-xl border-slate-200 py-0">
             <CardContent className="p-5">
               <Search className="size-7 text-amber-600" />
               <p className="mt-3 text-3xl font-black">1</p>

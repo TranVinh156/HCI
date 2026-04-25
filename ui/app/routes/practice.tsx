@@ -1,7 +1,6 @@
 import { ArrowRight, ClipboardCheck, RotateCcw } from "lucide-react";
 import { Link } from "react-router";
 
-import { Mascot } from "~/components/learning/mascot";
 import { StudentShell } from "~/components/learning/student-shell";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
@@ -24,23 +23,6 @@ export default function PracticeRoute() {
 
   return (
     <StudentShell>
-      <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-        <div>
-          <p className="text-sm font-black uppercase text-cyan-700">
-            Practice
-          </p>
-          <h1 className="text-4xl font-black">Quick sign checks</h1>
-          <p className="mt-2 max-w-2xl font-semibold text-slate-600">
-            Choose a lesson quiz, get instant feedback, and earn stars.
-          </p>
-        </div>
-        <Mascot
-          compact
-          mood="coach"
-          message="Short quizzes help us remember signs after each topic."
-        />
-      </div>
-
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {practiceLessons.map((lesson) => {
           const completed = progress.completedLessonIds.includes(lesson.id);
@@ -48,7 +30,7 @@ export default function PracticeRoute() {
           return (
             <Card
               key={lesson.id}
-              className="rounded-[2rem] border-cyan-100 bg-white shadow-sm"
+              className="rounded-[2rem] border-slate-200 bg-white"
             >
               <CardHeader>
                 <div className="mb-3 flex items-center justify-between gap-3">

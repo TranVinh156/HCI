@@ -35,7 +35,7 @@ export default function HomeRoute() {
     <main className="min-h-screen px-4 py-8 text-slate-900">
       <div className="mx-auto flex min-h-[calc(100vh-4rem)] max-w-5xl flex-col justify-center gap-8">
         <div className="text-center">
-          <div className="mx-auto mb-4 grid size-20 place-items-center rounded-[2rem] bg-sky-600 text-2xl font-black text-white shadow-lg shadow-sky-200">
+          <div className="mx-auto mb-4 grid size-20 place-items-center rounded-[2rem] bg-sky-600 text-2xl font-black text-white">
             SO
           </div>
           <h1 className="text-4xl font-black sm:text-5xl">SignOcean</h1>
@@ -50,7 +50,7 @@ export default function HomeRoute() {
           {profiles.map((profile) => (
             <Card
               key={profile.id}
-              className={`rounded-[2rem] bg-white shadow-sm ${
+              className={`rounded-[2rem] bg-white ${
                 selectedId === profile.id ? "ring-2 ring-sky-500" : ""
               }`}
             >

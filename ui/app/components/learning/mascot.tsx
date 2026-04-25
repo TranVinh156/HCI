@@ -14,11 +14,11 @@ export function Mascot({ message, mood = "hello", compact }: MascotProps) {
   return (
     <div
       className={cn(
-        "flex items-center gap-3 rounded-[2rem] border border-cyan-100 bg-white/90 p-3 shadow-sm",
+        "flex items-center gap-3 rounded-[2rem] border border-slate-200 bg-white/90 p-3",
         compact ? "max-w-md" : "max-w-2xl"
       )}
     >
-      <div className="grid size-16 shrink-0 place-items-center rounded-full bg-sky-500 text-lg font-black text-white shadow-inner">
+      <div className="grid size-16 shrink-0 place-items-center rounded-full bg-sky-500 text-lg font-black text-white">
         {face}
       </div>
       <div className="min-w-0">

@@ -17,7 +17,7 @@ export default function AdminTopicsRoute() {
   return (
     <AdminShell title="Topics" subtitle="Curriculum structure">
       <div className="space-y-5">
-        <Card className="rounded-xl border-sky-100 py-0 shadow-sm">
+        <Card className="rounded-xl border-slate-200 py-0">
           <CardContent className="flex flex-col gap-3 p-4 md:flex-row md:items-center md:justify-between">
             <div>
               <h2 className="text-lg font-black">Learning topics</h2>

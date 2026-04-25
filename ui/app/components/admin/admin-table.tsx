@@ -21,8 +21,8 @@ type AdminTableProps<T> = {
 
 export function AdminTable<T>({ title, columns, data }: AdminTableProps<T>) {
   return (
-    <section className="rounded-xl border border-sky-100 bg-white shadow-sm">
-      <div className="border-b border-sky-100 p-4">
+    <section className="rounded-xl border border-slate-200 bg-white">
+      <div className="border-b border-slate-200 p-4">
         <h2 className="text-lg font-black text-slate-900">{title}</h2>
       </div>
       <Table className="min-w-[42rem]">

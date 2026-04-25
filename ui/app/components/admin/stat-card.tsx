@@ -11,7 +11,7 @@ type StatCardProps = {
 
 export function StatCard({ label, value, detail, icon: Icon }: StatCardProps) {
   return (
-    <Card className="rounded-xl border-sky-100 bg-white py-0 shadow-sm">
+    <Card className="rounded-xl border-slate-200 bg-white py-0">
       <CardContent className="p-5">
       <div className="flex items-center justify-between gap-3">
         <div>

@@ -34,7 +34,7 @@ export default function RegisterRoute() {
           <span className="text-xl font-black">SignOcean</span>
         </Link>
 
-        <Card className="rounded-[2rem] border-cyan-100 bg-white/95 shadow-xl shadow-cyan-100/70">
+        <Card className="rounded-[2rem] border-slate-200 bg-white/95">
           <CardHeader className="text-center">
             <Badge className="mx-auto mb-2 h-8 bg-emerald-100 px-3 text-emerald-800">
               Demo register

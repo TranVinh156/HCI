@@ -40,7 +40,7 @@ export default function ProfileRoute() {
   return (
     <StudentShell>
       <div className="grid gap-6 lg:grid-cols-[0.75fr_1.25fr]">
-        <aside className="rounded-[2rem] bg-white p-6 text-center shadow-sm ring-1 ring-cyan-100">
+        <aside className="rounded-[2rem] bg-white p-6 text-center ring-1 ring-slate-200">
           <Avatar className="mx-auto size-28 bg-sky-600 text-white">
             <AvatarFallback className="bg-transparent text-5xl font-black text-white">
               {profile?.avatar}
@@ -66,7 +66,7 @@ export default function ProfileRoute() {
               return (
                 <div
                   key={item.label}
-                  className="rounded-[1.5rem] bg-white p-5 shadow-sm ring-1 ring-cyan-100"
+                  className="rounded-[1.5rem] bg-white p-5 ring-1 ring-slate-200"
                 >
                   <Icon className="size-7 text-cyan-700" />
                   <p className="mt-3 text-3xl font-black">{item.value}</p>
@@ -75,7 +75,7 @@ export default function ProfileRoute() {
               );
             })}
           </div>
-          <div className="rounded-[1.5rem] bg-white p-5 shadow-sm ring-1 ring-cyan-100">
+          <div className="rounded-[1.5rem] bg-white p-5 ring-1 ring-slate-200">
             <div className="mb-4 flex items-center gap-2">
               <Award className="size-5 text-amber-500" />
               <h2 className="text-xl font-black">Badges</h2>
@@ -96,7 +96,7 @@ export default function ProfileRoute() {
               ) : null}
             </div>
           </div>
-          <div className="rounded-[1.5rem] bg-white p-5 shadow-sm ring-1 ring-cyan-100">
+          <div className="rounded-[1.5rem] bg-white p-5 ring-1 ring-slate-200">
             <div className="mb-4 flex items-center gap-2">
               <Clock className="size-5 text-cyan-700" />
               <h2 className="text-xl font-black">Learning history</h2>
