@@ -1,13 +1,26 @@
-import { type RouteConfig, index, layout, route } from "@react-router/dev/routes";
+import { index, route, type RouteConfig } from "@react-router/dev/routes";
 
 export default [
-	layout("routes/auth-layout.tsx", [route("login", "routes/login.tsx")]),
-	layout("routes/app-layout.tsx", [
-		index("routes/home.tsx"),
-		route("live", "routes/live.tsx"),
-		route("session-analytics", "routes/session-analytics.tsx"),
-		route("student-profiles", "routes/student-profiles.tsx"),
-		route("ai-configuration", "routes/ai-configuration.tsx"),
-		route("school-overview", "routes/school-overview.tsx"),
-	]),
+  index("routes/home.tsx"),
+  route("login", "routes/login.tsx"),
+  route("register", "routes/register.tsx"),
+  route("learn", "routes/learn.tsx"),
+  route("topics", "routes/topics.tsx"),
+  route("communication", "routes/communication.tsx"),
+  route("practice", "routes/practice.tsx"),
+  route("mascot", "routes/mascot.tsx"),
+  route("path/:topicId", "routes/path.$topicId.tsx"),
+  route("lesson/:lessonId", "routes/lesson.$lessonId.tsx"),
+  route("quiz/:lessonId", "routes/quiz.$lessonId.tsx"),
+  route("result/:lessonId", "routes/result.$lessonId.tsx"),
+  route("profile", "routes/profile.tsx"),
+  route("admin", "routes/admin.tsx"),
+  route("admin/overview", "routes/admin.overview.tsx"),
+  route("admin/content", "routes/admin.content.tsx"),
+  route("admin/students", "routes/admin.students.tsx"),
+  route("admin/topics", "routes/admin.topics.tsx"),
+  route("admin/lessons", "routes/admin.lessons.tsx"),
+  route("admin/quizzes", "routes/admin.quizzes.tsx"),
+  route("admin/reports", "routes/admin.reports.tsx"),
+  route("admin/mascot", "routes/admin.mascot.tsx"),
 ] satisfies RouteConfig;

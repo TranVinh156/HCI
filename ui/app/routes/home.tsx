@@ -1,99 +1,116 @@
-import { Link } from "react-router";
-import { DashboardShell } from "../components/dashboard/DashboardShell";
-import { SectionHeading } from "../components/dashboard/SectionHeading";
-import { ASSIGNED_CLASSES, type ManagedClass } from "../features/classes/data";
-import { Badge } from "../components/ui/badge";
-import { Button } from "../components/ui/button";
-import { Card, CardContent } from "../components/ui/card";
-export function meta() {
-  return [
-    { title: "Live Dashboard - Assigned Classes" },
-    {
-      name: "description",
-      content: "Choose a class first, then open live classroom analytics.",
-    },
-  ];
-}
+import { ArrowRight, LogIn, LogOut, UserPlus } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router";
 
-export default function Home() {
+import { Mascot } from "~/components/learning/mascot";
+import { Avatar, AvatarFallback } from "~/components/ui/avatar";
+import { Button } from "~/components/ui/button";
+import { Card, CardContent } from "~/components/ui/card";
+import { isLoggedIn, logoutMock } from "~/lib/auth";
+import { profiles } from "~/lib/learning-data";
+import { readProgress, selectProfile } from "~/lib/progress";
+
+export default function HomeRoute() {
+  const navigate = useNavigate();
+  const [selectedId, setSelectedId] = useState(profiles[0]?.id ?? "");
+  const [loggedIn, setLoggedIn] = useState(false);
+
+  useEffect(() => {
+    setSelectedId(readProgress().selectedProfileId);
+    setLoggedIn(isLoggedIn());
+  }, []);
+
+  function chooseProfile(profileId: string) {
+    selectProfile(profileId);
+    navigate("/learn");
+  }
+
+  function handleLogout() {
+    logoutMock();
+    setLoggedIn(false);
+    navigate("/login");
+  }
+
   return (
-    <DashboardShell>
-      <Card>
-        <CardContent className="p-5">
-        <SectionHeading
-          title="Assigned Classes"
-          description="Select a class to open the live session and related analytics views."
-          eyebrow={`${ASSIGNED_CLASSES.length} classes`}
-          className="mb-5"
-        />
-
-          <div className="grid grid-cols-1 gap-4 xl:grid-cols-2 2xl:grid-cols-3">
-            {ASSIGNED_CLASSES.map((item) => {
-              const status = item.status;
-
-              return (
-                <Card
-                  key={item.id}
-                  className="relative overflow-hidden border-slate-200 bg-white py-0 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg"
-                >
-                  <CardContent className="relative flex h-full flex-col gap-4 p-5">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="space-y-1">
-                        <h4 className="text-lg font-semibold leading-tight text-slate-900">{item.subject}</h4>
-                      </div>
-
-                      {status === "LIVE" && (
-                        <Badge variant="destructive" className="gap-2 rounded-full px-2 py-3 text-sm font-bold">
-                          <span className="material-symbols-outlined text-xs">live_tv</span>
-                          LIVE
-                        </Badge>
-                      )}
-                    </div>
-
-
-
-                    <div className="grid grid-cols-3 gap-2">
-                      <div className="rounded-xl border border-slate-200 bg-white px-3 py-2.5">
-                        <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Class</p>
-                        <p className="mt-1 text-sm font-semibold text-slate-800">{item.code}</p>
-                      </div>
-                      <div className="rounded-xl border border-slate-200 bg-white px-3 py-2.5">
-                        <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Students</p>
-                        <p className="mt-1 text-sm font-semibold text-slate-800">{item.studentCount}</p>
-                      </div>
-                      <div className="rounded-xl border border-slate-200 bg-white px-3 py-2.5">
-                        <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Room</p>
-                        <p className="mt-1 text-sm font-semibold text-slate-800">{item.room}</p>
-                      </div>
-                    </div>
-                    <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5">
-                      <p className="mb-1 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-                        <span className="material-symbols-outlined text-sm">schedule</span>
-                        Schedule
-                      </p>
-                      <p className="text-sm font-semibold text-slate-800">{item.schedule}</p>
-                    </div>
-                    <div className="mt-auto grid grid-cols-1 gap-2 sm:grid-cols-2">
-                      <Button asChild size="lg" className="h-11 rounded-xl font-semibold shadow-sm">
-                        <Link to={`/live?class=${encodeURIComponent(item.code)}`}>
-                          <span className="material-symbols-outlined text-sm">play_circle</span>
-                          Open Live
-                        </Link>
-                      </Button>
-                      <Button asChild variant="outline" size="lg" className="h-11 rounded-xl font-semibold">
-                        <Link to={`/session-analytics?class=${encodeURIComponent(item.code)}`}>
-                          <span className="material-symbols-outlined text-sm">analytics</span>
-                          View Analytics
-                        </Link>
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
+    <main className="min-h-screen bg-cyan-50 px-4 py-8 text-slate-900">
+      <div className="mx-auto flex min-h-[calc(100vh-4rem)] max-w-5xl flex-col justify-center gap-8">
+        <div className="text-center">
+          <div className="mx-auto mb-4 grid size-20 place-items-center rounded-[2rem] bg-sky-600 text-2xl font-black text-white shadow-lg shadow-sky-200">
+            SO
           </div>
-        </CardContent>
-      </Card>
-    </DashboardShell>
+          <h1 className="text-4xl font-black sm:text-5xl">SignOcean</h1>
+          <p className="mx-auto mt-3 max-w-2xl text-lg font-semibold text-slate-600">
+            Learn sign language with visuals, playful quizzes, and Sami.
+          </p>
+        </div>
+        <div className="mx-auto">
+          <Mascot message="Choose a profile to start learning today." />
+        </div>
+        <div className="grid gap-4 md:grid-cols-3">
+          {profiles.map((profile) => (
+            <Card
+              key={profile.id}
+              className={`rounded-[2rem] bg-white shadow-sm ${
+                selectedId === profile.id ? "ring-2 ring-sky-500" : ""
+              }`}
+            >
+              <CardContent className="flex flex-col items-center gap-4 p-5 text-center">
+                <button type="button" onClick={() => setSelectedId(profile.id)}>
+                  <Avatar className="size-24 bg-sky-600 text-white">
+                    <AvatarFallback className="bg-transparent text-4xl font-black text-white">
+                      {profile.avatar}
+                    </AvatarFallback>
+                  </Avatar>
+                </button>
+                <div>
+                  <h2 className="text-2xl font-black">{profile.name}</h2>
+                  <p className="text-sm font-semibold text-slate-500">
+                    Age {profile.age} · Guardian: {profile.guardian}
+                  </p>
+                </div>
+                <Button
+                  onClick={() => chooseProfile(profile.id)}
+                  className="h-12 w-full rounded-2xl text-base font-black"
+                >
+                  Start learning
+                  <ArrowRight className="size-5" />
+                </Button>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+        <div className="text-center">
+          <div className="flex flex-wrap items-center justify-center gap-2">
+            {loggedIn ? (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleLogout}
+                className="h-11 rounded-2xl"
+              >
+                <LogOut className="size-4" />
+                Logout
+              </Button>
+            ) : (
+              <Button asChild variant="outline" className="h-11 rounded-2xl">
+                <Link to="/login">
+                  <LogIn className="size-4" />
+                  Login
+                </Link>
+              </Button>
+            )}
+            <Button asChild variant="outline" className="h-11 rounded-2xl">
+              <Link to="/register">
+                <UserPlus className="size-4" />
+                Register
+              </Link>
+            </Button>
+            <Button asChild variant="link" className="h-11 text-cyan-700">
+              <Link to="/admin">Open admin</Link>
+            </Button>
+          </div>
+        </div>
+      </div>
+    </main>
   );
 }
