@@ -1,0 +1,314 @@
+export type StudentProfile = {
+  id: string;
+  name: string;
+  age: number;
+  avatar: string;
+  guardian: string;
+};
+
+export type Topic = {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+  color: string;
+  lessonIds: string[];
+};
+
+export type Lesson = {
+  id: string;
+  topicId: string;
+  type: "vocabulary" | "communication";
+  title: string;
+  phrase: string;
+  description: string;
+  visual: string;
+  signHint: string;
+  difficulty: "Easy" | "Medium";
+  xp: number;
+};
+
+export type QuizQuestion = {
+  id: string;
+  lessonId: string;
+  prompt: string;
+  type: "image-choice" | "sign-choice" | "sentence-order";
+  options: string[];
+  answer: string;
+  hint: string;
+};
+
+export type Badge = {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+};
+
+export const profiles: StudentProfile[] = [
+  {
+    id: "minh",
+    name: "Minh",
+    age: 7,
+    avatar: "M",
+    guardian: "Lan",
+  },
+  {
+    id: "an",
+    name: "An",
+    age: 6,
+    avatar: "A",
+    guardian: "Nam",
+  },
+  {
+    id: "linh",
+    name: "Linh",
+    age: 8,
+    avatar: "L",
+    guardian: "Mai",
+  },
+];
+
+export const topics: Topic[] = [
+  {
+    id: "family",
+    title: "Family",
+    description: "Parents, siblings, and warm everyday greetings.",
+    icon: "Home",
+    color: "bg-sky-100 text-sky-800",
+    lessonIds: ["hello-family", "mother", "father"],
+  },
+  {
+    id: "colors",
+    title: "Colors",
+    description: "Recognize colors through visuals and signs.",
+    icon: "Palette",
+    color: "bg-cyan-100 text-cyan-800",
+    lessonIds: ["blue", "yellow", "red"],
+  },
+  {
+    id: "feelings",
+    title: "Feelings",
+    description: "Express happy, sad, and asking for help.",
+    icon: "Smile",
+    color: "bg-emerald-100 text-emerald-800",
+    lessonIds: ["happy", "sad", "help"],
+  },
+  {
+    id: "school",
+    title: "School",
+    description: "Simple communication in the classroom.",
+    icon: "BookOpen",
+    color: "bg-amber-100 text-amber-800",
+    lessonIds: ["teacher", "book", "thank-you"],
+  },
+];
+
+export const lessons: Lesson[] = [
+  {
+    id: "hello-family",
+    topicId: "family",
+    type: "communication",
+    title: "Hello, family",
+    phrase: "Hello, family",
+    description: "Practice greeting family members.",
+    visual: "🏠",
+    signHint: "Open your hand gently from near the chin outward, with a smile.",
+    difficulty: "Easy",
+    xp: 12,
+  },
+  {
+    id: "mother",
+    topicId: "family",
+    type: "vocabulary",
+    title: "Mother",
+    phrase: "Mother",
+    description: "Recognize the sign for mother.",
+    visual: "👩",
+    signHint: "Place an open hand near the cheek and move it slightly forward.",
+    difficulty: "Easy",
+    xp: 10,
+  },
+  {
+    id: "father",
+    topicId: "family",
+    type: "vocabulary",
+    title: "Father",
+    phrase: "Father",
+    description: "Recognize the sign for father.",
+    visual: "👨",
+    signHint: "Place an open hand near the forehead and move it slightly forward.",
+    difficulty: "Easy",
+    xp: 10,
+  },
+  {
+    id: "blue",
+    topicId: "colors",
+    type: "vocabulary",
+    title: "Blue",
+    phrase: "Blue",
+    description: "Learn the sign for ocean blue.",
+    visual: "🌊",
+    signHint: "Gently shake a B-shaped hand in front of the chest.",
+    difficulty: "Easy",
+    xp: 10,
+  },
+  {
+    id: "yellow",
+    topicId: "colors",
+    type: "vocabulary",
+    title: "Yellow",
+    phrase: "Yellow",
+    description: "Learn the sign for yellow like a star.",
+    visual: "⭐",
+    signHint: "Gently twist the hand near the shoulder with palm facing out.",
+    difficulty: "Easy",
+    xp: 10,
+  },
+  {
+    id: "red",
+    topicId: "colors",
+    type: "vocabulary",
+    title: "Red",
+    phrase: "Red",
+    description: "Recognize the sign for red.",
+    visual: "🍎",
+    signHint: "Touch the index finger near the lips, then move it down gently.",
+    difficulty: "Easy",
+    xp: 10,
+  },
+  {
+    id: "happy",
+    topicId: "feelings",
+    type: "vocabulary",
+    title: "Happy",
+    phrase: "Happy",
+    description: "Say that you feel happy with a sign.",
+    visual: "😊",
+    signHint: "Open both hands in front of the chest and move them up gently.",
+    difficulty: "Easy",
+    xp: 10,
+  },
+  {
+    id: "sad",
+    topicId: "feelings",
+    type: "vocabulary",
+    title: "Sad",
+    phrase: "Sad",
+    description: "Recognize the feeling of sadness.",
+    visual: "☁️",
+    signHint: "Move the fingers downward in front of the face with a sad expression.",
+    difficulty: "Easy",
+    xp: 10,
+  },
+  {
+    id: "help",
+    topicId: "feelings",
+    type: "communication",
+    title: "I need help",
+    phrase: "I need help",
+    description: "Use this when you need support from an adult.",
+    visual: "🤝",
+    signHint: "One hand supports the other, then lifts gently upward.",
+    difficulty: "Medium",
+    xp: 14,
+  },
+  {
+    id: "teacher",
+    topicId: "school",
+    type: "vocabulary",
+    title: "Teacher",
+    phrase: "Teacher",
+    description: "Learn the sign for teacher.",
+    visual: "🧑‍🏫",
+    signHint: "Open both hands near the temples, then move them down in front.",
+    difficulty: "Medium",
+    xp: 12,
+  },
+  {
+    id: "book",
+    topicId: "school",
+    type: "vocabulary",
+    title: "Book",
+    phrase: "Book",
+    description: "Recognize a classroom object.",
+    visual: "📘",
+    signHint: "Close both palms together, then open them like a book.",
+    difficulty: "Easy",
+    xp: 10,
+  },
+  {
+    id: "thank-you",
+    topicId: "school",
+    type: "communication",
+    title: "Thank you",
+    phrase: "Thank you",
+    description: "Practice a polite thank-you sentence.",
+    visual: "💛",
+    signHint: "Move the hand from the chin outward with a friendly expression.",
+    difficulty: "Easy",
+    xp: 12,
+  },
+];
+
+export const quizzes: QuizQuestion[] = lessons.flatMap((lesson) => [
+  {
+    id: `${lesson.id}-meaning`,
+    lessonId: lesson.id,
+    prompt: `What does this sign mean?`,
+    type: "sign-choice",
+    options: [lesson.phrase, "I am sorry", "Purple", "Go outside"],
+    answer: lesson.phrase,
+    hint: `Remember the picture ${lesson.visual} and the phrase "${lesson.phrase}".`,
+  },
+  {
+    id: `${lesson.id}-match`,
+    lessonId: lesson.id,
+    prompt: `Choose the picture that best matches "${lesson.phrase}"`,
+    type: "image-choice",
+    options: [lesson.visual, "🚗", "🍌", "🎈"],
+    answer: lesson.visual,
+    hint: "Look back at the large picture from the lesson.",
+  },
+]);
+
+export const badges: Badge[] = [
+  {
+    id: "first-lesson",
+    title: "First ocean step",
+    description: "Complete your first lesson.",
+    icon: "Star",
+  },
+  {
+    id: "perfect-quiz",
+    title: "Perfect answers",
+    description: "Answer every question correctly in one lesson.",
+    icon: "Trophy",
+  },
+  {
+    id: "three-lessons",
+    title: "Steady learner",
+    description: "Complete 3 lessons.",
+    icon: "Medal",
+  },
+];
+
+export function getLesson(lessonId: string) {
+  return lessons.find((lesson) => lesson.id === lessonId);
+}
+
+export function getTopic(topicId: string) {
+  return topics.find((topic) => topic.id === topicId);
+}
+
+export function getTopicLessons(topicId: string) {
+  const topic = getTopic(topicId);
+  if (!topic) return [];
+  return topic.lessonIds
+    .map((lessonId) => lessons.find((lesson) => lesson.id === lessonId))
+    .filter((lesson): lesson is Lesson => Boolean(lesson));
+}
+
+export function getLessonQuiz(lessonId: string) {
+  return quizzes.filter((question) => question.lessonId === lessonId);
+}
