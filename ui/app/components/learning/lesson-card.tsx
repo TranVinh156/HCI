@@ -55,7 +55,7 @@ export function LessonCard({ lesson }: LessonCardProps) {
         <Button
           type="button"
           variant="outline"
-          className="mx-auto flex h-12 rounded-2xl border-primary/30 px-5 text-base font-black text-primary"
+          className="mx-auto flex h-12 rounded-2xl  px-5 text-base font-black text-primary"
         >
           <RotateCcw className="size-5" />
           Replay sign

@@ -243,7 +243,7 @@ export function CameraPractice({ lesson }: CameraPracticeProps) {
             type="button"
             variant="outline"
             onClick={() => setFeedback("idle")}
-            className="h-12 rounded-2xl border-primary/30 font-black text-primary"
+            className="h-12 rounded-2xl font-black text-primary"
           >
             <RotateCcw className="size-5" />
             Try again
