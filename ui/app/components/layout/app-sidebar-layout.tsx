@@ -70,7 +70,7 @@ export function AppSidebarLayout({
           label={navLabel}
           bordered={mobileNavBorder}
         />
-        <div className={contentClassName}>{children}</div>
+        <div className={cn(contentClassName, "max-lg:pb-24")}>{children}</div>
       </main>
     </div>
   );
@@ -207,8 +207,8 @@ function MobileSidebarNav({
   return (
     <nav
       className={cn(
-        "flex gap-2 overflow-x-auto bg-white px-4 pb-3 pt-3 lg:hidden",
-        bordered && "border-b border-slate-200"
+        "fixed inset-x-0 bottom-0 z-30 flex gap-2 overflow-x-auto border-t border-slate-200 bg-white px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3 shadow-[0_-10px_30px_rgba(15,23,42,0.08)] lg:hidden",
+        bordered && "border-t border-slate-200"
       )}
       aria-label={label}
     >
@@ -221,13 +221,13 @@ function MobileSidebarNav({
             end={item.end}
             className={({ isActive }) =>
               cn(
-                "flex h-11 shrink-0 items-center gap-2 rounded-xl border-2 border-transparent px-3 text-sm font-black uppercase text-slate-500",
+                "flex h-16 min-w-16 shrink-0 flex-col items-center justify-center gap-1 rounded-xl border-2 border-transparent px-2 text-xs font-black uppercase text-slate-500",
                 isActive && "border-primary/40 bg-primary/10 text-primary"
               )
             }
           >
-            <Icon className="size-4 stroke-[3]" />
-            <span>{item.label}</span>
+            <Icon className="size-5 stroke-[3]" />
+            <span className="leading-none">{item.label}</span>
           </NavLink>
         );
       })}
