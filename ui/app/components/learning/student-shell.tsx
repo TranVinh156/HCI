@@ -1,7 +1,9 @@
 import {
+  ArrowLeftRight,
   BookOpen,
   Dumbbell,
   Home,
+  Languages,
   MessageCircle,
   Shield,
   Sparkles,
@@ -17,6 +19,7 @@ type StudentShellProps = {
 
 const navItems = [
   { to: "/learn", label: "Learn", icon: BookOpen },
+  { to: "/translate", label: "Translate", icon: Languages },
   { to: "/communication", label: "Talk", icon: MessageCircle },
   { to: "/practice", label: "Practice", icon: Dumbbell },
   { to: "/mascot", label: "Sami", icon: Sparkles },

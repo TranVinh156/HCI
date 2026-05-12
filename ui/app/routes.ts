@@ -5,6 +5,7 @@ export default [
   route("login", "routes/login.tsx"),
   route("register", "routes/register.tsx"),
   route("learn", "routes/learn.tsx"),
+  route("translate", "routes/translate.tsx"),
   route("communication", "routes/communication.tsx"),
   route("practice", "routes/practice.tsx"),
   route("mascot", "routes/mascot.tsx"),
