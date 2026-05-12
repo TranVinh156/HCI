@@ -7,7 +7,7 @@ import {
   Mic,
   Type,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { StudentShell } from "~/components/learning/student-shell";
 import { Button } from "~/components/ui/button";
@@ -56,6 +56,9 @@ export default function TranslateRoute() {
   const [mode, setMode] = useState<TranslateMode>("handsign-to-text");
   const [textInput, setTextInput] = useState("Hello thank you");
   const [selectedSigns, setSelectedSigns] = useState<string[]>(["hello"]);
+  const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
+  const [cameraError, setCameraError] = useState<string | null>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
 
   const isHandsignToText = mode === "handsign-to-text";
   const sourceLabel = isHandsignToText ? "Handsign" : "Text";
@@ -82,6 +85,37 @@ export default function TranslateRoute() {
         : [...current, sign]
     );
   }
+
+  async function requestCameraAccess() {
+    setCameraError(null);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "user" },
+        audio: false,
+      });
+      setCameraStream(stream);
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Unable to access the camera.";
+      setCameraError(message);
+      setCameraStream(null);
+    }
+  }
+
+  useEffect(() => {
+    if (videoRef.current && cameraStream) {
+      videoRef.current.srcObject = cameraStream;
+    }
+  }, [cameraStream]);
+
+  useEffect(() => {
+    if (!isHandsignToText && cameraStream) {
+      cameraStream.getTracks().forEach((track) => track.stop());
+      setCameraStream(null);
+    }
+  }, [cameraStream, isHandsignToText]);
 
   return (
     <StudentShell>
@@ -128,13 +162,53 @@ export default function TranslateRoute() {
             <CardContent className="flex h-full flex-col gap-4">
               {isHandsignToText ? (
                 <>
-                  <div className="grid min-h-44 place-items-center rounded-[1.5rem] border-2 border-dashed border-primary/40 bg-secondary">
-                    <div className="text-center">
-                      <Camera className="mx-auto size-12 text-primary" />
-                      <p className="mt-3 text-sm font-black text-slate-700">
-                        Camera preview
-                      </p>
+
+                  {!cameraStream ? (
+                    <div className="flex flex-col gap-3 rounded-[1.5rem] border-2 border-slate-200 bg-white p-4">
+                      <div className="flex items-center gap-3">
+                        <div className="grid size-12 place-items-center rounded-[1.25rem] bg-secondary text-primary">
+                          <Camera className="size-5" />
+                        </div>
+                      </div>
+                      <div>
+                        <p className="text-sm font-black text-slate-900">
+                          Enable camera to detect hand signs
+                        </p>
+                        <p className="text-xs font-semibold text-slate-500">
+                          We only use it for live detection during practice.
+                        </p>
+                      </div>
+                      <Button
+                        type="button"
+                        onClick={requestCameraAccess}
+                        className="h-10 rounded-2xl font-black"
+                      >
+                        Request camera access
+                      </Button>
                     </div>
+                  ) : null}
+                  {cameraError ? (
+                    <p className="text-xs font-semibold text-rose-500">
+                      {cameraError}
+                    </p>
+                  ) : null}
+                  <div className="grid min-h-44 place-items-center overflow-hidden rounded-[1.5rem] border-2 border-dashed border-primary/40 bg-secondary">
+                    {cameraStream ? (
+                      <video
+                        ref={videoRef}
+                        autoPlay
+                        playsInline
+                        muted
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <div className="text-center">
+                        <Camera className="mx-auto size-12 text-primary" />
+                        <p className="mt-3 text-sm font-black text-slate-700">
+                          Camera preview
+                        </p>
+                      </div>
+                    )}
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {sampleSigns.map((entry) => {
@@ -145,11 +219,10 @@ export default function TranslateRoute() {
                           key={entry.sign}
                           type="button"
                           onClick={() => toggleSign(entry.sign)}
-                          className={`rounded-2xl border-2 px-3 py-2 text-sm font-black transition-colors ${
-                            selected
-                              ? "border-primary bg-primary text-white"
-                              : "border-slate-200 bg-white text-slate-700 hover:bg-secondary"
-                          }`}
+                          className={`rounded-2xl border-2 px-3 py-2 text-sm font-black transition-colors ${selected
+                            ? "border-primary bg-primary text-white"
+                            : "border-slate-200 bg-white text-slate-700 hover:bg-secondary"
+                            }`}
                           aria-pressed={selected}
                         >
                           {entry.sign}
