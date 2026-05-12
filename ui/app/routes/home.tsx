@@ -10,7 +10,6 @@ import {
   Star,
 } from "lucide-react";
 
-import { Mascot } from "~/components/learning/mascot";
 import { Avatar, AvatarFallback } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
@@ -29,41 +28,8 @@ export default function HomeRoute() {
           </p>
         </div>
         <div className="mx-auto">
-          <Mascot message="Choose a profile to start learning today." />
         </div>
-        <div className="grid gap-4 md:grid-cols-3">
-          {profiles.map((profile) => (
-            <Card
-              key={profile.id}
-              className={`rounded-[2rem] bg-white ${
-                selectedId === profile.id ? "ring-2 ring-primary" : ""
-              }`}
-            >
-              <CardContent className="flex flex-col items-center gap-4 p-5 text-center">
-                <button type="button" onClick={() => setSelectedId(profile.id)}>
-                  <Avatar className="size-24 bg-primary text-white">
-                    <AvatarFallback className="bg-transparent text-4xl font-black text-white">
-                      {profile.avatar}
-                    </AvatarFallback>
-                  </Avatar>
-                </button>
-                <div>
-                  <h2 className="text-2xl font-black">{profile.name}</h2>
-                  <p className="text-sm font-semibold text-slate-500">
-                    Age {profile.age} · Guardian: {profile.guardian}
-                  </p>
-                </div>
-                <Button className="h-11 w-full rounded-2xl bg-slate-900 text-sm font-black text-white shadow-[4px_6px_0_#0f172a]">
-                  Continue lesson
-                </Button>
-              </CardContent>
-            </Card>
-            <div className="rounded-[2rem] border-3 border-slate-900 bg-[#fff4b0] p-6 shadow-[6px_8px_0_#0f172a]">
-              <Mascot message="I saved your streak! Want a high-five?" />
-            </div>
-          </div>
-        </section>
-
+        
         <section className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
           <div className="rounded-[2rem] border-3 border-slate-900 bg-[#b7f5ff] p-6 shadow-[6px_8px_0_#0f172a]">
             <div className="flex items-center gap-2 text-sm font-black uppercase tracking-[0.2em] text-slate-600">
