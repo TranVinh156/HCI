@@ -890,7 +890,7 @@ function LessonEditPanel({
                 }))
               }
               placeholder="Lesson title"
-              className="h-11 bg-white"
+              className="h-11 bg-slate-100"
             />
             <Input
               value={form.phrase}
@@ -901,7 +901,7 @@ function LessonEditPanel({
                 }))
               }
               placeholder="Word or phrase"
-              className="h-11 bg-white"
+              className="h-11 bg-slate-100"
             />
           </div>
           <div className="grid gap-3 md:grid-cols-[1fr_7rem_10rem_10rem_7rem]">
@@ -914,7 +914,7 @@ function LessonEditPanel({
                 }))
               }
               placeholder="Lesson description"
-              className="h-11 bg-white"
+              className="h-11 bg-slate-100"
             />
             <Input
               value={form.visual}
@@ -925,7 +925,7 @@ function LessonEditPanel({
                 }))
               }
               placeholder="Visual"
-              className="h-11 bg-white"
+              className="h-11 bg-slate-100"
             />
             <select
               value={form.type}
@@ -935,7 +935,7 @@ function LessonEditPanel({
                   type: event.target.value as Lesson["type"],
                 }))
               }
-              className="h-11 rounded-lg border border-input bg-white px-2.5 text-sm font-semibold outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+              className="h-11 rounded-lg border-2 border-input bg-slate-100 px-2.5 text-sm font-semibold outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
             >
               <option value="vocabulary">Vocabulary</option>
               <option value="communication">Communication</option>
@@ -948,7 +948,7 @@ function LessonEditPanel({
                   difficulty: event.target.value as Lesson["difficulty"],
                 }))
               }
-              className="h-11 rounded-lg border border-input bg-white px-2.5 text-sm font-semibold outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+              className="h-11 rounded-lg border-2 border-input bg-slate-100 px-2.5 text-sm font-semibold outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
             >
               <option value="Easy">Easy</option>
               <option value="Medium">Medium</option>
@@ -964,7 +964,7 @@ function LessonEditPanel({
                 }))
               }
               placeholder="XP"
-              className="h-11 bg-white"
+              className="h-11 bg-slate-100"
             />
           </div>
           <textarea
@@ -976,7 +976,7 @@ function LessonEditPanel({
               }))
             }
             placeholder="Sign hint"
-            className="min-h-24 rounded-lg border border-input bg-white px-2.5 py-2 text-sm font-semibold outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+            className="min-h-24 rounded-lg border-2 border-input bg-slate-100 px-2.5 py-2 text-sm font-semibold outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
           />
           <div className="flex flex-wrap justify-end gap-2">
             <Button
@@ -1112,7 +1112,7 @@ function ExerciseEditPanel({
                 }))
               }
               placeholder="Prompt"
-              className="h-11 bg-white"
+              className="h-11 bg-slate-100"
             />
             <Input
               value={form.instruction}
@@ -1123,7 +1123,7 @@ function ExerciseEditPanel({
                 }))
               }
               placeholder="Instruction"
-              className="h-11 bg-white"
+              className="h-11 bg-slate-100"
             />
           </div>
 
@@ -1152,7 +1152,7 @@ function ExerciseEditPanel({
               }))
             }
             placeholder="Explanation or feedback copy"
-            className="min-h-24 rounded-lg border border-input bg-white px-2.5 py-2 text-sm font-semibold outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+            className="min-h-24 rounded-lg border-2 border-input bg-slate-100 px-2.5 py-2 text-sm font-semibold outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
           />
 
           <div className="flex flex-wrap justify-end gap-2">
@@ -1190,7 +1190,7 @@ function LearningExerciseFields({
             setForm((current) => ({ ...current, title: event.target.value }))
           }
           placeholder="Learning title"
-          className="h-11 bg-white"
+          className="h-11 bg-slate-100"
         />
         <Input
           value={form.targetWord}
@@ -1201,7 +1201,7 @@ function LearningExerciseFields({
             }))
           }
           placeholder="Target word"
-          className="h-11 bg-white"
+          className="h-11 bg-slate-100"
         />
         <Input
           value={form.sampleSignVideoUrl}
@@ -1212,7 +1212,7 @@ function LearningExerciseFields({
             }))
           }
           placeholder="Sample sign video URL"
-          className="h-11 bg-white"
+          className="h-11 bg-slate-100"
         />
       </div>
       <textarea
@@ -1221,7 +1221,7 @@ function LearningExerciseFields({
           setForm((current) => ({ ...current, content: event.target.value }))
         }
         placeholder="Learning content"
-        className="min-h-28 rounded-lg border border-input bg-white px-2.5 py-2 text-sm font-semibold outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+        className="min-h-28 rounded-lg border-2 border-input bg-slate-100 px-2.5 py-2 text-sm font-semibold outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
       />
       <div className="rounded-xl border border-slate-200 bg-white p-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
@@ -1273,7 +1273,7 @@ function LearningExerciseFields({
                   }))
                 }
                 placeholder="Example text"
-                className="h-10 bg-white"
+                className="h-10 bg-slate-100"
               />
               <Input
                 value={example.translation}
@@ -1288,7 +1288,7 @@ function LearningExerciseFields({
                   }))
                 }
                 placeholder="Translation"
-                className="h-10 bg-white"
+                className="h-10 bg-slate-100"
               />
               <Input
                 value={example.signVideoUrl}
@@ -1303,7 +1303,7 @@ function LearningExerciseFields({
                   }))
                 }
                 placeholder="Sign video URL"
-                className="h-10 bg-white"
+                className="h-10 bg-slate-100"
               />
               <Button
                 type="button"
@@ -1344,7 +1344,7 @@ function SignPracticeExerciseFields({
           setForm((current) => ({ ...current, targetWord: event.target.value }))
         }
         placeholder="Target word"
-        className="h-11 bg-white"
+        className="h-11 bg-slate-100"
       />
       <Input
         value={form.targetSignVideoUrl}
@@ -1355,7 +1355,7 @@ function SignPracticeExerciseFields({
           }))
         }
         placeholder="Target sign video URL"
-        className="h-11 bg-white"
+        className="h-11 bg-slate-100"
       />
       <Input
         type="number"
@@ -1368,7 +1368,7 @@ function SignPracticeExerciseFields({
           }))
         }
         placeholder="Record sec"
-        className="h-11 bg-white"
+        className="h-11 bg-slate-100"
       />
       <Input
         type="number"
@@ -1383,9 +1383,9 @@ function SignPracticeExerciseFields({
           }))
         }
         placeholder="Confidence"
-        className="h-11 bg-white"
+        className="h-11 bg-slate-100"
       />
-      <label className="flex h-11 items-center gap-2 rounded-lg border border-input bg-white px-3 text-sm font-black">
+      <label className="flex h-11 items-center gap-2 rounded-lg border-2 border-input bg-slate-100 px-3 text-sm font-black">
         <input
           type="checkbox"
           checked={form.allowRetry}
@@ -1417,7 +1417,7 @@ function QuizExerciseFields({
           setForm((current) => ({ ...current, question: event.target.value }))
         }
         placeholder="Quiz question"
-        className="h-11 bg-white"
+        className="h-11 bg-slate-100"
       />
       <div className="rounded-xl border border-slate-200 bg-white p-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
@@ -1456,7 +1456,7 @@ function QuizExerciseFields({
               key={option.id}
               className="grid gap-2 rounded-xl bg-slate-50 p-3 lg:grid-cols-[auto_1fr_1fr_auto]"
             >
-              <label className="flex h-10 items-center gap-2 rounded-lg bg-white px-3 text-sm font-black">
+              <label className="flex h-10 items-center gap-2 rounded-lg border-2 border-input bg-slate-100 px-3 text-sm font-black">
                 <input
                   type="radio"
                   name="correctOption"
@@ -1486,7 +1486,7 @@ function QuizExerciseFields({
                   }))
                 }
                 placeholder="Option text"
-                className="h-10 bg-white"
+                className="h-10 bg-slate-100"
               />
               <Input
                 value={option.signVideoUrl}
@@ -1501,7 +1501,7 @@ function QuizExerciseFields({
                   }))
                 }
                 placeholder="Sign video URL"
-                className="h-10 bg-white"
+                className="h-10 bg-slate-100"
               />
               <Button
                 type="button"
@@ -1544,7 +1544,7 @@ function CompletionExerciseFields({
             setForm((current) => ({ ...current, score: event.target.value }))
           }
           placeholder="Score"
-          className="h-11 bg-white"
+          className="h-11 bg-slate-100"
         />
         <Input
           type="number"
@@ -1553,7 +1553,7 @@ function CompletionExerciseFields({
             setForm((current) => ({ ...current, xp: event.target.value }))
           }
           placeholder="XP"
-          className="h-11 bg-white"
+          className="h-11 bg-slate-100"
         />
         <Input
           type="number"
@@ -1565,7 +1565,7 @@ function CompletionExerciseFields({
             }))
           }
           placeholder="Correct count"
-          className="h-11 bg-white"
+          className="h-11 bg-slate-100"
         />
         <Input
           type="number"
@@ -1577,7 +1577,7 @@ function CompletionExerciseFields({
             }))
           }
           placeholder="Total count"
-          className="h-11 bg-white"
+          className="h-11 bg-slate-100"
         />
       </div>
       <div className="rounded-xl border border-slate-200 bg-white p-3">
@@ -1625,7 +1625,7 @@ function CompletionExerciseFields({
                   }))
                 }
                 placeholder="Mistake text"
-                className="h-10 bg-white"
+                className="h-10 bg-slate-100"
               />
               <Button
                 type="button"

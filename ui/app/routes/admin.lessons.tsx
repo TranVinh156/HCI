@@ -274,7 +274,7 @@ export default function AdminLessonsRoute() {
                   }))
                 }
                 placeholder="Topic title"
-                className="h-11 bg-white"
+                className="h-11 bg-slate-100"
               />
               <Input
                 value={topicForm.description}
@@ -285,7 +285,7 @@ export default function AdminLessonsRoute() {
                   }))
                 }
                 placeholder="Topic description"
-                className="h-11 bg-white"
+                className="h-11 bg-slate-100"
               />
               <div className="flex justify-end">
                 <Button type="submit" className="h-11 rounded-xl font-black">
@@ -365,7 +365,7 @@ export default function AdminLessonsRoute() {
                     value={query}
                     onChange={(event) => setQuery(event.target.value)}
                     placeholder="Search this topic..."
-                    className="h-11 bg-white pl-9 lg:w-72"
+                    className="h-11 bg-slate-100 pl-9 lg:w-72"
                     disabled={!selectedTopic}
                   />
                 </div>
@@ -389,7 +389,7 @@ export default function AdminLessonsRoute() {
                           }))
                         }
                         placeholder="Lesson title"
-                        className="h-11 bg-white"
+                        className="h-11 bg-slate-100"
                       />
                       <Input
                         value={lessonForm.phrase}
@@ -400,7 +400,7 @@ export default function AdminLessonsRoute() {
                           }))
                         }
                         placeholder="Word or phrase"
-                        className="h-11 bg-white"
+                        className="h-11 bg-slate-100"
                       />
                     </div>
                     <div className="grid gap-3 md:grid-cols-[1fr_7rem_10rem_10rem_7rem]">
@@ -413,7 +413,7 @@ export default function AdminLessonsRoute() {
                           }))
                         }
                         placeholder="Lesson description"
-                        className="h-11 bg-white"
+                        className="h-11 bg-slate-100"
                       />
                       <Input
                         value={lessonForm.visual}
@@ -424,7 +424,7 @@ export default function AdminLessonsRoute() {
                           }))
                         }
                         placeholder="Visual"
-                        className="h-11 bg-white"
+                        className="h-11 bg-slate-100"
                       />
                       <select
                         value={lessonForm.type}
@@ -434,7 +434,7 @@ export default function AdminLessonsRoute() {
                             type: event.target.value as Lesson["type"],
                           }))
                         }
-                        className="h-11 rounded-lg border border-input bg-white px-2.5 text-sm font-semibold outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+                        className="h-11 rounded-lg border-2 border-input bg-slate-100 px-2.5 text-sm font-semibold outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
                       >
                         <option value="vocabulary">Vocabulary</option>
                         <option value="communication">Communication</option>
@@ -448,7 +448,7 @@ export default function AdminLessonsRoute() {
                               .value as Lesson["difficulty"],
                           }))
                         }
-                        className="h-11 rounded-lg border border-input bg-white px-2.5 text-sm font-semibold outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+                        className="h-11 rounded-lg border-2 border-input bg-slate-100 px-2.5 text-sm font-semibold outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
                       >
                         <option value="Easy">Easy</option>
                         <option value="Medium">Medium</option>
@@ -464,7 +464,7 @@ export default function AdminLessonsRoute() {
                           }))
                         }
                         placeholder="XP"
-                        className="h-11 bg-white"
+                        className="h-11 bg-slate-100"
                       />
                     </div>
                     <textarea
@@ -476,7 +476,7 @@ export default function AdminLessonsRoute() {
                         }))
                       }
                       placeholder="Sign hint"
-                      className="min-h-24 rounded-lg border border-input bg-white px-2.5 py-2 text-sm font-semibold outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+                      className="min-h-24 rounded-lg border-2 border-input bg-slate-100 px-2.5 py-2 text-sm font-semibold outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
                     />
                     <div className="flex justify-end">
                       <Button type="submit" className="h-11 rounded-xl font-black">
