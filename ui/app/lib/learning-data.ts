@@ -38,11 +38,85 @@ export type QuizQuestion = {
   hint: string;
 };
 
+export type ExerciseType =
+  | "learning"
+  | "sign_practice"
+  | "quiz"
+  | "completion";
+
+type BaseExercise = {
+  id: string;
+  lessonId: string;
+  type: ExerciseType;
+  prompt?: string;
+  instruction?: string;
+  explanation?: string;
+};
+
+export type LearningExercise = BaseExercise & {
+  type: "learning";
+  title: string;
+  content: string;
+  targetWord?: string;
+  sampleSignVideoUrl?: string;
+  examples?: {
+    text: string;
+    translation?: string;
+    signVideoUrl?: string;
+  }[];
+};
+
+export type SignPracticeExercise = BaseExercise & {
+  type: "sign_practice";
+  targetWord: string;
+  targetSignVideoUrl?: string;
+  instruction?: string;
+  maxRecordSeconds?: number;
+  minConfidence?: number;
+  allowRetry?: boolean;
+};
+
+export type QuizExercise = BaseExercise & {
+  type: "quiz";
+  question: string;
+  options: {
+    id: string;
+    text: string;
+    isCorrect: boolean;
+    signVideoUrl?: string;
+  }[];
+};
+
+export type CompletionExercise = BaseExercise & {
+  type: "completion";
+  score?: number;
+  xp?: number;
+  correctCount?: number;
+  totalCount?: number;
+  mistakes?: string[];
+};
+
+export type LessonExercise =
+  | LearningExercise
+  | SignPracticeExercise
+  | QuizExercise
+  | CompletionExercise;
+
 export type Badge = {
   id: string;
   title: string;
   description: string;
   icon: string;
+};
+
+type LegacyAdminLessonDetail = {
+  id: string;
+  lessonId: string;
+  title: string;
+  label: string;
+  description: string;
+  status: string;
+  details: string[];
 };
 
 export const profiles: StudentProfile[] = [
@@ -296,6 +370,7 @@ export const badges: Badge[] = [
 export type AdminLearningData = {
   topics: Topic[];
   lessons: Lesson[];
+  exercises: LessonExercise[];
 };
 
 const ADMIN_LEARNING_STORAGE_KEY = "sign-ocean-admin-learning-data";
@@ -304,6 +379,7 @@ function createDefaultAdminLearningData(): AdminLearningData {
   return {
     topics,
     lessons,
+    exercises: [],
   };
 }
 
@@ -319,9 +395,31 @@ function mergeAdminLearningData(data: Partial<AdminLearningData>) {
     if (lesson?.id) lessonMap.set(lesson.id, lesson);
   }
 
+  const legacyDetails = (
+    data as Partial<AdminLearningData> & {
+      lessonDetails?: LegacyAdminLessonDetail[];
+    }
+  ).lessonDetails;
+  const migratedExercises: LessonExercise[] = (legacyDetails ?? [])
+    .filter((detail) => Boolean(detail?.id && detail.lessonId && detail.title))
+    .map((detail) => ({
+      id: detail.id,
+      lessonId: detail.lessonId,
+      type: "learning",
+      title: detail.title,
+      content: detail.description,
+      prompt: detail.label,
+      explanation: detail.details.join("\n"),
+      examples: detail.details.map((item) => ({ text: item })),
+    }));
+
   return {
     topics: Array.from(topicMap.values()),
     lessons: Array.from(lessonMap.values()),
+    exercises: [...migratedExercises, ...(data.exercises ?? [])].filter(
+      (exercise): exercise is LessonExercise =>
+        Boolean(exercise?.id && exercise.lessonId && exercise.type)
+    ),
   };
 }
 
@@ -346,18 +444,19 @@ export function writeAdminLearningData(data: AdminLearningData) {
 }
 
 export function getLesson(lessonId: string) {
-  return lessons.find((lesson) => lesson.id === lessonId);
+  return readAdminLearningData().lessons.find((lesson) => lesson.id === lessonId);
 }
 
 export function getTopic(topicId: string) {
-  return topics.find((topic) => topic.id === topicId);
+  return readAdminLearningData().topics.find((topic) => topic.id === topicId);
 }
 
 export function getTopicLessons(topicId: string) {
-  const topic = getTopic(topicId);
+  const data = readAdminLearningData();
+  const topic = data.topics.find((item) => item.id === topicId);
   if (!topic) return [];
   return topic.lessonIds
-    .map((lessonId) => lessons.find((lesson) => lesson.id === lessonId))
+    .map((lessonId) => data.lessons.find((lesson) => lesson.id === lessonId))
     .filter((lesson): lesson is Lesson => Boolean(lesson));
 }
 

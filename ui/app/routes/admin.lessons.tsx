@@ -5,8 +5,15 @@ import {
   GraduationCap,
   Plus,
   Search,
+  X,
 } from "lucide-react";
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+  type FormEvent,
+  type ReactNode,
+} from "react";
 import { Link } from "react-router";
 
 import { AdminShell } from "~/components/admin/admin-shell";
@@ -202,6 +209,7 @@ export default function AdminLessonsRoute() {
       xp: Math.max(1, Number.parseInt(lessonForm.xp, 10) || 10),
     };
     const nextData = {
+      ...data,
       topics: data.topics.map((topic) =>
         topic.id === selectedTopic.id
           ? { ...topic, lessonIds: [...topic.lessonIds, newLesson.id] }
@@ -251,37 +259,41 @@ export default function AdminLessonsRoute() {
         </Card>
 
         {showTopicForm ? (
-          <Card className="rounded-xl border border-primary/30 bg-primary/5 py-0">
-            <CardContent className="p-4">
-              <form className="grid gap-3 md:grid-cols-[1fr_1.4fr_auto]" onSubmit={handleCreateTopic}>
-                <Input
-                  value={topicForm.title}
-                  onChange={(event) =>
-                    setTopicForm((current) => ({
-                      ...current,
-                      title: event.target.value,
-                    }))
-                  }
-                  placeholder="Topic title"
-                  className="h-11 bg-white"
-                />
-                <Input
-                  value={topicForm.description}
-                  onChange={(event) =>
-                    setTopicForm((current) => ({
-                      ...current,
-                      description: event.target.value,
-                    }))
-                  }
-                  placeholder="Topic description"
-                  className="h-11 bg-white"
-                />
+          <FormDialog
+            title="New topic"
+            subtitle="Create a topic path before adding lessons."
+            onClose={() => setShowTopicForm(false)}
+          >
+            <form className="grid gap-3" onSubmit={handleCreateTopic}>
+              <Input
+                value={topicForm.title}
+                onChange={(event) =>
+                  setTopicForm((current) => ({
+                    ...current,
+                    title: event.target.value,
+                  }))
+                }
+                placeholder="Topic title"
+                className="h-11 bg-white"
+              />
+              <Input
+                value={topicForm.description}
+                onChange={(event) =>
+                  setTopicForm((current) => ({
+                    ...current,
+                    description: event.target.value,
+                  }))
+                }
+                placeholder="Topic description"
+                className="h-11 bg-white"
+              />
+              <div className="flex justify-end">
                 <Button type="submit" className="h-11 rounded-xl font-black">
                   Create topic
                 </Button>
-              </form>
-            </CardContent>
-          </Card>
+              </div>
+            </form>
+          </FormDialog>
         ) : null}
 
         <div className="grid gap-5 xl:grid-cols-[22rem_1fr]">
@@ -361,8 +373,11 @@ export default function AdminLessonsRoute() {
             </Card>
 
             {showLessonForm && selectedTopic ? (
-              <Card className="rounded-xl border border-primary/30 bg-primary/5 py-0">
-                <CardContent className="p-4">
+              <FormDialog
+                title="New lesson"
+                subtitle={`Create a lesson inside ${selectedTopic.title}.`}
+                onClose={() => setShowLessonForm(false)}
+              >
                   <form className="grid gap-3" onSubmit={handleCreateLesson}>
                     <div className="grid gap-3 md:grid-cols-2">
                       <Input
@@ -469,8 +484,7 @@ export default function AdminLessonsRoute() {
                       </Button>
                     </div>
                   </form>
-                </CardContent>
-              </Card>
+              </FormDialog>
             ) : null}
 
             {filteredLessons.length ? (
@@ -562,5 +576,56 @@ export default function AdminLessonsRoute() {
         </div>
       </div>
     </AdminShell>
+  );
+}
+
+function FormDialog({
+  title,
+  subtitle,
+  onClose,
+  children,
+}: {
+  title: string;
+  subtitle: string;
+  onClose: () => void;
+  children: ReactNode;
+}) {
+  return (
+    <div
+      className="fixed inset-0 z-50 grid place-items-center bg-slate-950/45 p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="admin-form-dialog-title"
+      onMouseDown={onClose}
+    >
+      <div
+        className="w-full max-w-3xl overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl"
+        onMouseDown={(event) => event.stopPropagation()}
+      >
+        <div className="flex items-start justify-between gap-4 border-b border-slate-200 p-4">
+          <div>
+            <h2 id="admin-form-dialog-title" className="text-xl font-black">
+              {title}
+            </h2>
+            <p className="mt-1 text-sm font-semibold text-slate-500">
+              {subtitle}
+            </p>
+          </div>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="rounded-xl"
+            onClick={onClose}
+            aria-label="Close dialog"
+          >
+            <X className="size-5" />
+          </Button>
+        </div>
+        <div className="max-h-[calc(88vh-5.5rem)] overflow-y-auto p-4">
+          {children}
+        </div>
+      </div>
+    </div>
   );
 }

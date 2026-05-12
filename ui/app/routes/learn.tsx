@@ -1,4 +1,4 @@
-import { ArrowRight, Hand, Keyboard } from "lucide-react";
+import { ArrowRight, Camera, Hand } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router";
 
@@ -9,18 +9,33 @@ import { topics } from "~/lib/learning-data";
 
 const tabs = [
   { id: "handsign", label: "Handsign", icon: Hand },
-  { id: "fingerspelling", label: "Fingerspelling", icon: Keyboard },
+  { id: "sign_practice", label: "Sign practice", icon: Camera },
 ] as const;
 
 type LearnTab = (typeof tabs)[number]["id"];
 
-const fingerspellingCards = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").map(
-  (letter) => ({
-    id: letter.toLowerCase(),
-    title: letter,
-    description: `Practice the ${letter} handshape.`,
-  })
-);
+const signPracticeCards = [
+  {
+    id: "camera-ready",
+    title: "Camera ready",
+    description: "Check lighting, framing, and hand position before practice.",
+  },
+  {
+    id: "record-sign",
+    title: "Record sign",
+    description: "Record a short hand sign clip for recognition practice.",
+  },
+  {
+    id: "confidence",
+    title: "Confidence check",
+    description: "Compare detected signs with the target word and score.",
+  },
+  {
+    id: "retry-flow",
+    title: "Retry flow",
+    description: "Practice again when confidence is low or no hand is detected.",
+  },
+];
 
 export default function LearnRoute() {
   const [activeTab, setActiveTab] = useState<LearnTab>("handsign");
@@ -78,7 +93,7 @@ export default function LearnRoute() {
           </div>
         ) : (
           <div className="grid gap-5 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
-            {fingerspellingCards.map((card) => (
+            {signPracticeCards.map((card) => (
               <BlockyCard key={card.id} className="h-full">
                 <CardContent className="flex h-full flex-col px-5 pb-2">
                   <div className="grid aspect-square place-items-center rounded-[1.5rem] bg-primary text-7xl font-black text-white">
