@@ -18,6 +18,7 @@ export default [
   route("admin/content", "routes/admin.content.tsx"),
   route("admin/topics", "routes/admin.topics.tsx"),
   route("admin/lessons", "routes/admin.lessons.tsx"),
+  route("admin/lessons/:lessonId", "routes/admin.lesson-detail.tsx"),
   route("admin/quizzes", "routes/admin.quizzes.tsx"),
   route("admin/reports", "routes/admin.reports.tsx"),
 ] satisfies RouteConfig;

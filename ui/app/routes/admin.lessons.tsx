@@ -1,4 +1,5 @@
 import {
+  ArrowRight,
   BookOpen,
   FileVideo,
   GraduationCap,
@@ -6,6 +7,7 @@ import {
   Search,
 } from "lucide-react";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { Link } from "react-router";
 
 import { AdminShell } from "~/components/admin/admin-shell";
 import { Badge } from "~/components/ui/badge";
@@ -474,51 +476,58 @@ export default function AdminLessonsRoute() {
             {filteredLessons.length ? (
               <div className="grid gap-3">
                 {filteredLessons.map((lesson, index) => (
-                  <Card
+                  <Link
                     key={lesson.id}
-                    className="rounded-xl border border-slate-200 py-0"
+                    to={`/admin/lessons/${lesson.id}`}
+                    className="block rounded-xl outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
                   >
-                    <CardContent className="grid gap-4 p-4 md:grid-cols-[auto_1fr_auto] md:items-center">
-                      <div className="flex items-center gap-3">
-                        <div className="grid size-11 place-items-center rounded-xl bg-primary/10 text-xl">
-                          {lesson.visual}
+                    <Card className="rounded-xl border border-slate-200 py-0 transition hover:border-primary/40 hover:bg-primary/5">
+                      <CardContent className="grid gap-4 p-4 md:grid-cols-[auto_1fr_auto] md:items-center">
+                        <div className="flex items-center gap-3">
+                          <div className="grid size-11 place-items-center rounded-xl bg-primary/10 text-xl">
+                            {lesson.visual}
+                          </div>
+                          <div className="grid size-9 place-items-center rounded-full bg-slate-100 text-sm font-black text-slate-500">
+                            {index + 1}
+                          </div>
                         </div>
-                        <div className="grid size-9 place-items-center rounded-full bg-slate-100 text-sm font-black text-slate-500">
-                          {index + 1}
+                        <div className="min-w-0">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <h3 className="text-base font-black">
+                              {lesson.title}
+                            </h3>
+                            <Badge className="bg-primary/10 text-primary">
+                              {lesson.type === "communication"
+                                ? "Communication"
+                                : "Vocabulary"}
+                            </Badge>
+                            <Badge className="bg-amber-100 text-amber-800">
+                              <FileVideo className="size-3" />
+                              Placeholder
+                            </Badge>
+                          </div>
+                          <p className="mt-1 text-sm font-semibold text-slate-600">
+                            {lesson.phrase}
+                          </p>
+                          <p className="mt-1 line-clamp-2 text-sm text-slate-500">
+                            {lesson.signHint}
+                          </p>
                         </div>
-                      </div>
-                      <div className="min-w-0">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <h3 className="text-base font-black">
-                            {lesson.title}
-                          </h3>
-                          <Badge className="bg-primary/10 text-primary">
-                            {lesson.type === "communication"
-                              ? "Communication"
-                              : "Vocabulary"}
+                        <div className="flex flex-wrap gap-2 md:justify-end">
+                          <Badge className="bg-slate-100 text-slate-700">
+                            {lesson.difficulty}
                           </Badge>
-                          <Badge className="bg-amber-100 text-amber-800">
-                            <FileVideo className="size-3" />
-                            Placeholder
+                          <Badge className="bg-emerald-100 text-emerald-800">
+                            {lesson.xp} XP
                           </Badge>
+                          <span className="inline-flex h-7 items-center gap-1 rounded-full bg-primary px-2 text-xs font-black text-primary-foreground">
+                            Details
+                            <ArrowRight className="size-3" />
+                          </span>
                         </div>
-                        <p className="mt-1 text-sm font-semibold text-slate-600">
-                          {lesson.phrase}
-                        </p>
-                        <p className="mt-1 line-clamp-2 text-sm text-slate-500">
-                          {lesson.signHint}
-                        </p>
-                      </div>
-                      <div className="flex gap-2 md:justify-end">
-                        <Badge className="bg-slate-100 text-slate-700">
-                          {lesson.difficulty}
-                        </Badge>
-                        <Badge className="bg-emerald-100 text-emerald-800">
-                          {lesson.xp} XP
-                        </Badge>
-                      </div>
-                    </CardContent>
-                  </Card>
+                      </CardContent>
+                    </Card>
+                  </Link>
                 ))}
               </div>
             ) : (
