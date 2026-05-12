@@ -42,9 +42,7 @@ export default function LoginRoute() {
 
         <Card className="rounded-[2rem] border-slate-200 bg-white/95">
           <CardHeader className="text-center">
-            <Badge className="mx-auto mb-2 h-8 bg-primary/10 px-3 text-primary">
-              Demo login
-            </Badge>
+
             <CardTitle className="text-3xl font-black">Welcome back</CardTitle>
             <CardDescription className="text-base font-semibold">
               The fields are prefilled for quick testing. Authentication is not

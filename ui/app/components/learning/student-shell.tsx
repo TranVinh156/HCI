@@ -16,8 +16,7 @@ type StudentShellProps = {
 };
 
 const navItems = [
-  { to: "/learn", label: "Home", icon: Home },
-  { to: "/topics", label: "Learn", icon: BookOpen },
+  { to: "/learn", label: "Learn", icon: BookOpen },
   { to: "/communication", label: "Talk", icon: MessageCircle },
   { to: "/practice", label: "Practice", icon: Dumbbell },
   { to: "/mascot", label: "Sami", icon: Sparkles },

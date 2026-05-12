@@ -34,15 +34,9 @@ export default function RegisterRoute() {
           <span className="text-xl font-black">SignOcean</span>
         </Link>
 
-        <Card className="rounded-[2rem] border-slate-200 bg-white/95">
+        <Card className="rounded-[2rem] bg-white/95">
           <CardHeader className="text-center">
-            <Badge className="mx-auto mb-2 h-8 bg-emerald-100 px-3 text-emerald-800">
-              Demo register
-            </Badge>
             <CardTitle className="text-3xl font-black">Create account</CardTitle>
-            <CardDescription className="text-base font-semibold">
-              This form is UI-only for now. It does not create a real account.
-            </CardDescription>
           </CardHeader>
           <CardContent>
             <form className="space-y-4" onSubmit={submitRegister}>

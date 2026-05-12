@@ -5,7 +5,6 @@ import {
   GraduationCap,
   LayoutDashboard,
   Sparkles,
-  Users,
 } from "lucide-react";
 import type { ReactNode } from "react";
 
@@ -19,7 +18,6 @@ type AdminShellProps = {
 
 const navItems = [
   { label: "Overview", to: "/admin", icon: LayoutDashboard, end: true },
-  { label: "Students", to: "/admin/students", icon: Users },
   { label: "Topics", to: "/admin/topics", icon: BookOpen },
   { label: "Lessons", to: "/admin/lessons", icon: GraduationCap },
   { label: "Quizzes", to: "/admin/quizzes", icon: ClipboardCheck },

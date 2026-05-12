@@ -13,12 +13,6 @@ import { lessons, profiles, quizzes, topics } from "~/lib/learning-data";
 
 const adminShortcuts = [
   {
-    title: "Manage students",
-    description: "Review profiles, guardians, progress, and class status.",
-    to: "/admin/students",
-    icon: Users,
-  },
-  {
     title: "Edit topics",
     description: "Organize learning paths, topic order, and visibility.",
     to: "/admin/topics",
