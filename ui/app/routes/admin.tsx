@@ -13,16 +13,10 @@ import { lessons, profiles, quizzes, topics } from "~/lib/learning-data";
 
 const adminShortcuts = [
   {
-    title: "Edit topics",
-    description: "Organize learning paths, topic order, and visibility.",
-    to: "/admin/topics",
-    icon: BookOpen,
-  },
-  {
     title: "Build lessons",
-    description: "Maintain signs, hints, difficulty, and reward values.",
+    description: "Organize topic paths, signs, hints, and rewards.",
     to: "/admin/lessons",
-    icon: GraduationCap,
+    icon: BookOpen,
   },
   {
     title: "Quiz bank",

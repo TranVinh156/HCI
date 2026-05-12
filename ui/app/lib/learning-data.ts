@@ -293,6 +293,58 @@ export const badges: Badge[] = [
   },
 ];
 
+export type AdminLearningData = {
+  topics: Topic[];
+  lessons: Lesson[];
+};
+
+const ADMIN_LEARNING_STORAGE_KEY = "sign-ocean-admin-learning-data";
+
+function createDefaultAdminLearningData(): AdminLearningData {
+  return {
+    topics,
+    lessons,
+  };
+}
+
+function mergeAdminLearningData(data: Partial<AdminLearningData>) {
+  const topicMap = new Map(topics.map((topic) => [topic.id, topic]));
+  const lessonMap = new Map(lessons.map((lesson) => [lesson.id, lesson]));
+
+  for (const topic of data.topics ?? []) {
+    if (topic?.id) topicMap.set(topic.id, topic);
+  }
+
+  for (const lesson of data.lessons ?? []) {
+    if (lesson?.id) lessonMap.set(lesson.id, lesson);
+  }
+
+  return {
+    topics: Array.from(topicMap.values()),
+    lessons: Array.from(lessonMap.values()),
+  };
+}
+
+export function readAdminLearningData(): AdminLearningData {
+  if (typeof window === "undefined") return createDefaultAdminLearningData();
+
+  try {
+    const raw = window.localStorage.getItem(ADMIN_LEARNING_STORAGE_KEY);
+    if (!raw) return createDefaultAdminLearningData();
+    return mergeAdminLearningData(JSON.parse(raw));
+  } catch {
+    return createDefaultAdminLearningData();
+  }
+}
+
+export function writeAdminLearningData(data: AdminLearningData) {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(
+    ADMIN_LEARNING_STORAGE_KEY,
+    JSON.stringify(data)
+  );
+}
+
 export function getLesson(lessonId: string) {
   return lessons.find((lesson) => lesson.id === lessonId);
 }

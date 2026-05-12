@@ -1,10 +1,8 @@
 import {
   BarChart3,
-  BookOpen,
   ClipboardCheck,
   GraduationCap,
   LayoutDashboard,
-  Sparkles,
 } from "lucide-react";
 import type { ReactNode } from "react";
 
@@ -18,7 +16,6 @@ type AdminShellProps = {
 
 const navItems = [
   { label: "Overview", to: "/admin", icon: LayoutDashboard, end: true },
-  { label: "Topics", to: "/admin/topics", icon: BookOpen },
   { label: "Lessons", to: "/admin/lessons", icon: GraduationCap },
   { label: "Quizzes", to: "/admin/quizzes", icon: ClipboardCheck },
   { label: "Reports", to: "/admin/reports", icon: BarChart3 },
