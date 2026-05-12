@@ -455,9 +455,16 @@ export function getTopicLessons(topicId: string) {
   const data = readAdminLearningData();
   const topic = data.topics.find((item) => item.id === topicId);
   if (!topic) return [];
-  return topic.lessonIds
-    .map((lessonId) => data.lessons.find((lesson) => lesson.id === lessonId))
+
+  const byId = new Map(data.lessons.map((lesson) => [lesson.id, lesson]));
+  const orderedLessons = topic.lessonIds
+    .map((lessonId) => byId.get(lessonId))
     .filter((lesson): lesson is Lesson => Boolean(lesson));
+  const appendedLessons = data.lessons.filter(
+    (lesson) => lesson.topicId === topic.id && !topic.lessonIds.includes(lesson.id)
+  );
+
+  return [...orderedLessons, ...appendedLessons];
 }
 
 export function getLessonQuiz(lessonId: string) {

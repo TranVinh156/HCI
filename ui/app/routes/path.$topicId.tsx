@@ -10,6 +10,7 @@ export default function PathRoute() {
   const params = useParams();
   const topic = getTopic(params.topicId ?? "");
   const lessons = getTopicLessons(params.topicId ?? "");
+  const orderedLessonIds = lessons.map((lesson) => lesson.id);
   const progress = readProgress();
 
   if (!topic) {
@@ -52,7 +53,7 @@ export default function PathRoute() {
             title={lesson.title}
             index={index}
             isLast={index === lessons.length - 1}
-            status={getLessonStatus(lesson.id, topic.lessonIds, progress)}
+            status={getLessonStatus(lesson.id, orderedLessonIds, progress)}
           />
         ))}
       </div>
