@@ -35,13 +35,7 @@ const adminShortcuts = [
     description: "Inspect completion, accuracy, and weak lessons.",
     to: "/admin/reports",
     icon: BarChart3,
-  },
-  {
-    title: "Mascot scripts",
-    description: "Tune feedback lines and coaching behavior.",
-    to: "/admin/mascot",
-    icon: Sparkles,
-  },
+  }
 ];
 
 export default function AdminRoute() {

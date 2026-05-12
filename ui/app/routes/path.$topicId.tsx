@@ -1,6 +1,5 @@
 import { Link, useParams } from "react-router";
 
-import { Mascot } from "~/components/learning/mascot";
 import { PathNode } from "~/components/learning/path-node";
 import { StudentShell } from "~/components/learning/student-shell";
 import { Button } from "~/components/ui/button";
@@ -44,7 +43,6 @@ export default function PathRoute() {
             {topic.description}
           </p>
         </div>
-        <Mascot compact mood="coach" message="Take it one node at a time. The next lesson unlocks after this one." />
       </div>
       <div className="relative mx-auto max-w-2xl rounded-[2rem] p-5 sm:p-6">
         {lessons.map((lesson, index) => (

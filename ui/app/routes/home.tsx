@@ -2,7 +2,6 @@ import { ArrowRight, LogIn, LogOut, UserPlus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router";
 
-import { Mascot } from "~/components/learning/mascot";
 import { Avatar, AvatarFallback } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
@@ -44,7 +43,6 @@ export default function HomeRoute() {
           </p>
         </div>
         <div className="mx-auto">
-          <Mascot message="Choose a profile to start learning today." />
         </div>
         <div className="grid gap-4 md:grid-cols-3">
           {profiles.map((profile) => (

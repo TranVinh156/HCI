@@ -2,7 +2,6 @@ import { ArrowRight, CheckCircle2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 
-import { Mascot } from "~/components/learning/mascot";
 import { OceanProgress } from "~/components/learning/ocean-progress";
 import { QuizOption } from "~/components/learning/quiz-option";
 import { StudentShell } from "~/components/learning/student-shell";
@@ -61,16 +60,6 @@ export default function QuizRoute() {
     <StudentShell>
       <div className="mx-auto max-w-3xl space-y-5">
         <OceanProgress value={progressValue} label={`Question ${questionIndex + 1}`} />
-        <Mascot
-          mood={checked ? (isCorrect ? "success" : "coach") : "coach"}
-          message={
-            checked
-              ? isCorrect
-                ? "That is correct. Great job."
-                : question.hint
-              : "Choose the answer that matches the sign you just learned."
-          }
-        />
         <section className="rounded-[2rem] bg-white p-5">
           <div className="mb-5 rounded-[1.5rem] p-5 text-center">
             <p className="text-sm font-black uppercase text-primary">

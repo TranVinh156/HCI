@@ -3,7 +3,6 @@ import { Link, useParams } from "react-router";
 
 import { CameraPractice } from "~/components/learning/camera-practice";
 import { LessonCard } from "~/components/learning/lesson-card";
-import { Mascot } from "~/components/learning/mascot";
 import { StudentShell } from "~/components/learning/student-shell";
 import { Button } from "~/components/ui/button";
 import { getLesson, getTopic } from "~/lib/learning-data";
@@ -30,7 +29,6 @@ export default function LessonRoute() {
           </p>
           <h1 className="text-4xl font-black">{lesson.title}</h1>
         </div>
-        <Mascot compact mood="coach" message="Watch the hands and face, then replay the sign if you need." />
       </div>
       <div className="mx-auto max-w-3xl space-y-5">
         <LessonCard lesson={lesson} />

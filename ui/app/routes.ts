@@ -8,7 +8,6 @@ export default [
   route("translate", "routes/translate.tsx"),
   route("communication", "routes/communication.tsx"),
   route("practice", "routes/practice.tsx"),
-  route("mascot", "routes/mascot.tsx"),
   route("path/:topicId", "routes/path.$topicId.tsx"),
   route("lesson/:lessonId", "routes/lesson.$lessonId.tsx"),
   route("quiz/:lessonId", "routes/quiz.$lessonId.tsx"),
@@ -21,5 +20,4 @@ export default [
   route("admin/lessons", "routes/admin.lessons.tsx"),
   route("admin/quizzes", "routes/admin.quizzes.tsx"),
   route("admin/reports", "routes/admin.reports.tsx"),
-  route("admin/mascot", "routes/admin.mascot.tsx"),
 ] satisfies RouteConfig;

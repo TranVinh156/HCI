@@ -22,7 +22,6 @@ const navItems = [
   { to: "/translate", label: "Translate", icon: Languages },
   { to: "/communication", label: "Talk", icon: MessageCircle },
   { to: "/practice", label: "Practice", icon: Dumbbell },
-  { to: "/mascot", label: "Sami", icon: Sparkles },
   { to: "/profile", label: "Profile", icon: User },
   { to: "/admin", label: "Admin", icon: Shield },
 ];

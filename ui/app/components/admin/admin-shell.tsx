@@ -22,7 +22,6 @@ const navItems = [
   { label: "Lessons", to: "/admin/lessons", icon: GraduationCap },
   { label: "Quizzes", to: "/admin/quizzes", icon: ClipboardCheck },
   { label: "Reports", to: "/admin/reports", icon: BarChart3 },
-  { label: "Mascot", to: "/admin/mascot", icon: Sparkles },
 ];
 
 export function AdminShell({ children }: AdminShellProps) {
