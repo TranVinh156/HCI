@@ -1,4 +1,4 @@
-import { ArrowRight, Camera, Hand } from "lucide-react";
+import { ArrowRight, Hand, Keyboard } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router";
 
@@ -9,33 +9,18 @@ import { topics } from "~/lib/learning-data";
 
 const tabs = [
   { id: "handsign", label: "Handsign", icon: Hand },
-  { id: "sign_practice", label: "Sign practice", icon: Camera },
+  { id: "fingerspelling", label: "Fingerspelling", icon: Keyboard },
 ] as const;
 
 type LearnTab = (typeof tabs)[number]["id"];
 
-const signPracticeCards = [
-  {
-    id: "camera-ready",
-    title: "Camera ready",
-    description: "Check lighting, framing, and hand position before practice.",
-  },
-  {
-    id: "record-sign",
-    title: "Record sign",
-    description: "Record a short hand sign clip for recognition practice.",
-  },
-  {
-    id: "confidence",
-    title: "Confidence check",
-    description: "Compare detected signs with the target word and score.",
-  },
-  {
-    id: "retry-flow",
-    title: "Retry flow",
-    description: "Practice again when confidence is low or no hand is detected.",
-  },
-];
+const fingerspellingCards = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").map(
+  (letter) => ({
+    id: letter.toLowerCase(),
+    title: letter,
+    description: `Practice the ${letter} handshape.`,
+  })
+);
 
 export default function LearnRoute() {
   const [activeTab, setActiveTab] = useState<LearnTab>("handsign");
@@ -43,7 +28,7 @@ export default function LearnRoute() {
   return (
     <StudentShell>
       <div className="space-y-6">
-        <div className="flex w-full rounded-[1.75rem] border-3 border-slate-800 bg-white p-1.5 shadow-[4px_6px_0_#1f2937] sm:w-fit gap-2">
+        <div className="flex w-full rounded-[1.75rem] border-2 border-[#036678] bg-white p-1.5  sm:w-fit gap-2">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             const selected = activeTab === tab.id;
@@ -93,7 +78,7 @@ export default function LearnRoute() {
           </div>
         ) : (
           <div className="grid gap-5 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
-            {signPracticeCards.map((card) => (
+            {fingerspellingCards.map((card) => (
               <BlockyCard key={card.id} className="h-full">
                 <CardContent className="flex h-full flex-col px-5 pb-2">
                   <div className="grid aspect-square place-items-center rounded-[1.5rem] bg-primary text-7xl font-black text-white">

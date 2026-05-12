@@ -30,7 +30,7 @@ function BlockyCard({
       data-slot="blocky-card"
       data-size={size}
       className={cn(
-        "rounded-[26px] border-4 border-slate-700  shadow-[4px_6px_0_#2f394d,inset_0_-6px_0_#e4e4e4] transition-all duration-200 hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[8px_10px_0_#2f394d,inset_0_-6px_0_#e4e4e4]",
+        "rounded-[26px] border-2 border-[#036678]  shadow-[2px_4px_0_#036678,inset_0_-6px_0_#e4e4e4] transition-all duration-200 hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[4px_6px_0_#036678,inset_0_-6px_0_#e4e4e4]",
         className
       )}
       size={size}
