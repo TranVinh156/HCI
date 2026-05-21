@@ -31,20 +31,18 @@ export default function LoginRoute() {
   }
 
   return (
-    <main className="min-h-screen bg-cyan-50 px-4 py-8 text-slate-900">
+    <main className="min-h-screen px-4 py-8 text-slate-900">
       <div className="mx-auto flex min-h-[calc(100vh-4rem)] max-w-md flex-col justify-center">
         <Link to="/" className="mx-auto mb-6 flex items-center gap-2">
-          <div className="grid size-11 place-items-center rounded-2xl bg-sky-600 text-lg font-black text-white">
+          <div className="grid size-11 place-items-center rounded-2xl bg-primary text-lg font-black text-white">
             SO
           </div>
           <span className="text-xl font-black">SignOcean</span>
         </Link>
 
-        <Card className="rounded-[2rem] border-cyan-100 bg-white/95 shadow-xl shadow-cyan-100/70">
+        <Card className="rounded-[2rem] border-slate-200 bg-white/95">
           <CardHeader className="text-center">
-            <Badge className="mx-auto mb-2 h-8 bg-cyan-100 px-3 text-cyan-800">
-              Demo login
-            </Badge>
+
             <CardTitle className="text-3xl font-black">Welcome back</CardTitle>
             <CardDescription className="text-base font-semibold">
               The fields are prefilled for quick testing. Authentication is not
@@ -91,10 +89,10 @@ export default function LoginRoute() {
             </form>
 
             <div className="mt-5 flex items-center justify-between text-sm font-bold">
-              <Link className="text-cyan-700 hover:underline" to="/">
+              <Link className="text-primary hover:underline" to="/">
                 Choose profile
               </Link>
-              <Link className="text-cyan-700 hover:underline" to="/register">
+              <Link className="text-primary hover:underline" to="/register">
                 Create account
               </Link>
             </div>

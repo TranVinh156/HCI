@@ -38,11 +38,85 @@ export type QuizQuestion = {
   hint: string;
 };
 
+export type ExerciseType =
+  | "learning"
+  | "sign_practice"
+  | "quiz"
+  | "completion";
+
+type BaseExercise = {
+  id: string;
+  lessonId: string;
+  type: ExerciseType;
+  prompt?: string;
+  instruction?: string;
+  explanation?: string;
+};
+
+export type LearningExercise = BaseExercise & {
+  type: "learning";
+  title: string;
+  content: string;
+  targetWord?: string;
+  sampleSignVideoUrl?: string;
+  examples?: {
+    text: string;
+    translation?: string;
+    signVideoUrl?: string;
+  }[];
+};
+
+export type SignPracticeExercise = BaseExercise & {
+  type: "sign_practice";
+  targetWord: string;
+  targetSignVideoUrl?: string;
+  instruction?: string;
+  maxRecordSeconds?: number;
+  minConfidence?: number;
+  allowRetry?: boolean;
+};
+
+export type QuizExercise = BaseExercise & {
+  type: "quiz";
+  question: string;
+  options: {
+    id: string;
+    text: string;
+    isCorrect: boolean;
+    signVideoUrl?: string;
+  }[];
+};
+
+export type CompletionExercise = BaseExercise & {
+  type: "completion";
+  score?: number;
+  xp?: number;
+  correctCount?: number;
+  totalCount?: number;
+  mistakes?: string[];
+};
+
+export type LessonExercise =
+  | LearningExercise
+  | SignPracticeExercise
+  | QuizExercise
+  | CompletionExercise;
+
 export type Badge = {
   id: string;
   title: string;
   description: string;
   icon: string;
+};
+
+type LegacyAdminLessonDetail = {
+  id: string;
+  lessonId: string;
+  title: string;
+  label: string;
+  description: string;
+  status: string;
+  details: string[];
 };
 
 export const profiles: StudentProfile[] = [
@@ -75,7 +149,7 @@ export const topics: Topic[] = [
     title: "Family",
     description: "Parents, siblings, and warm everyday greetings.",
     icon: "Home",
-    color: "bg-sky-100 text-sky-800",
+    color: "bg-primary/10 text-primary",
     lessonIds: ["hello-family", "mother", "father"],
   },
   {
@@ -83,7 +157,7 @@ export const topics: Topic[] = [
     title: "Colors",
     description: "Recognize colors through visuals and signs.",
     icon: "Palette",
-    color: "bg-cyan-100 text-cyan-800",
+    color: "text-primary",
     lessonIds: ["blue", "yellow", "red"],
   },
   {
@@ -293,20 +367,104 @@ export const badges: Badge[] = [
   },
 ];
 
+export type AdminLearningData = {
+  topics: Topic[];
+  lessons: Lesson[];
+  exercises: LessonExercise[];
+};
+
+const ADMIN_LEARNING_STORAGE_KEY = "sign-ocean-admin-learning-data";
+
+function createDefaultAdminLearningData(): AdminLearningData {
+  return {
+    topics,
+    lessons,
+    exercises: [],
+  };
+}
+
+function mergeAdminLearningData(data: Partial<AdminLearningData>) {
+  const topicMap = new Map(topics.map((topic) => [topic.id, topic]));
+  const lessonMap = new Map(lessons.map((lesson) => [lesson.id, lesson]));
+
+  for (const topic of data.topics ?? []) {
+    if (topic?.id) topicMap.set(topic.id, topic);
+  }
+
+  for (const lesson of data.lessons ?? []) {
+    if (lesson?.id) lessonMap.set(lesson.id, lesson);
+  }
+
+  const legacyDetails = (
+    data as Partial<AdminLearningData> & {
+      lessonDetails?: LegacyAdminLessonDetail[];
+    }
+  ).lessonDetails;
+  const migratedExercises: LessonExercise[] = (legacyDetails ?? [])
+    .filter((detail) => Boolean(detail?.id && detail.lessonId && detail.title))
+    .map((detail) => ({
+      id: detail.id,
+      lessonId: detail.lessonId,
+      type: "learning",
+      title: detail.title,
+      content: detail.description,
+      prompt: detail.label,
+      explanation: detail.details.join("\n"),
+      examples: detail.details.map((item) => ({ text: item })),
+    }));
+
+  return {
+    topics: Array.from(topicMap.values()),
+    lessons: Array.from(lessonMap.values()),
+    exercises: [...migratedExercises, ...(data.exercises ?? [])].filter(
+      (exercise): exercise is LessonExercise =>
+        Boolean(exercise?.id && exercise.lessonId && exercise.type)
+    ),
+  };
+}
+
+export function readAdminLearningData(): AdminLearningData {
+  if (typeof window === "undefined") return createDefaultAdminLearningData();
+
+  try {
+    const raw = window.localStorage.getItem(ADMIN_LEARNING_STORAGE_KEY);
+    if (!raw) return createDefaultAdminLearningData();
+    return mergeAdminLearningData(JSON.parse(raw));
+  } catch {
+    return createDefaultAdminLearningData();
+  }
+}
+
+export function writeAdminLearningData(data: AdminLearningData) {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(
+    ADMIN_LEARNING_STORAGE_KEY,
+    JSON.stringify(data)
+  );
+}
+
 export function getLesson(lessonId: string) {
-  return lessons.find((lesson) => lesson.id === lessonId);
+  return readAdminLearningData().lessons.find((lesson) => lesson.id === lessonId);
 }
 
 export function getTopic(topicId: string) {
-  return topics.find((topic) => topic.id === topicId);
+  return readAdminLearningData().topics.find((topic) => topic.id === topicId);
 }
 
 export function getTopicLessons(topicId: string) {
-  const topic = getTopic(topicId);
+  const data = readAdminLearningData();
+  const topic = data.topics.find((item) => item.id === topicId);
   if (!topic) return [];
-  return topic.lessonIds
-    .map((lessonId) => lessons.find((lesson) => lesson.id === lessonId))
+
+  const byId = new Map(data.lessons.map((lesson) => [lesson.id, lesson]));
+  const orderedLessons = topic.lessonIds
+    .map((lessonId) => byId.get(lessonId))
     .filter((lesson): lesson is Lesson => Boolean(lesson));
+  const appendedLessons = data.lessons.filter(
+    (lesson) => lesson.topicId === topic.id && !topic.lessonIds.includes(lesson.id)
+  );
+
+  return [...orderedLessons, ...appendedLessons];
 }
 
 export function getLessonQuiz(lessonId: string) {

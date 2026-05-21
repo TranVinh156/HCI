@@ -1,7 +1,6 @@
 import { ArrowRight, Home } from "lucide-react";
 import { Link, useParams, useSearchParams } from "react-router";
 
-import { Mascot } from "~/components/learning/mascot";
 import { RewardSummary } from "~/components/learning/reward-summary";
 import { StudentShell } from "~/components/learning/student-shell";
 import { Button } from "~/components/ui/button";
@@ -30,12 +29,8 @@ export default function ResultRoute() {
   return (
     <StudentShell>
       <div className="mx-auto max-w-3xl space-y-5 text-center">
-        <Mascot
-          mood="success"
-          message={`You completed "${lesson.title}". Here is your reward!`}
-        />
-        <div className="rounded-[2rem] bg-cyan-50 p-8 shadow-xl shadow-cyan-100">
-          <div className="mx-auto grid size-28 place-items-center rounded-full bg-white text-6xl shadow-sm">
+        <div className="rounded-[2rem] p-8">
+          <div className="mx-auto grid size-28 place-items-center rounded-full bg-white text-6xl">
             🎉
           </div>
           <h1 className="mt-5 text-4xl font-black">Wonderful!</h1>

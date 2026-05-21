@@ -1,194 +1,101 @@
-import {
-  ArrowRight,
-  BookOpen,
-  Dumbbell,
-  Flame,
-  MessageCircle,
-  Sparkles,
-  Star,
-  Zap,
-} from "lucide-react";
-import { useEffect, useState } from "react";
+import { ArrowRight, Hand, Keyboard } from "lucide-react";
+import { useState } from "react";
 import { Link } from "react-router";
 
-import { Mascot } from "~/components/learning/mascot";
-import { OceanProgress } from "~/components/learning/ocean-progress";
 import { StudentShell } from "~/components/learning/student-shell";
 import { Button } from "~/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "~/components/ui/card";
-import { getSelectedProfile, readProgress, type ProgressState } from "~/lib/progress";
-import { lessons, topics } from "~/lib/learning-data";
+import { BlockyCard, CardContent } from "~/components/ui/card";
+import { topics } from "~/lib/learning-data";
 
-const mainActions = [
-  {
-    title: "Learn by topic",
-    description: "Pick a topic and follow the lesson path.",
-    to: "/topics",
-    icon: BookOpen,
-  },
-  {
-    title: "Communication",
-    description: "Practice useful daily sentences in context.",
-    to: "/communication",
-    icon: MessageCircle,
-  },
-  {
-    title: "Practice",
-    description: "Answer quick visual quizzes and review signs.",
-    to: "/practice",
-    icon: Dumbbell,
-  },
-  {
-    title: "Talk with Sami",
-    description: "Try simple mascot-guided conversation prompts.",
-    to: "/mascot",
-    icon: Sparkles,
-  },
-];
+const tabs = [
+  { id: "handsign", label: "Handsign", icon: Hand },
+  { id: "fingerspelling", label: "Fingerspelling", icon: Keyboard },
+] as const;
+
+type LearnTab = (typeof tabs)[number]["id"];
+
+const fingerspellingCards = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").map(
+  (letter) => ({
+    id: letter.toLowerCase(),
+    title: letter,
+    description: `Practice the ${letter} handshape.`,
+  })
+);
 
 export default function LearnRoute() {
-  const [progress, setProgress] = useState<ProgressState>(() => readProgress());
-
-  useEffect(() => {
-    setProgress(readProgress());
-  }, []);
-
-  const profile = getSelectedProfile(progress);
-  const completion = Math.round(
-    (progress.completedLessonIds.length / lessons.length) * 100
-  );
-  const nextLesson =
-    lessons.find((lesson) => !progress.completedLessonIds.includes(lesson.id)) ??
-    lessons[0];
+  const [activeTab, setActiveTab] = useState<LearnTab>("handsign");
 
   return (
     <StudentShell>
-      <div className="grid gap-6 lg:grid-cols-[1.3fr_0.7fr]">
-        <section className="space-y-5">
-          <div className="rounded-[2rem] bg-sky-600 p-6 text-white shadow-xl shadow-cyan-100">
-            <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <p className="text-sm font-black uppercase text-cyan-100">
-                  Hello {profile?.name}
-                </p>
-                <h1 className="mt-2 text-4xl font-black">
-                  Ready to learn a new sign?
-                </h1>
-              </div>
-              <Mascot
-                compact
-                mood="hello"
-                message="I will learn with you one small lesson at a time."
-              />
-            </div>
-          </div>
+      <div className="space-y-6">
+        <div className="flex w-full rounded-[1.75rem] border-2 border-[#036678] bg-white p-1.5  sm:w-fit gap-2">
+          {tabs.map((tab) => {
+            const Icon = tab.icon;
+            const selected = activeTab === tab.id;
 
-          <Card className="rounded-[2rem] bg-white shadow-sm">
-            <CardHeader>
-              <CardTitle className="text-2xl font-black">
-                Continue learning
-              </CardTitle>
-              <CardDescription>
-                Complete lessons to earn experience points, stars, and badges.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-5">
-              <OceanProgress value={completion} label="Overall progress" />
-              <div className="flex flex-col gap-3 rounded-[1.5rem] bg-cyan-50 p-4 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <p className="text-sm font-bold text-cyan-700">Next lesson</p>
-                  <h2 className="text-2xl font-black">{nextLesson.title}</h2>
-                </div>
-                <Button asChild className="h-12 rounded-2xl text-base font-black">
-                  <Link to={`/lesson/${nextLesson.id}`}>
-                    Learn now
-                    <ArrowRight className="size-5" />
-                  </Link>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          <section>
-            <h2 className="mb-3 text-2xl font-black">Start a mode</h2>
-            <div className="grid gap-4 sm:grid-cols-2">
-              {mainActions.map((action) => {
-                const Icon = action.icon;
-                return (
-                  <Link
-                    key={action.to}
-                    to={action.to}
-                    className="rounded-[1.5rem] bg-white p-5 shadow-sm ring-1 ring-cyan-100 transition hover:-translate-y-1"
-                  >
-                    <div className="mb-4 grid size-12 place-items-center rounded-2xl bg-cyan-100 text-cyan-800">
-                      <Icon className="size-6" />
-                    </div>
-                    <h3 className="text-xl font-black">{action.title}</h3>
-                    <p className="mt-1 text-sm font-semibold text-slate-500">
-                      {action.description}
-                    </p>
-                  </Link>
-                );
-              })}
-            </div>
-          </section>
-
-          <section>
-            <div className="mb-3 flex items-center justify-between">
-              <h2 className="text-2xl font-black">Topics</h2>
-              <Link className="text-sm font-black text-cyan-700" to="/topics">
-                View all
-              </Link>
-            </div>
-            <div className="grid gap-4 sm:grid-cols-2">
-              {topics.slice(0, 4).map((topic) => (
-                <Link
-                  key={topic.id}
-                  to={`/path/${topic.id}`}
-                  className="rounded-[1.5rem] bg-white p-5 shadow-sm ring-1 ring-cyan-100 transition hover:-translate-y-1"
-                >
-                  <p className="text-sm font-black uppercase text-cyan-700">
-                    {topic.lessonIds.length} lessons
-                  </p>
-                  <h3 className="mt-2 text-2xl font-black">{topic.title}</h3>
-                  <p className="mt-1 text-sm font-semibold text-slate-500">
-                    {topic.description}
-                  </p>
-                </Link>
-              ))}
-            </div>
-          </section>
-        </section>
-
-        <aside className="space-y-4">
-          {[
-            { label: "XP", value: progress.xp, icon: Zap },
-            { label: "Stars", value: progress.stars, icon: Star },
-            { label: "Streak", value: progress.streak, icon: Flame },
-          ].map((stat) => {
-            const Icon = stat.icon;
             return (
-              <div
-                key={stat.label}
-                className="flex items-center gap-4 rounded-[1.5rem] bg-white p-5 shadow-sm ring-1 ring-cyan-100"
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setActiveTab(tab.id)}
+                className={`w-40 flex h-12 flex-1 items-center justify-center gap-2 rounded-[1.25rem] px-4 text-sm font-black transition-colors sm:flex-none ${
+                  selected
+                    ? "bg-primary text-primary-foreground"
+                    : "text-slate-600 hover:bg-primary/10 hover:text-primary"
+                }`}
+                aria-pressed={selected}
               >
-                <div className="grid size-12 place-items-center rounded-2xl bg-amber-100 text-amber-700">
-                  <Icon className="size-6" />
-                </div>
-                <div>
-                  <p className="text-2xl font-black">{stat.value}</p>
-                  <p className="text-sm font-bold text-slate-500">{stat.label}</p>
-                </div>
-              </div>
+                <Icon className="size-4" />
+                {tab.label}
+              </button>
             );
           })}
-        </aside>
+        </div>
+
+        {activeTab === "handsign" ? (
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {topics.map((topic) => (
+              <BlockyCard key={topic.id} className="h-full">
+                <CardContent className="flex h-full flex-col pb-2">
+                  <div className={`mb-5 rounded-[1.5rem]`}>
+                    <h2 className="text-2xl font-black">{topic.title}</h2>
+                  </div>
+                  <p className="min-h-12 grow text-sm font-semibold text-slate-600">
+                    {topic.description}
+                  </p>
+                  <Button
+                    asChild
+                    className="mt-5 h-12 w-full rounded-2xl font-black"
+                  >
+                    <Link to={`/path/${topic.id}`}>
+                      Open path
+                      <ArrowRight className="size-5" />
+                    </Link>
+                  </Button>
+                </CardContent>
+              </BlockyCard>
+            ))}
+          </div>
+        ) : (
+          <div className="grid gap-5 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
+            {fingerspellingCards.map((card) => (
+              <BlockyCard key={card.id} className="h-full">
+                <CardContent className="flex h-full flex-col px-5 pb-2">
+                  <div className="grid aspect-square place-items-center rounded-[1.5rem] bg-primary text-7xl font-black text-white">
+                    {card.title}
+                  </div>
+                  <p className="mt-1 grow text-sm font-semibold text-slate-600">
+                    {card.description}
+                  </p>
+                  <Button className="mt-5 h-12 w-full rounded-2xl font-black">
+                    Start practice
+                    <ArrowRight className="size-5" />
+                  </Button>
+                </CardContent>
+              </BlockyCard>
+            ))}
+          </div>
+        )}
       </div>
     </StudentShell>
   );

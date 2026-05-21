@@ -13,22 +13,10 @@ import { lessons, profiles, quizzes, topics } from "~/lib/learning-data";
 
 const adminShortcuts = [
   {
-    title: "Manage students",
-    description: "Review profiles, guardians, progress, and class status.",
-    to: "/admin/students",
-    icon: Users,
-  },
-  {
-    title: "Edit topics",
-    description: "Organize learning paths, topic order, and visibility.",
-    to: "/admin/topics",
-    icon: BookOpen,
-  },
-  {
     title: "Build lessons",
-    description: "Maintain signs, hints, difficulty, and reward values.",
+    description: "Organize topic paths, signs, hints, and rewards.",
     to: "/admin/lessons",
-    icon: GraduationCap,
+    icon: BookOpen,
   },
   {
     title: "Quiz bank",
@@ -41,13 +29,7 @@ const adminShortcuts = [
     description: "Inspect completion, accuracy, and weak lessons.",
     to: "/admin/reports",
     icon: BarChart3,
-  },
-  {
-    title: "Mascot scripts",
-    description: "Tune feedback lines and coaching behavior.",
-    to: "/admin/mascot",
-    icon: Sparkles,
-  },
+  }
 ];
 
 export default function AdminRoute() {
@@ -96,13 +78,13 @@ export default function AdminRoute() {
           {adminShortcuts.map((item) => {
             const Icon = item.icon;
             return (
-              <Card key={item.to} className="rounded-xl border-sky-100 py-0 shadow-sm">
+              <Card key={item.to} className="rounded-xl border-slate-200 py-0">
                 <CardContent className="flex h-full flex-col gap-4 p-5">
                   <div className="flex items-start justify-between gap-3">
-                    <div className="grid size-11 place-items-center rounded-xl bg-cyan-50 text-cyan-700">
+                    <div className="grid size-11 place-items-center rounded-xl text-primary">
                       <Icon className="size-5" />
                     </div>
-                    <Badge className="bg-sky-100 text-sky-800">Route ready</Badge>
+                    <Badge className="bg-primary/10 text-primary">Route ready</Badge>
                   </div>
                   <div className="grow">
                     <h2 className="text-lg font-black">{item.title}</h2>
@@ -110,7 +92,7 @@ export default function AdminRoute() {
                       {item.description}
                     </p>
                   </div>
-                  <Button asChild variant="outline" className="h-10 rounded-xl">
+                  <Button asChild className="h-10 rounded-xl">
                     <Link to={item.to}>
                       Open
                       <ArrowRight className="size-4" />
@@ -143,7 +125,7 @@ export default function AdminRoute() {
           />
         </div>
 
-        <section className="rounded-xl border border-sky-100 bg-white p-4 shadow-sm">
+        <section className="rounded-xl border border-slate-200 bg-white p-4">
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div>
               <h2 className="text-lg font-black">Search content</h2>

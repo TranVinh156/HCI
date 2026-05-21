@@ -12,21 +12,21 @@ export default function AdminQuizzesRoute() {
     <AdminShell title="Quizzes" subtitle="Practice question bank">
       <div className="space-y-5">
         <div className="grid gap-4 md:grid-cols-3">
-          <Card className="rounded-xl border-sky-100 py-0 shadow-sm">
+          <Card className="rounded-xl border-slate-200 py-0">
             <CardContent className="p-5">
-              <ClipboardCheck className="size-7 text-cyan-700" />
+              <ClipboardCheck className="size-7 text-primary" />
               <p className="mt-3 text-3xl font-black">{quizzes.length}</p>
               <p className="text-sm font-bold text-slate-500">Questions</p>
             </CardContent>
           </Card>
-          <Card className="rounded-xl border-sky-100 py-0 shadow-sm">
+          <Card className="rounded-xl border-slate-200 py-0">
             <CardContent className="p-5">
               <HelpCircle className="size-7 text-amber-600" />
               <p className="mt-3 text-3xl font-black">2</p>
               <p className="text-sm font-bold text-slate-500">Question types</p>
             </CardContent>
           </Card>
-          <Card className="rounded-xl border-sky-100 py-0 shadow-sm">
+          <Card className="rounded-xl border-slate-200 py-0">
             <CardContent className="p-5">
               <CheckCircle2 className="size-7 text-emerald-600" />
               <p className="mt-3 text-3xl font-black">100%</p>
@@ -35,7 +35,7 @@ export default function AdminQuizzesRoute() {
           </Card>
         </div>
 
-        <Card className="rounded-xl border-sky-100 py-0 shadow-sm">
+        <Card className="rounded-xl border-slate-200 py-0">
           <CardContent className="flex flex-col gap-3 p-4 md:flex-row md:items-center md:justify-between">
             <div>
               <h2 className="text-lg font-black">Quiz questions</h2>
@@ -64,7 +64,7 @@ export default function AdminQuizzesRoute() {
               key: "type",
               header: "Type",
               render: (item) => (
-                <Badge className="bg-cyan-100 text-cyan-800">{item.type}</Badge>
+                <Badge className="bg-primary/10 text-primary">{item.type}</Badge>
               ),
             },
             { key: "answer", header: "Answer", render: (item) => item.answer },

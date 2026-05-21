@@ -22,13 +22,13 @@ export function PathNode({
   const node = (
     <div
       className={cn(
-        "relative z-10 grid size-16 place-items-center rounded-full border-4 text-white shadow-lg transition sm:size-18",
+        "relative z-10 grid size-16 place-items-center rounded-full border-4 text-white transition sm:size-18",
         status === "completed" &&
-          "border-emerald-200 bg-emerald-500 shadow-emerald-200",
+          "border-emerald-200 bg-emerald-500",
         status === "current" &&
-          "border-sky-200 bg-sky-600 shadow-sky-200 hover:-translate-y-1",
+          "border-primary/30 bg-primary hover:-translate-y-1",
         status === "locked" &&
-          "border-slate-200 bg-slate-300 text-slate-500 shadow-slate-100"
+          "border-slate-200 bg-slate-300 text-slate-500"
       )}
     >
       <Icon className="size-8" />
@@ -41,7 +41,7 @@ export function PathNode({
         {!isLast ? (
           <div
             className={cn(
-              "absolute left-1/2 top-16 h-[calc(100%+2rem)] w-1 -translate-x-1/2 rounded-full bg-cyan-200 sm:top-18",
+              "absolute left-1/2 top-16 h-[calc(100%+2rem)] w-1 -translate-x-1/2 rounded-full bg-primary/30 sm:top-18",
               status === "completed" && "bg-emerald-300"
             )}
             aria-hidden="true"
@@ -61,15 +61,15 @@ export function PathNode({
 
       <div
         className={cn(
-          "mb-8 min-w-0 rounded-2xl bg-white px-4 py-4 shadow-sm ring-1 ring-cyan-100 sm:px-5",
-          status === "current" && "ring-2 ring-sky-300",
-          status === "completed" && "bg-emerald-50 ring-emerald-100",
+          "mb-8 min-w-0 rounded-2xl bg-white px-4 py-4 ring-1 ring-slate-200 sm:px-5",
+          status === "current" && "ring-2 ring-primary/40",
+          status === "completed" && "bg-emerald-50 ring-slate-200",
           status === "locked" && "bg-slate-50 text-slate-500 ring-slate-200"
         )}
       >
         <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0">
-            <p className="text-xs font-bold uppercase text-cyan-700">
+            <p className="text-xs font-bold uppercase text-primary">
               Lesson {index + 1}
             </p>
             <p className="mt-1 truncate text-lg font-black text-slate-800">
@@ -80,7 +80,7 @@ export function PathNode({
             className={cn(
               "w-fit rounded-full px-2.5 py-1 text-xs font-black",
               status === "completed" && "bg-emerald-100 text-emerald-800",
-              status === "current" && "bg-sky-100 text-sky-800",
+              status === "current" && "bg-primary/10 text-primary",
               status === "locked" && "bg-slate-200 text-slate-600"
             )}
           >

@@ -1,6 +1,5 @@
 import { Link, useParams } from "react-router";
 
-import { Mascot } from "~/components/learning/mascot";
 import { PathNode } from "~/components/learning/path-node";
 import { StudentShell } from "~/components/learning/student-shell";
 import { Button } from "~/components/ui/button";
@@ -11,6 +10,7 @@ export default function PathRoute() {
   const params = useParams();
   const topic = getTopic(params.topicId ?? "");
   const lessons = getTopicLessons(params.topicId ?? "");
+  const orderedLessonIds = lessons.map((lesson) => lesson.id);
   const progress = readProgress();
 
   if (!topic) {
@@ -27,7 +27,7 @@ export default function PathRoute() {
         <div className="min-w-0 flex-1">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div className="min-w-0">
-              <p className="text-sm font-black uppercase text-cyan-700">
+              <p className="text-sm font-black uppercase text-primary">
                 Learning path
               </p>
               <h1 className="text-4xl font-black">{topic.title}</h1>
@@ -44,9 +44,8 @@ export default function PathRoute() {
             {topic.description}
           </p>
         </div>
-        <Mascot compact mood="coach" message="Take it one node at a time. The next lesson unlocks after this one." />
       </div>
-      <div className="relative mx-auto max-w-2xl rounded-[2rem] bg-cyan-50/70 p-5 sm:p-6">
+      <div className="relative mx-auto max-w-2xl rounded-[2rem] p-5 sm:p-6">
         {lessons.map((lesson, index) => (
           <PathNode
             key={lesson.id}
@@ -54,7 +53,7 @@ export default function PathRoute() {
             title={lesson.title}
             index={index}
             isLast={index === lessons.length - 1}
-            status={getLessonStatus(lesson.id, topic.lessonIds, progress)}
+            status={getLessonStatus(lesson.id, orderedLessonIds, progress)}
           />
         ))}
       </div>

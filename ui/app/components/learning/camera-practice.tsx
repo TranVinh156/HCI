@@ -100,7 +100,7 @@ export function CameraPractice({ lesson }: CameraPracticeProps) {
     idle: {
       title: "Mirror practice",
       text: `Try "${lesson.phrase}" while looking at yourself in the mirror view.`,
-      className: "bg-cyan-50 text-cyan-800",
+      className: "text-primary",
       icon: Sparkles,
     },
     checking: {
@@ -135,7 +135,7 @@ export function CameraPractice({ lesson }: CameraPracticeProps) {
   const FeedbackIcon = currentFeedback.icon;
 
   return (
-    <Card className="rounded-[2rem] border-cyan-100 bg-white/95 shadow-xl shadow-cyan-100/60">
+    <Card className="rounded-[2rem] border-slate-200 bg-white/95">
       <CardHeader>
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
@@ -147,14 +147,14 @@ export function CameraPractice({ lesson }: CameraPracticeProps) {
               sample.
             </CardDescription>
           </div>
-          <Badge className="h-8 bg-cyan-100 px-3 text-cyan-800">
+          <Badge className="h-8 bg-primary/10 px-3 text-primary">
             Prototype feedback
           </Badge>
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
-          <div className="relative aspect-[4/3] overflow-hidden rounded-[1.5rem] border border-cyan-100 bg-slate-950">
+          <div className="relative aspect-[4/3] overflow-hidden rounded-[1.5rem] border border-slate-200 bg-slate-950">
             <video
               ref={videoRef}
               autoPlay
@@ -188,8 +188,8 @@ export function CameraPractice({ lesson }: CameraPracticeProps) {
               </div>
             </div>
 
-            <div className="rounded-[1.5rem] bg-cyan-50 p-4">
-              <p className="mb-2 text-sm font-black uppercase text-cyan-700">
+            <div className="rounded-[1.5rem] p-4">
+              <p className="mb-2 text-sm font-black uppercase text-primary">
                 Practice checklist
               </p>
               <ul className="space-y-2">
@@ -243,7 +243,7 @@ export function CameraPractice({ lesson }: CameraPracticeProps) {
             type="button"
             variant="outline"
             onClick={() => setFeedback("idle")}
-            className="h-12 rounded-2xl border-cyan-200 font-black text-cyan-800"
+            className="h-12 rounded-2xl font-black text-primary"
           >
             <RotateCcw className="size-5" />
             Try again

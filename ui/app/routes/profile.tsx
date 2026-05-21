@@ -40,8 +40,8 @@ export default function ProfileRoute() {
   return (
     <StudentShell>
       <div className="grid gap-6 lg:grid-cols-[0.75fr_1.25fr]">
-        <aside className="rounded-[2rem] bg-white p-6 text-center shadow-sm ring-1 ring-cyan-100">
-          <Avatar className="mx-auto size-28 bg-sky-600 text-white">
+        <aside className="rounded-[2rem] bg-white p-6 text-center ring-1 ring-slate-200">
+          <Avatar className="mx-auto size-28 bg-primary text-white">
             <AvatarFallback className="bg-transparent text-5xl font-black text-white">
               {profile?.avatar}
             </AvatarFallback>
@@ -66,16 +66,16 @@ export default function ProfileRoute() {
               return (
                 <div
                   key={item.label}
-                  className="rounded-[1.5rem] bg-white p-5 shadow-sm ring-1 ring-cyan-100"
+                  className="rounded-[1.5rem] bg-white p-5 ring-1 ring-slate-200"
                 >
-                  <Icon className="size-7 text-cyan-700" />
+                  <Icon className="size-7 text-primary" />
                   <p className="mt-3 text-3xl font-black">{item.value}</p>
                   <p className="text-sm font-bold text-slate-500">{item.label}</p>
                 </div>
               );
             })}
           </div>
-          <div className="rounded-[1.5rem] bg-white p-5 shadow-sm ring-1 ring-cyan-100">
+          <div className="rounded-[1.5rem] bg-white p-5 ring-1 ring-slate-200">
             <div className="mb-4 flex items-center gap-2">
               <Award className="size-5 text-amber-500" />
               <h2 className="text-xl font-black">Badges</h2>
@@ -96,9 +96,9 @@ export default function ProfileRoute() {
               ) : null}
             </div>
           </div>
-          <div className="rounded-[1.5rem] bg-white p-5 shadow-sm ring-1 ring-cyan-100">
+          <div className="rounded-[1.5rem] bg-white p-5 ring-1 ring-slate-200">
             <div className="mb-4 flex items-center gap-2">
-              <Clock className="size-5 text-cyan-700" />
+              <Clock className="size-5 text-primary" />
               <h2 className="text-xl font-black">Learning history</h2>
             </div>
             <div className="space-y-3">
@@ -115,7 +115,7 @@ export default function ProfileRoute() {
                     return (
                       <div
                         key={attempt.lessonId}
-                        className="flex flex-col gap-2 rounded-2xl bg-cyan-50 p-4 sm:flex-row sm:items-center sm:justify-between"
+                        className="flex flex-col gap-2 rounded-2xl p-4 sm:flex-row sm:items-center sm:justify-between"
                       >
                         <div>
                           <p className="font-black text-slate-900">

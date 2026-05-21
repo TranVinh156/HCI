@@ -25,24 +25,18 @@ export default function RegisterRoute() {
   }
 
   return (
-    <main className="min-h-screen bg-cyan-50 px-4 py-8 text-slate-900">
+    <main className="min-h-screen px-4 py-8 text-slate-900">
       <div className="mx-auto flex min-h-[calc(100vh-4rem)] max-w-md flex-col justify-center">
         <Link to="/" className="mx-auto mb-6 flex items-center gap-2">
-          <div className="grid size-11 place-items-center rounded-2xl bg-sky-600 text-lg font-black text-white">
+          <div className="grid size-11 place-items-center rounded-2xl bg-primary text-lg font-black text-white">
             SO
           </div>
           <span className="text-xl font-black">SignOcean</span>
         </Link>
 
-        <Card className="rounded-[2rem] border-cyan-100 bg-white/95 shadow-xl shadow-cyan-100/70">
+        <Card className="rounded-[2rem] bg-white/95">
           <CardHeader className="text-center">
-            <Badge className="mx-auto mb-2 h-8 bg-emerald-100 px-3 text-emerald-800">
-              Demo register
-            </Badge>
             <CardTitle className="text-3xl font-black">Create account</CardTitle>
-            <CardDescription className="text-base font-semibold">
-              This form is UI-only for now. It does not create a real account.
-            </CardDescription>
           </CardHeader>
           <CardContent>
             <form className="space-y-4" onSubmit={submitRegister}>
@@ -101,7 +95,7 @@ export default function RegisterRoute() {
 
             <div className="mt-5 text-center text-sm font-bold">
               Already have a demo account?{" "}
-              <Link className="text-cyan-700 hover:underline" to="/login">
+              <Link className="text-primary hover:underline" to="/login">
                 Log in
               </Link>
             </div>
