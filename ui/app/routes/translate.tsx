@@ -2,9 +2,12 @@ import {
   ArrowLeftRight,
   Camera,
   Copy,
+  Eraser,
   Hand,
   Languages,
+  Loader2,
   Mic,
+  ScanLine,
   Type,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -18,8 +21,16 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
+import { api } from "~/lib/api-client";
 
 type TranslateMode = "handsign-to-text" | "text-to-handsign";
+type SignKind = "alphabet" | "word";
+
+type Prediction = {
+  label: string;
+  confidence: number;
+  kind: SignKind;
+};
 
 const sampleSigns = [
   { sign: "hello", text: "Hello" },
@@ -30,10 +41,6 @@ const sampleSigns = [
   { sign: "no", text: "No" },
 ];
 
-const signDictionary = new Map(
-  sampleSigns.map((entry) => [entry.sign, entry.text])
-);
-
 function translateTextToHands(input: string) {
   return input
     .trim()
@@ -43,46 +50,43 @@ function translateTextToHands(input: string) {
     .filter(Boolean);
 }
 
-function translateHandsignToText(input: string) {
-  return input
-    .trim()
-    .split(/[\s,]+/)
-    .filter(Boolean)
-    .map((sign) => signDictionary.get(sign.toLowerCase()) ?? sign)
-    .join(" ");
-}
-
 export default function TranslateRoute() {
   const [mode, setMode] = useState<TranslateMode>("handsign-to-text");
+  const [kind, setKind] = useState<SignKind>("alphabet");
   const [textInput, setTextInput] = useState("Hello thank you");
-  const [selectedSigns, setSelectedSigns] = useState<string[]>(["hello"]);
   const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
   const [cameraError, setCameraError] = useState<string | null>(null);
+  const [predictions, setPredictions] = useState<Prediction[]>([]);
+  const [isCapturing, setIsCapturing] = useState(false);
+  const [autoCapture, setAutoCapture] = useState(false);
+  const [stubWarning, setStubWarning] = useState(false);
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   const isHandsignToText = mode === "handsign-to-text";
   const sourceLabel = isHandsignToText ? "Handsign" : "Text";
   const targetLabel = isHandsignToText ? "Text" : "Handsign";
 
-  const result = useMemo(() => {
-    if (isHandsignToText) {
-      return translateHandsignToText(selectedSigns.join(" "));
+  const recognizedText = useMemo(() => {
+    if (predictions.length === 0) return "";
+    if (kind === "alphabet") {
+      return predictions.map((p) => p.label).join("");
     }
+    return predictions
+      .map((p) => p.label.replace(/-/g, " "))
+      .join(" ");
+  }, [predictions, kind]);
 
-    return translateTextToHands(textInput);
-  }, [isHandsignToText, selectedSigns, textInput]);
+  const lastPrediction = predictions[predictions.length - 1];
+
+  const textToSignsResult = useMemo(
+    () => (isHandsignToText ? [] : translateTextToHands(textInput)),
+    [isHandsignToText, textInput]
+  );
 
   function switchMode() {
     setMode((current) =>
       current === "handsign-to-text" ? "text-to-handsign" : "handsign-to-text"
-    );
-  }
-
-  function toggleSign(sign: string) {
-    setSelectedSigns((current) =>
-      current.includes(sign)
-        ? current.filter((item) => item !== sign)
-        : [...current, sign]
     );
   }
 
@@ -104,6 +108,53 @@ export default function TranslateRoute() {
     }
   }
 
+  async function captureFrame() {
+    if (!videoRef.current || !canvasRef.current || isCapturing) return;
+    setIsCapturing(true);
+    try {
+      const video = videoRef.current;
+      const canvas = canvasRef.current;
+      canvas.width = video.videoWidth || 640;
+      canvas.height = video.videoHeight || 480;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
+
+      const result = await api.translate.signToText(dataUrl, kind);
+      setStubWarning(!result.model_loaded);
+
+      if (result.confidence >= 0.5 || !result.model_loaded) {
+        setPredictions((prev) => [
+          ...prev,
+          { label: result.label, confidence: result.confidence, kind },
+        ]);
+      }
+    } catch (error) {
+      console.error(error);
+      setCameraError(
+        error instanceof Error ? error.message : "Recognition failed"
+      );
+    } finally {
+      setIsCapturing(false);
+    }
+  }
+
+  function clearPredictions() {
+    setPredictions([]);
+    setStubWarning(false);
+  }
+
+  async function copyText() {
+    try {
+      await navigator.clipboard.writeText(
+        isHandsignToText ? recognizedText : textInput
+      );
+    } catch {
+      /* ignore */
+    }
+  }
+
   useEffect(() => {
     if (videoRef.current && cameraStream) {
       videoRef.current.srcObject = cameraStream;
@@ -117,6 +168,15 @@ export default function TranslateRoute() {
     }
   }, [cameraStream, isHandsignToText]);
 
+  useEffect(() => {
+    if (!autoCapture || !cameraStream) return;
+    const intervalMs = kind === "alphabet" ? 1500 : 2500;
+    const timer = setInterval(() => {
+      captureFrame();
+    }, intervalMs);
+    return () => clearInterval(timer);
+  }, [autoCapture, cameraStream, kind]);
+
   return (
     <StudentShell>
       <div className="space-y-5">
@@ -124,7 +184,7 @@ export default function TranslateRoute() {
           <div>
             <div className="mb-2 flex items-center gap-2 text-sm font-black uppercase tracking-[0.08em] text-primary">
               <Languages className="size-4" />
-              Translate
+              Translate (ASL)
             </div>
             <h1 className="text-3xl font-black tracking-tight text-slate-900">
               {sourceLabel} to {targetLabel}
@@ -142,6 +202,34 @@ export default function TranslateRoute() {
           </Button>
         </div>
 
+        {isHandsignToText ? (
+          <div className="flex flex-wrap items-center gap-2 rounded-2xl border-2 border-slate-200 bg-white p-3">
+            <span className="text-sm font-black text-slate-700">Mode:</span>
+            <Button
+              type="button"
+              onClick={() => {
+                setKind("alphabet");
+                clearPredictions();
+              }}
+              variant={kind === "alphabet" ? "default" : "outline"}
+              className="h-9 rounded-xl font-black"
+            >
+              Alphabet (A-Z)
+            </Button>
+            <Button
+              type="button"
+              onClick={() => {
+                setKind("word");
+                clearPredictions();
+              }}
+              variant={kind === "word" ? "default" : "outline"}
+              className="h-9 rounded-xl font-black"
+            >
+              Vocabulary
+            </Button>
+          </div>
+        ) : null}
+
         <div className="grid gap-4 lg:grid-cols-[1fr_auto_1fr] lg:items-stretch">
           <Card className="min-h-[24rem] rounded-[2rem] border-3 border-slate-800 bg-white shadow-[4px_6px_0_#1f2937]">
             <CardHeader className="border-b border-slate-100 pb-4">
@@ -155,28 +243,27 @@ export default function TranslateRoute() {
               </CardTitle>
               <CardDescription className="font-semibold">
                 {isHandsignToText
-                  ? "Select signs or use camera input."
+                  ? "Bật camera, đưa tay vào khung, bấm Capture để nhận diện."
                   : "Type a phrase to convert into hand signs."}
               </CardDescription>
             </CardHeader>
             <CardContent className="flex h-full flex-col gap-4">
               {isHandsignToText ? (
                 <>
-
                   {!cameraStream ? (
                     <div className="flex flex-col gap-3 rounded-[1.5rem] border-2 border-slate-200 bg-white p-4">
                       <div className="flex items-center gap-3">
                         <div className="grid size-12 place-items-center rounded-[1.25rem] bg-secondary text-primary">
                           <Camera className="size-5" />
                         </div>
-                      </div>
-                      <div>
-                        <p className="text-sm font-black text-slate-900">
-                          Enable camera to detect hand signs
-                        </p>
-                        <p className="text-xs font-semibold text-slate-500">
-                          We only use it for live detection during practice.
-                        </p>
+                        <div>
+                          <p className="text-sm font-black text-slate-900">
+                            Enable camera to detect hand signs
+                          </p>
+                          <p className="text-xs font-semibold text-slate-500">
+                            Camera chỉ dùng để nhận diện cục bộ.
+                          </p>
+                        </div>
                       </div>
                       <Button
                         type="button"
@@ -210,26 +297,59 @@ export default function TranslateRoute() {
                       </div>
                     )}
                   </div>
-                  <div className="flex flex-wrap gap-2">
-                    {sampleSigns.map((entry) => {
-                      const selected = selectedSigns.includes(entry.sign);
+                  <canvas ref={canvasRef} className="hidden" />
 
-                      return (
-                        <button
-                          key={entry.sign}
-                          type="button"
-                          onClick={() => toggleSign(entry.sign)}
-                          className={`rounded-2xl border-2 px-3 py-2 text-sm font-black transition-colors ${selected
-                            ? "border-primary bg-primary text-white"
-                            : "border-slate-200 bg-white text-slate-700 hover:bg-secondary"
-                            }`}
-                          aria-pressed={selected}
-                        >
-                          {entry.sign}
-                        </button>
-                      );
-                    })}
-                  </div>
+                  {cameraStream ? (
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        type="button"
+                        onClick={captureFrame}
+                        disabled={isCapturing}
+                        className="h-11 rounded-2xl font-black"
+                      >
+                        {isCapturing ? (
+                          <Loader2 className="size-4 animate-spin" />
+                        ) : (
+                          <ScanLine className="size-4" />
+                        )}
+                        Capture sign
+                      </Button>
+                      <Button
+                        type="button"
+                        onClick={() => setAutoCapture((v) => !v)}
+                        variant={autoCapture ? "default" : "outline"}
+                        className="h-11 rounded-2xl font-black"
+                      >
+                        {autoCapture ? "Stop auto" : "Auto capture"}
+                      </Button>
+                      <Button
+                        type="button"
+                        onClick={clearPredictions}
+                        variant="outline"
+                        className="h-11 rounded-2xl font-black"
+                      >
+                        <Eraser className="size-4" />
+                        Clear
+                      </Button>
+                    </div>
+                  ) : null}
+
+                  {lastPrediction ? (
+                    <div className="rounded-2xl border-2 border-primary/30 bg-secondary/40 p-3 text-sm font-bold text-slate-800">
+                      Vừa nhận diện:{" "}
+                      <span className="text-primary">
+                        {lastPrediction.label}
+                      </span>{" "}
+                      ({Math.round(lastPrediction.confidence * 100)}%)
+                    </div>
+                  ) : null}
+
+                  {stubWarning ? (
+                    <p className="rounded-xl bg-amber-50 p-2 text-xs font-bold text-amber-700">
+                      ⚠ Model chưa được train — backend đang trả về kết quả mẫu.
+                      Xem `backend/ml/README.md` để train model.
+                    </p>
+                  ) : null}
                 </>
               ) : (
                 <textarea
@@ -270,12 +390,16 @@ export default function TranslateRoute() {
             <CardContent className="flex min-h-72 flex-col gap-4">
               {isHandsignToText ? (
                 <div className="grow rounded-[1.5rem] bg-muted p-4 text-3xl font-black leading-snug text-slate-900">
-                  {typeof result === "string" && result ? result : "Text"}
+                  {recognizedText || (
+                    <span className="text-slate-400">
+                      Capture a sign to see text…
+                    </span>
+                  )}
                 </div>
               ) : (
                 <div className="grid grow content-start gap-3 rounded-[1.5rem] bg-muted p-4 sm:grid-cols-2">
-                  {Array.isArray(result) && result.length > 0 ? (
-                    result.map((word, index) => (
+                  {textToSignsResult.length > 0 ? (
+                    textToSignsResult.map((word, index) => (
                       <div
                         key={`${word}-${index}`}
                         className="grid min-h-28 place-items-center rounded-2xl border-2 border-slate-200 bg-white p-3 text-center"
@@ -295,7 +419,11 @@ export default function TranslateRoute() {
               )}
 
               <div className="flex flex-wrap gap-2">
-                <Button type="button" className="h-11 rounded-2xl font-black">
+                <Button
+                  type="button"
+                  onClick={copyText}
+                  className="h-11 rounded-2xl font-black"
+                >
                   <Copy className="size-4" />
                   Copy
                 </Button>
