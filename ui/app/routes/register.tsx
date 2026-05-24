@@ -10,7 +10,8 @@ import {
   CardTitle,
 } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
-import { api } from "~/lib/api-client";
+import { authApi } from "~/api/auth";
+import { profilesApi } from "~/api/profiles";
 
 export default function RegisterRoute() {
   const navigate = useNavigate();
@@ -29,15 +30,15 @@ export default function RegisterRoute() {
     setIsSubmitting(true);
 
     try {
-      await api.auth.register({
+      await authApi.register({
         email,
         username,
         password,
       });
-      await api.auth.login(username, password);
+      await authApi.login(username, password);
 
       if (name.trim()) {
-        await api.profiles.create({
+        await profilesApi.create({
           name: name.trim(),
           age: null,
           avatar: null,

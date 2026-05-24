@@ -21,7 +21,7 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
-import { api } from "~/lib/api-client";
+import { translateApi } from "~/api/translate";
 
 type TranslateMode = "handsign-to-text" | "text-to-handsign";
 type SignKind = "alphabet" | "word";
@@ -121,7 +121,7 @@ export default function TranslateRoute() {
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
       const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
 
-      const result = await api.translate.signToText(dataUrl, kind);
+      const result = await translateApi.signToText(dataUrl, kind);
       setStubWarning(!result.model_loaded);
 
       if (result.confidence >= 0.5 || !result.model_loaded) {

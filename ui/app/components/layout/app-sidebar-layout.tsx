@@ -4,7 +4,7 @@ import { Link, NavLink, useLocation, useNavigate } from "react-router";
 
 import { Button } from "~/components/ui/button";
 import { getCurrentUser, isLoggedIn, logout } from "~/lib/auth";
-import type { User, UserRole } from "~/lib/api-client";
+import type { User, UserRole } from "~/api/types";
 import { cn } from "~/lib/utils";
 
 export type AppSidebarNavItem = {

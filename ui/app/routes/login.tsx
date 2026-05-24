@@ -11,7 +11,7 @@ import {
   CardTitle,
 } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
-import { api } from "~/lib/api-client";
+import { authApi } from "~/api/auth";
 import { getCurrentUser } from "~/lib/auth";
 
 export default function LoginRoute() {
@@ -48,8 +48,8 @@ export default function LoginRoute() {
     setIsSubmitting(true);
 
     try {
-      await api.auth.login(username, password);
-      const user = await api.auth.me();
+      await authApi.login(username, password);
+      const user = await authApi.me();
       navigate(resolveRedirect(redirectTo, user.role), { replace: true });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to log in");
