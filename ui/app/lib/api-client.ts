@@ -2,14 +2,17 @@ const BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
 const TOKEN_KEY = "sign-ocean-token";
 
 export function getToken(): string | null {
+  if (typeof window === "undefined") return null;
   return localStorage.getItem(TOKEN_KEY);
 }
 
 export function setToken(token: string) {
+  if (typeof window === "undefined") return;
   localStorage.setItem(TOKEN_KEY, token);
 }
 
 export function clearToken() {
+  if (typeof window === "undefined") return;
   localStorage.removeItem(TOKEN_KEY);
 }
 
@@ -23,11 +26,29 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
 
   const res = await fetch(`${BASE_URL}${path}`, { ...options, headers });
   if (!res.ok) {
+    if (res.status === 401) clearToken();
     const err = await res.json().catch(() => ({ detail: res.statusText }));
-    throw new Error(err.detail ?? "API error");
+    throw new Error(formatApiError(err.detail ?? res.statusText));
   }
   if (res.status === 204) return undefined as T;
   return res.json();
+}
+
+function formatApiError(detail: unknown): string {
+  if (typeof detail === "string") return detail;
+  if (Array.isArray(detail)) {
+    return detail
+      .map((item) => {
+        if (typeof item === "string") return item;
+        if (item && typeof item === "object" && "msg" in item) {
+          return String(item.msg);
+        }
+        return JSON.stringify(item);
+      })
+      .join(", ");
+  }
+  if (detail) return JSON.stringify(detail);
+  return "API error";
 }
 
 // ── Auth ──────────────────────────────────────────────────────────────────────
@@ -35,10 +56,10 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
 export const api = {
   auth: {
     register: (body: { email: string; username: string; password: string; role?: string }) =>
-      request<{ id: string; email: string; username: string; role: string }>("/api/auth/register", { method: "POST", body: JSON.stringify(body) }),
+      request<User>("/api/auth/register", { method: "POST", body: JSON.stringify(body) }),
 
     login: async (username: string, password: string) => {
-      const res = await request<{ access_token: string }>("/api/auth/login", {
+      const res = await request<TokenResponse>("/api/auth/login", {
         method: "POST",
         body: JSON.stringify({ username, password }),
       });
@@ -46,7 +67,7 @@ export const api = {
       return res;
     },
 
-    me: () => request<{ id: string; email: string; username: string; role: string }>("/api/auth/me"),
+    me: () => request<User>("/api/auth/me"),
 
     logout: () => clearToken(),
   },
@@ -129,6 +150,9 @@ export const api = {
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
+export type UserRole = "admin" | "guardian";
+export type User = { id: string; email: string; username: string; role: UserRole };
+export type TokenResponse = { access_token: string; token_type: string };
 export type StudentProfile = { id: string; user_id: string; name: string; age: number | null; avatar: string | null; guardian_name: string | null };
 export type Topic = { id: string; title: string; description: string | null; icon: string | null; color: string | null; sort_order: number; lesson_count: number };
 export type Lesson = { id: string; topic_id: string; type: string; title: string; phrase: string | null; description: string | null; visual: string | null; sign_hint: string | null; difficulty: string; xp: number; sort_order: number };

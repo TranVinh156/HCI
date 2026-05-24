@@ -1,16 +1,22 @@
-const AUTH_KEY = "sign-ocean-authenticated";
+import { api, clearToken, getToken, type User } from "./api-client";
 
 export function isLoggedIn() {
   if (typeof window === "undefined") return false;
-  return window.localStorage.getItem(AUTH_KEY) === "true";
+  return Boolean(getToken());
 }
 
-export function loginMock() {
-  if (typeof window === "undefined") return;
-  window.localStorage.setItem(AUTH_KEY, "true");
+export async function getCurrentUser(): Promise<User | null> {
+  if (!isLoggedIn()) return null;
+
+  try {
+    return await api.auth.me();
+  } catch {
+    clearToken();
+    return null;
+  }
 }
 
-export function logoutMock() {
+export function logout() {
   if (typeof window === "undefined") return;
-  window.localStorage.removeItem(AUTH_KEY);
+  clearToken();
 }

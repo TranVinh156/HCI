@@ -1,9 +1,10 @@
 import { LogIn, LogOut, type LucideIcon } from "lucide-react";
 import { type ReactNode, useEffect, useState } from "react";
-import { Link, NavLink, useNavigate } from "react-router";
+import { Link, NavLink, useLocation, useNavigate } from "react-router";
 
 import { Button } from "~/components/ui/button";
-import { isLoggedIn, logoutMock } from "~/lib/auth";
+import { getCurrentUser, isLoggedIn, logout } from "~/lib/auth";
+import type { User, UserRole } from "~/lib/api-client";
 import { cn } from "~/lib/utils";
 
 export type AppSidebarNavItem = {
@@ -11,6 +12,7 @@ export type AppSidebarNavItem = {
   to: string;
   icon: LucideIcon;
   end?: boolean;
+  adminOnly?: boolean;
 };
 
 type AppSidebarLayoutProps = {
@@ -21,6 +23,8 @@ type AppSidebarLayoutProps = {
   brand?: string;
   contentClassName?: string;
   mobileNavBorder?: boolean;
+  requireAuth?: boolean;
+  requiredRole?: UserRole;
 };
 
 export function AppSidebarLayout({
@@ -31,18 +35,86 @@ export function AppSidebarLayout({
   brand = "GangnamSign",
   contentClassName,
   mobileNavBorder,
+  requireAuth,
+  requiredRole,
 }: AppSidebarLayoutProps) {
   const navigate = useNavigate();
+  const location = useLocation();
   const [loggedIn, setLoggedIn] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(Boolean(requireAuth));
 
   useEffect(() => {
-    setLoggedIn(isLoggedIn());
-  }, []);
+    let ignore = false;
+
+    async function checkAuth() {
+      const hasToken = isLoggedIn();
+      setLoggedIn(hasToken);
+
+      if (!hasToken) {
+        setUser(null);
+        setIsCheckingAuth(false);
+        if (requireAuth) {
+          const next = encodeURIComponent(`${location.pathname}${location.search}`);
+          navigate(`/login?redirectTo=${next}`, { replace: true });
+        }
+        return;
+      }
+
+      setIsCheckingAuth(true);
+      const currentUser = await getCurrentUser();
+      if (ignore) return;
+
+      if (!currentUser) {
+        setUser(null);
+        setLoggedIn(false);
+        setIsCheckingAuth(false);
+        if (requireAuth) {
+          const next = encodeURIComponent(`${location.pathname}${location.search}`);
+          navigate(`/login?redirectTo=${next}`, { replace: true });
+        }
+        return;
+      }
+
+      if (requiredRole && currentUser.role !== requiredRole) {
+        setUser(currentUser);
+        setLoggedIn(true);
+        navigate("/learn", { replace: true });
+        return;
+      }
+
+      setUser(currentUser);
+      setLoggedIn(true);
+      setIsCheckingAuth(false);
+    }
+
+    void checkAuth();
+
+    return () => {
+      ignore = true;
+    };
+  }, [location.pathname, location.search, navigate, requireAuth, requiredRole]);
 
   function handleLogout() {
-    logoutMock();
+    logout();
     setLoggedIn(false);
+    setUser(null);
     navigate("/login");
+  }
+
+  const visibleNavItems = navItems.filter((item) => !item.adminOnly || user?.role === "admin");
+
+  if (isCheckingAuth) {
+    return (
+      <div className="grid min-h-screen place-items-center bg-slate-50 px-4 text-center text-slate-900">
+        <div>
+          <div className="mx-auto mb-4 size-10 animate-spin rounded-full border-4 border-primary/20 border-t-primary" />
+          <p className="text-sm font-black uppercase tracking-normal text-slate-500">
+            Checking account
+          </p>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -54,7 +126,7 @@ export function AppSidebarLayout({
         >
           {brand}
         </Link>
-        <SidebarNav items={navItems} label={navLabel} />
+        <SidebarNav items={visibleNavItems} label={navLabel} />
         <SidebarAuthAction loggedIn={loggedIn} onLogout={handleLogout} />
       </aside>
 
@@ -66,7 +138,7 @@ export function AppSidebarLayout({
           onLogout={handleLogout}
         />
         <MobileSidebarNav
-          items={navItems}
+          items={visibleNavItems}
           label={navLabel}
           bordered={mobileNavBorder}
         />

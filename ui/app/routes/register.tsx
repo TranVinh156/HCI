@@ -1,27 +1,56 @@
-import { ArrowRight, Mail, UserRound } from "lucide-react";
+import { ArrowRight, LockKeyhole, Mail, UserRound } from "lucide-react";
 import { useState } from "react";
-import { Link, useNavigate } from "react-router";
+import { Link, useNavigate, useSearchParams } from "react-router";
 
-import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
+import { api } from "~/lib/api-client";
 
 export default function RegisterRoute() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const redirectTo = searchParams.get("redirectTo");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  function submitRegister(event: React.FormEvent<HTMLFormElement>) {
+  async function submitRegister(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    navigate("/login");
+    setError(null);
+    setIsSubmitting(true);
+
+    try {
+      await api.auth.register({
+        email,
+        username,
+        password,
+      });
+      await api.auth.login(username, password);
+
+      if (name.trim()) {
+        await api.profiles.create({
+          name: name.trim(),
+          age: null,
+          avatar: null,
+          guardian_name: null,
+        });
+      }
+
+      navigate(resolveRedirect(redirectTo), { replace: true });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to create account");
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -52,6 +81,7 @@ export default function RegisterRoute() {
                     placeholder="Minh"
                     className="h-12 rounded-2xl pl-9 font-semibold"
                     autoComplete="name"
+                    disabled={isSubmitting}
                   />
                 </div>
               </label>
@@ -67,6 +97,8 @@ export default function RegisterRoute() {
                     placeholder="guardian@example.com"
                     className="h-12 rounded-2xl pl-9 font-semibold"
                     autoComplete="email"
+                    disabled={isSubmitting}
+                    required
                   />
                 </div>
               </label>
@@ -83,18 +115,50 @@ export default function RegisterRoute() {
                     placeholder="new.learner"
                     className="h-12 rounded-2xl pl-9 font-semibold"
                     autoComplete="username"
+                    disabled={isSubmitting}
+                    required
                   />
                 </div>
               </label>
 
-              <Button className="h-13 w-full rounded-2xl text-base font-black">
-                Create demo account
+              <label className="block space-y-2">
+                <span className="text-sm font-black text-slate-700">
+                  Password
+                </span>
+                <div className="relative">
+                  <LockKeyhole className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
+                  <Input
+                    type="password"
+                    value={password}
+                    onChange={(event) => setPassword(event.target.value)}
+                    placeholder="At least 8 characters"
+                    className="h-12 rounded-2xl pl-9 font-semibold"
+                    autoComplete="new-password"
+                    maxLength={72}
+                    minLength={8}
+                    disabled={isSubmitting}
+                    required
+                  />
+                </div>
+              </label>
+
+              {error && (
+                <p className="rounded-2xl border-2 border-rose-200 bg-rose-50 px-4 py-3 text-sm font-bold text-rose-700">
+                  {error}
+                </p>
+              )}
+
+              <Button
+                className="h-13 w-full rounded-2xl text-base font-black"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? "Creating account..." : "Create account"}
                 <ArrowRight className="size-5" />
               </Button>
             </form>
 
             <div className="mt-5 text-center text-sm font-bold">
-              Already have a demo account?{" "}
+              Already have an account?{" "}
               <Link className="text-primary hover:underline" to="/login">
                 Log in
               </Link>
@@ -104,4 +168,16 @@ export default function RegisterRoute() {
       </div>
     </main>
   );
+}
+
+function resolveRedirect(redirectTo: string | null) {
+  if (
+    redirectTo?.startsWith("/") &&
+    !redirectTo.startsWith("//") &&
+    !redirectTo.startsWith("/admin")
+  ) {
+    return redirectTo;
+  }
+
+  return "/learn";
 }

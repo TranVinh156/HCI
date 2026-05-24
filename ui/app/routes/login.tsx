@@ -1,8 +1,7 @@
 import { ArrowRight, LockKeyhole, UserRound } from "lucide-react";
-import { useState } from "react";
-import { Link, useNavigate } from "react-router";
+import { useEffect, useState } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router";
 
-import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import {
   Card,
@@ -12,22 +11,51 @@ import {
   CardTitle,
 } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
-import { loginMock } from "~/lib/auth";
-
-const demoLogin = {
-  username: "demo.child",
-  password: "sign-ocean-123",
-};
+import { api } from "~/lib/api-client";
+import { getCurrentUser } from "~/lib/auth";
 
 export default function LoginRoute() {
   const navigate = useNavigate();
-  const [username, setUsername] = useState(demoLogin.username);
-  const [password, setPassword] = useState(demoLogin.password);
+  const [searchParams] = useSearchParams();
+  const redirectTo = searchParams.get("redirectTo");
+  const registerTo = redirectTo
+    ? `/register?redirectTo=${encodeURIComponent(redirectTo)}`
+    : "/register";
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  function submitLogin(event: React.FormEvent<HTMLFormElement>) {
+  useEffect(() => {
+    let ignore = false;
+
+    async function redirectAuthenticatedUser() {
+      const user = await getCurrentUser();
+      if (ignore || !user) return;
+      navigate(resolveRedirect(redirectTo, user.role), { replace: true });
+    }
+
+    void redirectAuthenticatedUser();
+
+    return () => {
+      ignore = true;
+    };
+  }, [navigate, redirectTo]);
+
+  async function submitLogin(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    loginMock();
-    navigate("/learn");
+    setError(null);
+    setIsSubmitting(true);
+
+    try {
+      await api.auth.login(username, password);
+      const user = await api.auth.me();
+      navigate(resolveRedirect(redirectTo, user.role), { replace: true });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to log in");
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -45,8 +73,7 @@ export default function LoginRoute() {
 
             <CardTitle className="text-3xl font-black">Welcome back</CardTitle>
             <CardDescription className="text-base font-semibold">
-              The fields are prefilled for quick testing. Authentication is not
-              enabled yet.
+              Use your SignOcean account to continue learning.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -62,6 +89,8 @@ export default function LoginRoute() {
                     onChange={(event) => setUsername(event.target.value)}
                     className="h-12 rounded-2xl pl-9 font-semibold"
                     autoComplete="username"
+                    disabled={isSubmitting}
+                    required
                   />
                 </div>
               </label>
@@ -78,12 +107,23 @@ export default function LoginRoute() {
                     onChange={(event) => setPassword(event.target.value)}
                     className="h-12 rounded-2xl pl-9 font-semibold"
                     autoComplete="current-password"
+                    disabled={isSubmitting}
+                    required
                   />
                 </div>
               </label>
 
-              <Button className="h-13 w-full rounded-2xl text-base font-black">
-                Continue to app
+              {error && (
+                <p className="rounded-2xl border-2 border-rose-200 bg-rose-50 px-4 py-3 text-sm font-bold text-rose-700">
+                  {error}
+                </p>
+              )}
+
+              <Button
+                className="h-13 w-full rounded-2xl text-base font-black"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? "Signing in..." : "Continue to app"}
                 <ArrowRight className="size-5" />
               </Button>
             </form>
@@ -92,7 +132,7 @@ export default function LoginRoute() {
               <Link className="text-primary hover:underline" to="/">
                 Choose profile
               </Link>
-              <Link className="text-primary hover:underline" to="/register">
+              <Link className="text-primary hover:underline" to={registerTo}>
                 Create account
               </Link>
             </div>
@@ -101,4 +141,13 @@ export default function LoginRoute() {
       </div>
     </main>
   );
+}
+
+function resolveRedirect(redirectTo: string | null, role: string) {
+  if (redirectTo?.startsWith("/") && !redirectTo.startsWith("//")) {
+    if (redirectTo.startsWith("/admin") && role !== "admin") return "/learn";
+    return redirectTo;
+  }
+
+  return role === "admin" ? "/admin" : "/learn";
 }
