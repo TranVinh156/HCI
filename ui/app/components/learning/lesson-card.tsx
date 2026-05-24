@@ -9,7 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
-import type { Lesson } from "~/lib/learning-data";
+import type { Lesson } from "~/api/types";
 
 type LessonCardProps = {
   lesson: Lesson;
@@ -23,10 +23,10 @@ export function LessonCard({ lesson }: LessonCardProps) {
           {lesson.visual}
         </div>
         <CardTitle className="text-3xl font-black text-slate-900">
-          {lesson.phrase}
+          {lesson.phrase ?? lesson.title}
         </CardTitle>
         <CardDescription className="text-base font-semibold">
-          {lesson.description}
+          {lesson.description ?? ""}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-5">
@@ -38,7 +38,7 @@ export function LessonCard({ lesson }: LessonCardProps) {
             Sign animation
           </p>
           <p className="mt-2 text-lg font-black text-slate-800">
-            {lesson.signHint}
+            {lesson.sign_hint ?? ""}
           </p>
         </div>
         <div className="flex flex-wrap items-center justify-center gap-2">

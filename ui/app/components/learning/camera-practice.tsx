@@ -18,7 +18,7 @@ import {
   CardTitle,
 } from "~/components/ui/card";
 import { Skeleton } from "~/components/ui/skeleton";
-import type { Lesson } from "~/lib/learning-data";
+import type { Lesson } from "~/api/types";
 
 type CameraPracticeProps = {
   lesson: Lesson;
@@ -99,7 +99,7 @@ export function CameraPractice({ lesson }: CameraPracticeProps) {
   const feedbackCopy = {
     idle: {
       title: "Mirror practice",
-      text: `Try "${lesson.phrase}" while looking at yourself in the mirror view.`,
+      text: `Try "${lesson.phrase ?? lesson.title}" while looking at yourself in the mirror view.`,
       className: "text-primary",
       icon: Sparkles,
     },

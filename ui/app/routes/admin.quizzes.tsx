@@ -5,9 +5,11 @@ import { AdminTable } from "~/components/admin/admin-table";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
-import { getLesson, quizzes } from "~/lib/learning-data";
+import { useQuizBank } from "~/hooks/use-quiz-bank";
 
 export default function AdminQuizzesRoute() {
+  const { data: quizzes = [], isLoading, isError } = useQuizBank();
+
   return (
     <AdminShell title="Quizzes" subtitle="Practice question bank">
       <div className="space-y-5">
@@ -50,31 +52,41 @@ export default function AdminQuizzesRoute() {
           </CardContent>
         </Card>
 
-        <AdminTable
-          title="Question bank"
-          data={quizzes}
-          columns={[
-            {
-              key: "lesson",
-              header: "Lesson",
-              render: (item) => getLesson(item.lessonId)?.title ?? "Unknown",
-            },
-            { key: "prompt", header: "Prompt", render: (item) => item.prompt },
-            {
-              key: "type",
-              header: "Type",
-              render: (item) => (
-                <Badge className="bg-primary/10 text-primary">{item.type}</Badge>
-              ),
-            },
-            { key: "answer", header: "Answer", render: (item) => item.answer },
-            {
-              key: "options",
-              header: "Options",
-              render: (item) => item.options.length,
-            },
-          ]}
-        />
+        {isLoading ? (
+          <p className="rounded-xl bg-white p-4 font-bold text-slate-600">
+            Loading question bank...
+          </p>
+        ) : isError ? (
+          <p className="rounded-xl border border-rose-200 bg-rose-50 p-4 font-bold text-rose-700">
+            Unable to load question bank.
+          </p>
+        ) : (
+          <AdminTable
+            title="Question bank"
+            data={quizzes}
+            columns={[
+              {
+                key: "lesson",
+                header: "Lesson",
+                render: (item) => item.lesson_title,
+              },
+              { key: "prompt", header: "Prompt", render: (item) => item.prompt },
+              {
+                key: "type",
+                header: "Type",
+                render: (item) => (
+                  <Badge className="bg-primary/10 text-primary">{item.type}</Badge>
+                ),
+              },
+              { key: "answer", header: "Answer", render: (item) => item.answer },
+              {
+                key: "options",
+                header: "Options",
+                render: (item) => item.options.length,
+              },
+            ]}
+          />
+        )}
       </div>
     </AdminShell>
   );

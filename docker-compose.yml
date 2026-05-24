@@ -1,0 +1,53 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: signocean-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: signocean
+      POSTGRES_USER: signocean
+      POSTGRES_PASSWORD: signocean
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U signocean -d signocean"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # backend:
+  #   build:
+  #     context: ./backend
+  #   container_name: signocean-backend
+  #   restart: unless-stopped
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #   environment:
+  #     DATABASE_URL: postgresql+asyncpg://signocean:signocean@postgres:5432/signocean
+  #     JWT_SECRET: ${JWT_SECRET:-dev-secret-change-me}
+  #     JWT_ALGORITHM: HS256
+  #     JWT_EXPIRE_MINUTES: 1440
+  #   ports:
+  #     - "8000:8000"
+  #   volumes:
+  #     # Mount trained ML models so we can retrain without rebuilding the image
+  #     - ./backend/ml/models:/app/ml/models
+
+  # ui:
+  #   build:
+  #     context: ./ui
+  #     args:
+  #       # Point the SPA to the backend container (accessed from the browser via localhost)
+  #       VITE_API_URL: http://localhost:8000
+  #   container_name: signocean-ui
+  #   restart: unless-stopped
+  #   depends_on:
+  #     - backend
+  #   ports:
+  #     - "5173:80"
+
+volumes:
+  postgres_data:

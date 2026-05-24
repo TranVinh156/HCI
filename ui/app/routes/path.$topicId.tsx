@@ -3,15 +3,50 @@ import { Link, useParams } from "react-router";
 import { PathNode } from "~/components/learning/path-node";
 import { StudentShell } from "~/components/learning/student-shell";
 import { Button } from "~/components/ui/button";
-import { getTopic, getTopicLessons } from "~/lib/learning-data";
-import { getLessonStatus, readProgress } from "~/lib/progress";
+import { getLessonStatus, useProgressData } from "~/hooks/use-progress";
+import { useGetTopic } from "~/hooks/use-get-topics";
+import { useGetTopicLessons } from "~/hooks/use-get-topics-lessons";
 
 export default function PathRoute() {
   const params = useParams();
-  const topic = getTopic(params.topicId ?? "");
-  const lessons = getTopicLessons(params.topicId ?? "");
+  const topicId = params.topicId;
+  const {
+    data: topic,
+    isLoading: isTopicLoading,
+    isError: isTopicError,
+  } = useGetTopic(topicId);
+  const {
+    data: lessons = [],
+    isLoading: isLessonsLoading,
+    isError: isLessonsError,
+  } = useGetTopicLessons(topicId);
+  const { data: progressData, isLoading: isProgressLoading } = useProgressData();
   const orderedLessonIds = lessons.map((lesson) => lesson.id);
-  const progress = readProgress();
+  const progress = progressData?.progress;
+
+  if (!topicId) {
+    return (
+      <StudentShell>
+        <p className="font-bold">Topic not found.</p>
+      </StudentShell>
+    );
+  }
+
+  if (isTopicLoading || isLessonsLoading || isProgressLoading) {
+    return (
+      <StudentShell>
+        <p className="font-bold">Loading learning path...</p>
+      </StudentShell>
+    );
+  }
+
+  if (isTopicError || isLessonsError) {
+    return (
+      <StudentShell>
+        <p className="font-bold">Unable to load learning path.</p>
+      </StudentShell>
+    );
+  }
 
   if (!topic) {
     return (

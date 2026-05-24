@@ -1,5 +1,6 @@
 import { ArrowRight, ClipboardCheck, RotateCcw } from "lucide-react";
 import { Link } from "react-router";
+import type { Lesson } from "~/api/types";
 
 import { StudentShell } from "~/components/learning/student-shell";
 import { Badge } from "~/components/ui/badge";
@@ -11,21 +12,24 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
-import { getLesson, quizzes } from "~/lib/learning-data";
-import { readProgress } from "~/lib/progress";
+import { useGetLessons } from "~/hooks/use-get-lessons";
+import { useProgressData } from "~/hooks/use-progress";
 
 export default function PracticeRoute() {
-  const progress = readProgress();
-  const practiceLessons = quizzes
-    .map((question) => getLesson(question.lessonId))
-    .filter((lesson, index, list) => lesson && list.findIndex((item) => item?.id === lesson.id) === index)
-    .filter((lesson): lesson is NonNullable<typeof lesson> => Boolean(lesson));
+  const { data, isLoading, isError } = useGetLessons();
+  const { data: progressData, isLoading: isProgressLoading } = useProgressData();
+  const completedLessonIds = progressData?.progress?.completed_lesson_ids ?? [];
+  const practiceLessons: Lesson[] = data ?? [];
 
   return (
     <StudentShell>
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {practiceLessons.map((lesson) => {
-          const completed = progress.completedLessonIds.includes(lesson.id);
+        {isLoading || isProgressLoading ? (
+          <p className="font-bold">Loading practice...</p>
+        ) : isError ? (
+          <p className="font-bold">Unable to load practice.</p>
+        ) : practiceLessons.map((lesson) => {
+          const completed = completedLessonIds.includes(lesson.id);
 
           return (
             <Card

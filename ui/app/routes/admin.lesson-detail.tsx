@@ -1,619 +1,162 @@
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  AlertCircle,
   ArrowLeft,
   BookOpen,
-  Camera,
-  CheckCircle2,
   ClipboardCheck,
   Edit3,
   ExternalLink,
-  Gift,
-  PlayCircle,
   Plus,
-  RotateCcw,
   Save,
-  Video,
   X,
-  type LucideIcon,
 } from "lucide-react";
-import {
-  useEffect,
-  useMemo,
-  useState,
-  type FormEvent,
-  type ReactNode,
-} from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { Link, useParams } from "react-router";
 
+import { lessonsApi } from "~/api/lessons";
+import type { Exercise, Lesson } from "~/api/types";
 import { AdminShell } from "~/components/admin/admin-shell";
+import { AdminTable } from "~/components/admin/admin-table";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "~/components/ui/select";
-import {
-  getLessonQuiz,
-  readAdminLearningData,
-  writeAdminLearningData,
-  type AdminLearningData,
-  type CompletionExercise,
-  type ExerciseType,
-  type LearningExercise,
-  type Lesson,
-  type LessonExercise,
-  type QuizExercise,
-  type QuizQuestion,
-  type SignPracticeExercise,
-} from "~/lib/learning-data";
+import { useGetLesson } from "~/hooks/use-get-lessons";
+import { useGetQuizQuestions } from "~/hooks/use-get-quiz-question";
+import { useGetTopic } from "~/hooks/use-get-topics";
 
-type LessonEditForm = {
+type LessonFormState = {
   title: string;
   phrase: string;
   description: string;
   visual: string;
   signHint: string;
-  type: Lesson["type"];
-  difficulty: Lesson["difficulty"];
+  type: string;
+  difficulty: string;
   xp: string;
 };
 
-type LearningExampleForm = {
-  id: string;
-  text: string;
-  translation: string;
-  signVideoUrl: string;
-};
-
-type QuizOptionForm = {
-  id: string;
-  text: string;
-  isCorrect: boolean;
-  signVideoUrl: string;
-};
-
-type MistakeForm = {
-  id: string;
-  text: string;
-};
-
-type ExerciseForm = {
-  type: ExerciseType;
+type QuestionFormState = {
   prompt: string;
-  instruction: string;
-  explanation: string;
-  title: string;
+  type: string;
+  options: string;
+  answer: string;
+  hint: string;
+};
+
+type ExerciseFormState = {
+  type: string;
+  sortOrder: string;
   content: string;
-  targetWord: string;
-  sampleSignVideoUrl: string;
-  examples: LearningExampleForm[];
-  targetSignVideoUrl: string;
-  maxRecordSeconds: string;
-  minConfidence: string;
-  allowRetry: boolean;
-  question: string;
-  options: QuizOptionForm[];
-  score: string;
-  xp: string;
-  correctCount: string;
-  totalCount: string;
-  mistakes: MistakeForm[];
 };
 
-const exerciseTypeMeta: Record<
-  ExerciseType,
-  { label: string; icon: LucideIcon; tone: string }
-> = {
-  learning: {
-    label: "LearningExercise",
-    icon: BookOpen,
-    tone: "bg-primary/10 text-primary",
-  },
-  sign_practice: {
-    label: "SignPracticeExercise",
-    icon: Camera,
-    tone: "bg-cyan-100 text-cyan-800",
-  },
-  quiz: {
-    label: "QuizExercise",
-    icon: ClipboardCheck,
-    tone: "bg-amber-100 text-amber-800",
-  },
-  completion: {
-    label: "CompletionScreen",
-    icon: Gift,
-    tone: "bg-emerald-100 text-emerald-800",
-  },
+const defaultQuestionForm: QuestionFormState = {
+  prompt: "",
+  type: "sign-choice",
+  options: "",
+  answer: "",
+  hint: "",
 };
 
-function slugify(value: string) {
-  return (
-    value
-      .toLowerCase()
-      .trim()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-+|-+$/g, "") || "exercise"
-  );
-}
+const defaultExerciseForm: ExerciseFormState = {
+  type: "learning",
+  sortOrder: "0",
+  content: "{\n  \"title\": \"\",\n  \"content\": \"\"\n}",
+};
 
-function createUniqueId(label: string, existingIds: string[]) {
-  const baseId = slugify(label);
-  const usedIds = new Set(existingIds);
-  let nextId = baseId;
-  let suffix = 2;
-
-  while (usedIds.has(nextId)) {
-    nextId = `${baseId}-${suffix}`;
-    suffix += 1;
-  }
-
-  return nextId;
-}
-
-function createFormRowId(prefix: string) {
-  return `${prefix}-${Math.random().toString(36).slice(2, 9)}`;
-}
-
-function createLessonEditForm(lesson?: Lesson): LessonEditForm {
+function createLessonForm(lesson?: Lesson): LessonFormState {
   return {
     title: lesson?.title ?? "",
     phrase: lesson?.phrase ?? "",
     description: lesson?.description ?? "",
     visual: lesson?.visual ?? "⭐",
-    signHint: lesson?.signHint ?? "",
+    signHint: lesson?.sign_hint ?? "",
     type: lesson?.type ?? "vocabulary",
     difficulty: lesson?.difficulty ?? "Easy",
     xp: String(lesson?.xp ?? 10),
   };
 }
 
-function createEmptyExerciseForm(lesson?: Lesson): ExerciseForm {
-  return {
-    type: "learning",
-    prompt: "",
-    instruction: "",
-    explanation: "",
-    title: lesson ? `Learn ${lesson.phrase}` : "",
-    content: lesson?.description ?? "",
-    targetWord: lesson?.phrase ?? "",
-    sampleSignVideoUrl: "",
-    examples: lesson
-      ? [
-          {
-            id: "example-target",
-            text: lesson.phrase,
-            translation: lesson.description,
-            signVideoUrl: "",
-          },
-        ]
-      : [],
-    targetSignVideoUrl: "",
-    maxRecordSeconds: "5",
-    minConfidence: "0.75",
-    allowRetry: true,
-    question: lesson ? `What does this sign mean?` : "",
-    options: lesson
-      ? [
-          {
-            id: "option-correct",
-            text: lesson.phrase,
-            isCorrect: true,
-            signVideoUrl: "",
-          },
-          {
-            id: "option-sorry",
-            text: "I am sorry",
-            isCorrect: false,
-            signVideoUrl: "",
-          },
-          {
-            id: "option-purple",
-            text: "Purple",
-            isCorrect: false,
-            signVideoUrl: "",
-          },
-          {
-            id: "option-outside",
-            text: "Go outside",
-            isCorrect: false,
-            signVideoUrl: "",
-          },
-        ]
-      : [],
-    score: "",
-    xp: String(lesson?.xp ?? 10),
-    correctCount: "",
-    totalCount: "",
-    mistakes: [],
-  };
-}
-
-function createExerciseForm(exercise: LessonExercise): ExerciseForm {
-  const base = createEmptyExerciseForm();
-
-  if (exercise.type === "learning") {
-    return {
-      ...base,
-      type: exercise.type,
-      prompt: exercise.prompt ?? "",
-      instruction: exercise.instruction ?? "",
-      explanation: exercise.explanation ?? "",
-      title: exercise.title,
-      content: exercise.content,
-      targetWord: exercise.targetWord ?? "",
-      sampleSignVideoUrl: exercise.sampleSignVideoUrl ?? "",
-      examples: (exercise.examples ?? []).map((example, index) => ({
-        id: `example-${index}`,
-        text: example.text,
-        translation: example.translation ?? "",
-        signVideoUrl: example.signVideoUrl ?? "",
-      })),
-    };
-  }
-
-  if (exercise.type === "sign_practice") {
-    return {
-      ...base,
-      type: exercise.type,
-      prompt: exercise.prompt ?? "",
-      instruction: exercise.instruction ?? "",
-      explanation: exercise.explanation ?? "",
-      targetWord: exercise.targetWord,
-      targetSignVideoUrl: exercise.targetSignVideoUrl ?? "",
-      maxRecordSeconds: String(exercise.maxRecordSeconds ?? 5),
-      minConfidence: String(exercise.minConfidence ?? 0.75),
-      allowRetry: exercise.allowRetry ?? true,
-    };
-  }
-
-  if (exercise.type === "quiz") {
-    return {
-      ...base,
-      type: exercise.type,
-      prompt: exercise.prompt ?? "",
-      instruction: exercise.instruction ?? "",
-      explanation: exercise.explanation ?? "",
-      question: exercise.question,
-      options: exercise.options.map((option) => ({
-        id: option.id,
-        text: option.text,
-        isCorrect: option.isCorrect,
-        signVideoUrl: option.signVideoUrl ?? "",
-      })),
-    };
-  }
-
-  return {
-    ...base,
-    type: exercise.type,
-    prompt: exercise.prompt ?? "",
-    instruction: exercise.instruction ?? "",
-    explanation: exercise.explanation ?? "",
-    score: String(exercise.score ?? ""),
-    xp: String(exercise.xp ?? ""),
-    correctCount: String(exercise.correctCount ?? ""),
-    totalCount: String(exercise.totalCount ?? ""),
-    mistakes: (exercise.mistakes ?? []).map((mistake, index) => ({
-      id: `mistake-${index}`,
-      text: mistake,
-    })),
-  };
-}
-
-function createFallbackQuizQuestions(lesson: Lesson): QuizQuestion[] {
-  return [
-    {
-      id: `${lesson.id}-meaning-preview`,
-      lessonId: lesson.id,
-      prompt: "What does this sign mean?",
-      type: "sign-choice",
-      options: [lesson.phrase, "I am sorry", "Purple", "Go outside"],
-      answer: lesson.phrase,
-      hint: `Remember the picture ${lesson.visual} and the phrase "${lesson.phrase}".`,
-    },
-    {
-      id: `${lesson.id}-match-preview`,
-      lessonId: lesson.id,
-      prompt: `Choose the picture that best matches "${lesson.phrase}"`,
-      type: "image-choice",
-      options: [lesson.visual, "Car", "Banana", "Balloon"],
-      answer: lesson.visual,
-      hint: "Look back at the large picture from the lesson.",
-    },
-  ];
-}
-
-function getPreviewQuestions(lesson: Lesson) {
-  const savedQuestions = getLessonQuiz(lesson.id);
-  const fallbackQuestions = createFallbackQuizQuestions(lesson);
-
-  return [
-    savedQuestions[0]?.answer === lesson.phrase
-      ? savedQuestions[0]
-      : fallbackQuestions[0],
-    savedQuestions[1]?.answer === lesson.visual
-      ? savedQuestions[1]
-      : fallbackQuestions[1],
-  ];
-}
-
-function createQuizExercise(
-  lesson: Lesson,
-  question: QuizQuestion,
-  index: number
-): QuizExercise {
-  return {
-    id: `${lesson.id}-quiz-${index}`,
-    lessonId: lesson.id,
-    type: "quiz",
-    question: question.prompt,
-    instruction: "Choose the correct answer, then check.",
-    options: question.options.map((option) => ({
-      id: createUniqueId(option, []),
-      text: option,
-      isCorrect: option === question.answer,
-    })),
-  };
-}
-
-function createDefaultExercises(lesson: Lesson): LessonExercise[] {
-  const questions = getPreviewQuestions(lesson);
-
-  return [
-    {
-      id: `${lesson.id}-learning`,
-      lessonId: lesson.id,
-      type: "learning",
-      title: `Learn ${lesson.phrase}`,
-      content: lesson.description,
-      targetWord: lesson.phrase,
-      instruction: "Watch the sample sign and read the short explanation.",
-      explanation: lesson.signHint,
-      examples: [
-        {
-          text: lesson.phrase,
-          translation: lesson.description,
-        },
-      ],
-    },
-    {
-      id: `${lesson.id}-sign-practice`,
-      lessonId: lesson.id,
-      type: "sign_practice",
-      prompt: `Show the sign for "${lesson.phrase}"`,
-      instruction:
-        "Turn on camera, record a short clip, and keep both hands inside the frame.",
-      explanation: lesson.signHint,
-      targetWord: lesson.phrase,
-      maxRecordSeconds: 5,
-      minConfidence: 0.75,
-      allowRetry: true,
-    },
-    createQuizExercise(lesson, questions[0], 1),
-    createQuizExercise(lesson, questions[1], 2),
-    {
-      id: `${lesson.id}-completion`,
-      lessonId: lesson.id,
-      type: "completion",
-      prompt: "Lesson complete",
-      explanation: "Show progress, mistakes, and reward summary.",
-      xp: lesson.xp,
-      totalCount: 4,
-    },
-  ];
-}
-
-function getLessonExercises(data: AdminLearningData, lesson: Lesson) {
-  const defaultExercises = createDefaultExercises(lesson);
-  const storedExercises = data.exercises.filter(
-    (exercise) => exercise.lessonId === lesson.id
-  );
-
-  if (!storedExercises.length) return defaultExercises;
-
-  const storedIds = new Set(storedExercises.map((exercise) => exercise.id));
-  const missingDefaults = defaultExercises.filter(
-    (exercise) => !storedIds.has(exercise.id)
-  );
-
-  return [...missingDefaults, ...storedExercises];
-}
-
-function createExerciseFromForm(
-  form: ExerciseForm,
-  lesson: Lesson,
-  existingExerciseIds: string[],
-  editingId?: string
-): LessonExercise {
-  const id =
-    editingId ??
-    createUniqueId(`${lesson.id}-${form.type}-${form.title || form.question}`, [
-      ...existingExerciseIds,
-    ]);
-  const base = {
-    id,
-    lessonId: lesson.id,
-    prompt: form.prompt.trim() || undefined,
-    instruction: form.instruction.trim() || undefined,
-    explanation: form.explanation.trim() || undefined,
-  };
-
-  if (form.type === "learning") {
-    return {
-      ...base,
-      type: "learning",
-      title: form.title.trim() || `Learn ${lesson.phrase}`,
-      content: form.content.trim() || lesson.description,
-      targetWord: form.targetWord.trim() || lesson.phrase,
-      sampleSignVideoUrl: form.sampleSignVideoUrl.trim() || undefined,
-      examples: form.examples
-        .map((example) => ({
-          text: example.text.trim(),
-          translation: example.translation.trim() || undefined,
-          signVideoUrl: example.signVideoUrl.trim() || undefined,
-        }))
-        .filter((example) => example.text),
-    };
-  }
-
-  if (form.type === "sign_practice") {
-    return {
-      ...base,
-      type: "sign_practice",
-      targetWord: form.targetWord.trim() || lesson.phrase,
-      targetSignVideoUrl: form.targetSignVideoUrl.trim() || undefined,
-      instruction:
-        form.instruction.trim() ||
-        "Turn on camera, record a short clip, and keep both hands inside the frame.",
-      maxRecordSeconds: Math.max(
-        1,
-        Number.parseInt(form.maxRecordSeconds, 10) || 5
-      ),
-      minConfidence: Math.min(
-        1,
-        Math.max(0, Number.parseFloat(form.minConfidence) || 0.75)
-      ),
-      allowRetry: form.allowRetry,
-    };
-  }
-
-  if (form.type === "quiz") {
-    return {
-      ...base,
-      type: "quiz",
-      question: form.question.trim() || "Choose the correct answer.",
-      options: normalizeQuizOptions(form.options, lesson.phrase),
-    };
-  }
-
-  return {
-    ...base,
-    type: "completion",
-    score: form.score ? Number.parseInt(form.score, 10) || 0 : undefined,
-    xp: form.xp ? Number.parseInt(form.xp, 10) || lesson.xp : lesson.xp,
-    correctCount: form.correctCount
-      ? Number.parseInt(form.correctCount, 10) || 0
-      : undefined,
-    totalCount: form.totalCount
-      ? Number.parseInt(form.totalCount, 10) || 0
-      : undefined,
-    mistakes: form.mistakes
-      .map((mistake) => mistake.text.trim())
-      .filter(Boolean),
-  };
-}
-
-function normalizeQuizOptions(options: QuizOptionForm[], fallbackAnswer: string) {
-  const normalizedOptions = options
-    .map((option) => ({
-      id: option.id || slugify(option.text),
-      text: option.text.trim(),
-      isCorrect: option.isCorrect,
-      signVideoUrl: option.signVideoUrl.trim() || undefined,
-    }))
-    .filter((option) => option.text);
-
-  if (!normalizedOptions.length) {
-    return [
-      { id: slugify(fallbackAnswer), text: fallbackAnswer, isCorrect: true },
-      { id: "try-again", text: "Try again", isCorrect: false },
-    ];
-  }
-
-  if (!normalizedOptions.some((option) => option.isCorrect)) {
-    return normalizedOptions.map((option, index) => ({
-      ...option,
-      isCorrect: index === 0,
-    }));
-  }
-
-  return normalizedOptions;
-}
-
-function ExerciseTypeBadge({ type }: { type: ExerciseType }) {
-  const meta = exerciseTypeMeta[type];
-  const Icon = meta.icon;
-
-  return (
-    <Badge className={meta.tone}>
-      <Icon className="size-3" />
-      {type}
-    </Badge>
-  );
-}
-
 export default function AdminLessonDetailRoute() {
   const params = useParams();
-  const [data, setData] = useState<AdminLearningData>(() =>
-    readAdminLearningData()
-  );
+  const lessonId = params.lessonId;
+  const queryClient = useQueryClient();
+  const {
+    data: lesson,
+    isLoading: isLessonLoading,
+    isError: isLessonError,
+  } = useGetLesson(lessonId);
+  const { data: topic } = useGetTopic(lesson?.topic_id);
+  const { data: questions = [], isLoading: isQuestionsLoading } =
+    useGetQuizQuestions(lessonId);
+  const { data: exercises = [], isLoading: isExercisesLoading } = useQuery({
+    queryKey: ["lessons", lessonId, "exercises"],
+    queryFn: () => lessonsApi.exercises(lessonId ?? ""),
+    enabled: Boolean(lessonId),
+    retry: false,
+    staleTime: 60 * 1000,
+  });
   const [editingLesson, setEditingLesson] = useState(false);
+  const [lessonForm, setLessonForm] = useState<LessonFormState>(() =>
+    createLessonForm()
+  );
+  const [showQuestionForm, setShowQuestionForm] = useState(false);
+  const [questionForm, setQuestionForm] = useState(defaultQuestionForm);
   const [showExerciseForm, setShowExerciseForm] = useState(false);
-  const [editingExerciseId, setEditingExerciseId] = useState<string | null>(
-    null
-  );
-  const [lessonForm, setLessonForm] = useState<LessonEditForm>(() =>
-    createLessonEditForm(
-      readAdminLearningData().lessons.find(
-        (item) => item.id === params.lessonId
-      )
-    )
-  );
-  const [exerciseForm, setExerciseForm] = useState<ExerciseForm>(() =>
-    createEmptyExerciseForm(
-      readAdminLearningData().lessons.find(
-        (item) => item.id === params.lessonId
-      )
-    )
-  );
+  const [exerciseForm, setExerciseForm] = useState(defaultExerciseForm);
+  const [exerciseError, setExerciseError] = useState<string | null>(null);
 
   useEffect(() => {
-    const storedData = readAdminLearningData();
-    const storedLesson = storedData.lessons.find(
-      (item) => item.id === params.lessonId
-    );
-
-    setData(storedData);
-    setLessonForm(createLessonEditForm(storedLesson));
-    setExerciseForm(createEmptyExerciseForm(storedLesson));
+    setLessonForm(createLessonForm(lesson));
     setEditingLesson(false);
-    setShowExerciseForm(false);
-    setEditingExerciseId(null);
-  }, [params.lessonId]);
+  }, [lesson]);
 
-  const lesson = data.lessons.find((item) => item.id === params.lessonId);
-  const topic = lesson
-    ? data.topics.find(
-        (item) =>
-          item.id === lesson.topicId || item.lessonIds.includes(lesson.id)
-      )
-    : undefined;
-  const exercises = useMemo(
-    () => (lesson ? getLessonExercises(data, lesson) : []),
-    [data, lesson]
-  );
+  const updateLessonMutation = useMutation({
+    mutationFn: ({
+      id,
+      body,
+    }: {
+      id: string;
+      body: Partial<Omit<Lesson, "id">>;
+    }) => lessonsApi.update(id, body),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["lessons"] });
+      setEditingLesson(false);
+    },
+  });
 
-  function persistLearningData(nextData: AdminLearningData) {
-    setData(nextData);
-    writeAdminLearningData(nextData);
-  }
+  const createQuestionMutation = useMutation({
+    mutationFn: ({
+      lessonId,
+      body,
+    }: {
+      lessonId: string;
+      body: Parameters<typeof lessonsApi.createQuestion>[1];
+    }) => lessonsApi.createQuestion(lessonId, body),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["quiz", lessonId ?? "none"] });
+      void queryClient.invalidateQueries({ queryKey: ["quiz-bank"] });
+      setQuestionForm(defaultQuestionForm);
+      setShowQuestionForm(false);
+    },
+  });
 
-  function replaceLessonExercises(nextExercises: LessonExercise[]) {
-    if (!lesson) return;
-
-    persistLearningData({
-      ...data,
-      exercises: [
-        ...data.exercises.filter((exercise) => exercise.lessonId !== lesson.id),
-        ...nextExercises,
-      ],
-    });
-  }
+  const createExerciseMutation = useMutation({
+    mutationFn: ({
+      lessonId,
+      body,
+    }: {
+      lessonId: string;
+      body: Parameters<typeof lessonsApi.createExercise>[1];
+    }) => lessonsApi.createExercise(lessonId, body),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: ["lessons", lessonId, "exercises"],
+      });
+      setExerciseForm(defaultExerciseForm);
+      setExerciseError(null);
+      setShowExerciseForm(false);
+    },
+  });
 
   function handleSaveLesson(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -623,68 +166,79 @@ export default function AdminLessonDetailRoute() {
     const phrase = lessonForm.phrase.trim();
     if (!title || !phrase) return;
 
-    const updatedLesson: Lesson = {
-      ...lesson,
-      title,
-      phrase,
-      description:
-        lessonForm.description.trim() || `Practice the sign for ${phrase}.`,
-      visual: lessonForm.visual.trim() || "⭐",
-      signHint: lessonForm.signHint.trim() || "Add a sign hint for learners.",
-      type: lessonForm.type,
-      difficulty: lessonForm.difficulty,
-      xp: Math.max(1, Number.parseInt(lessonForm.xp, 10) || 10),
-    };
-
-    persistLearningData({
-      ...data,
-      lessons: data.lessons.map((item) =>
-        item.id === updatedLesson.id ? updatedLesson : item
-      ),
+    updateLessonMutation.mutate({
+      id: lesson.id,
+      body: {
+        topic_id: lesson.topic_id,
+        title,
+        phrase,
+        description:
+          lessonForm.description.trim() || `Practice the sign for ${phrase}.`,
+        visual: lessonForm.visual.trim() || "⭐",
+        sign_hint:
+          lessonForm.signHint.trim() || "Add a sign hint for learners.",
+        type: lessonForm.type,
+        difficulty: lessonForm.difficulty,
+        xp: Math.max(1, Number.parseInt(lessonForm.xp, 10) || 10),
+        sort_order: lesson.sort_order,
+      },
     });
-    setLessonForm(createLessonEditForm(updatedLesson));
-    setEditingLesson(false);
   }
 
-  function startAddExercise() {
-    setEditingExerciseId(null);
-    setExerciseForm(createEmptyExerciseForm(lesson));
-    setShowExerciseForm(true);
-  }
-
-  function startEditExercise(exercise: LessonExercise) {
-    setEditingExerciseId(exercise.id);
-    setExerciseForm(createExerciseForm(exercise));
-    setShowExerciseForm(true);
-  }
-
-  function cancelExerciseForm() {
-    setEditingExerciseId(null);
-    setExerciseForm(createEmptyExerciseForm(lesson));
-    setShowExerciseForm(false);
-  }
-
-  function handleSaveExercise(event: FormEvent<HTMLFormElement>) {
+  function handleCreateQuestion(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!lesson) return;
 
-    const nextExercise = createExerciseFromForm(
-      exerciseForm,
-      lesson,
-      exercises.map((exercise) => exercise.id),
-      editingExerciseId ?? undefined
-    );
-    const nextExercises = editingExerciseId
-      ? exercises.map((exercise) =>
-          exercise.id === editingExerciseId ? nextExercise : exercise
-        )
-      : [...exercises, nextExercise];
+    const options = questionForm.options
+      .split("\n")
+      .map((option) => option.trim())
+      .filter(Boolean);
+    const answer = questionForm.answer.trim();
+    if (!questionForm.prompt.trim() || !answer || options.length < 2) return;
 
-    replaceLessonExercises(nextExercises);
-    cancelExerciseForm();
+    createQuestionMutation.mutate({
+      lessonId: lesson.id,
+      body: {
+        prompt: questionForm.prompt.trim(),
+        type: questionForm.type,
+        options: options.includes(answer) ? options : [answer, ...options],
+        answer,
+        hint: questionForm.hint.trim() || null,
+      },
+    });
   }
 
-  if (!lesson) {
+  function handleCreateExercise(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!lesson) return;
+
+    try {
+      const content = JSON.parse(exerciseForm.content) as Record<string, unknown>;
+      createExerciseMutation.mutate({
+        lessonId: lesson.id,
+        body: {
+          type: exerciseForm.type,
+          content,
+          sort_order:
+            Number.parseInt(exerciseForm.sortOrder, 10) || exercises.length,
+        },
+      });
+    } catch {
+      setExerciseError("Exercise content must be valid JSON.");
+    }
+  }
+
+  if (isLessonLoading) {
+    return (
+      <AdminShell title="Lesson detail" subtitle="Exercise builder">
+        <p className="rounded-xl bg-white p-4 font-bold text-slate-600">
+          Loading lesson...
+        </p>
+      </AdminShell>
+    );
+  }
+
+  if (isLessonError || !lesson) {
     return (
       <AdminShell title="Lesson detail" subtitle="Not found">
         <div className="mx-auto max-w-3xl space-y-4">
@@ -755,9 +309,7 @@ export default function AdminLessonDetailRoute() {
             </div>
             <div className="flex flex-wrap gap-2 lg:max-w-52 lg:justify-end">
               <Badge className="bg-primary/10 text-primary">
-                {lesson.type === "communication"
-                  ? "Communication"
-                  : "Vocabulary"}
+                {lesson.type === "communication" ? "Communication" : "Vocabulary"}
               </Badge>
               <Badge className="bg-amber-100 text-amber-800">
                 {lesson.difficulty}
@@ -769,10 +321,7 @@ export default function AdminLessonDetailRoute() {
                 type="button"
                 variant="outline"
                 className="h-9 rounded-xl font-black"
-                onClick={() => {
-                  setLessonForm(createLessonEditForm(lesson));
-                  setEditingLesson((current) => !current);
-                }}
+                onClick={() => setEditingLesson((current) => !current)}
               >
                 <Edit3 className="size-4" />
                 Edit
@@ -782,436 +331,323 @@ export default function AdminLessonDetailRoute() {
         </Card>
 
         {editingLesson ? (
-          <ExerciseDialog
+          <Dialog
             title="Edit lesson"
-            subtitle="Update the lesson metadata used by the exercise flow."
+            subtitle="Update lesson metadata from the API."
             onClose={() => setEditingLesson(false)}
           >
-            <LessonEditPanel
+            <LessonEditForm
               form={lessonForm}
               setForm={setLessonForm}
-              onCancel={() => setEditingLesson(false)}
               onSubmit={handleSaveLesson}
+              submitting={updateLessonMutation.isPending}
             />
-          </ExerciseDialog>
+          </Dialog>
         ) : null}
 
         <section className="rounded-xl border border-slate-200 bg-white p-4">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="text-lg font-black">Quiz questions</h2>
+              <p className="text-sm font-semibold text-slate-500">
+                Questions served by the lesson quiz API.
+              </p>
+            </div>
+            <Button
+              type="button"
+              className="h-9 rounded-xl font-black"
+              onClick={() => setShowQuestionForm(true)}
+            >
+              <Plus className="size-4" />
+              Add question
+            </Button>
+          </div>
+          {isQuestionsLoading ? (
+            <p className="font-bold text-slate-600">Loading questions...</p>
+          ) : (
+            <AdminTable
+              title="Questions"
+              data={questions}
+              columns={[
+                { key: "prompt", header: "Prompt", render: (item) => item.prompt },
+                { key: "type", header: "Type", render: (item) => item.type },
+                { key: "answer", header: "Answer", render: (item) => item.answer },
+                {
+                  key: "options",
+                  header: "Options",
+                  render: (item) => item.options.length,
+                },
+              ]}
+            />
+          )}
+        </section>
+
+        {showQuestionForm ? (
+          <Dialog
+            title="New question"
+            subtitle="Create a quiz question for this lesson."
+            onClose={() => setShowQuestionForm(false)}
+          >
+            <QuestionForm
+              form={questionForm}
+              setForm={setQuestionForm}
+              onSubmit={handleCreateQuestion}
+              submitting={createQuestionMutation.isPending}
+            />
+          </Dialog>
+        ) : null}
+
+        <section className="rounded-xl border border-slate-200 bg-white p-4">
+          <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h2 className="text-lg font-black">Lesson exercises</h2>
               <p className="text-sm font-semibold text-slate-500">
-                ExerciseRenderer-ready list for learning, sign practice, quiz,
-                and completion.
+                Structured exercise records from the lesson exercises API.
               </p>
             </div>
-            <div className="flex flex-wrap gap-2">
-              <Badge className="w-fit bg-slate-100 text-slate-700">
-                {exercises.length} exercises
-              </Badge>
-              <Button
-                type="button"
-                className="h-9 rounded-xl font-black"
-                onClick={startAddExercise}
-              >
-                <Plus className="size-4" />
-                Add exercise
-              </Button>
-            </div>
-          </div>
-
-          {showExerciseForm ? (
-            <ExerciseDialog
-              title={editingExerciseId ? "Edit exercise" : "Create exercise"}
-              subtitle="Build this exercise with structured controls instead of text parsing."
-              action={
-                <ExerciseTypeSelect
-                  value={exerciseForm.type}
-                  onValueChange={(value) =>
-                    setExerciseForm((current) => ({
-                      ...current,
-                      type: value,
-                    }))
-                  }
-                />
-              }
-              onClose={cancelExerciseForm}
+            <Button
+              type="button"
+              className="h-9 rounded-xl font-black"
+              onClick={() => setShowExerciseForm(true)}
             >
-              <ExerciseEditPanel
-                form={exerciseForm}
-                setForm={setExerciseForm}
-                editing={Boolean(editingExerciseId)}
-                onCancel={cancelExerciseForm}
-                onSubmit={handleSaveExercise}
-              />
-            </ExerciseDialog>
-          ) : null}
-
-          <div className="relative mt-5 grid gap-4">
-            <div className="absolute bottom-8 left-6 top-8 hidden w-1 rounded-full bg-primary/20 sm:block" />
-            {exercises.map((exercise, index) => (
-              <ExerciseCard
-                key={exercise.id}
-                exercise={exercise}
-                step={index + 1}
-                total={exercises.length}
-                onEdit={() => startEditExercise(exercise)}
-              />
-            ))}
+              <Plus className="size-4" />
+              Add exercise
+            </Button>
           </div>
+          {isExercisesLoading ? (
+            <p className="font-bold text-slate-600">Loading exercises...</p>
+          ) : (
+            <ExerciseList exercises={exercises} />
+          )}
         </section>
+
+        {showExerciseForm ? (
+          <Dialog
+            title="New exercise"
+            subtitle="Create an exercise with JSON content."
+            onClose={() => setShowExerciseForm(false)}
+          >
+            <ExerciseForm
+              form={exerciseForm}
+              setForm={setExerciseForm}
+              error={exerciseError}
+              onSubmit={handleCreateExercise}
+              submitting={createExerciseMutation.isPending}
+            />
+          </Dialog>
+        ) : null}
       </div>
     </AdminShell>
   );
 }
 
-function LessonEditPanel({
+function LessonEditForm({
   form,
   setForm,
-  onCancel,
   onSubmit,
+  submitting,
 }: {
-  form: LessonEditForm;
-  setForm: React.Dispatch<React.SetStateAction<LessonEditForm>>;
-  onCancel: () => void;
+  form: LessonFormState;
+  setForm: React.Dispatch<React.SetStateAction<LessonFormState>>;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
+  submitting: boolean;
 }) {
   return (
-    <Card className="rounded-xl border border-primary/30 bg-primary/5 py-0">
-      <CardContent className="p-4">
-        <form className="grid gap-3" onSubmit={onSubmit}>
-          <div className="grid gap-3 md:grid-cols-2">
-            <Input
-              value={form.title}
-              onChange={(event) =>
-                setForm((current) => ({
-                  ...current,
-                  title: event.target.value,
-                }))
-              }
-              placeholder="Lesson title"
-              className="h-11 bg-slate-100"
-            />
-            <Input
-              value={form.phrase}
-              onChange={(event) =>
-                setForm((current) => ({
-                  ...current,
-                  phrase: event.target.value,
-                }))
-              }
-              placeholder="Word or phrase"
-              className="h-11 bg-slate-100"
-            />
-          </div>
-          <div className="grid gap-3 md:grid-cols-[1fr_7rem_10rem_10rem_7rem]">
-            <Input
-              value={form.description}
-              onChange={(event) =>
-                setForm((current) => ({
-                  ...current,
-                  description: event.target.value,
-                }))
-              }
-              placeholder="Lesson description"
-              className="h-11 bg-slate-100"
-            />
-            <Input
-              value={form.visual}
-              onChange={(event) =>
-                setForm((current) => ({
-                  ...current,
-                  visual: event.target.value,
-                }))
-              }
-              placeholder="Visual"
-              className="h-11 bg-slate-100"
-            />
-            <select
-              value={form.type}
-              onChange={(event) =>
-                setForm((current) => ({
-                  ...current,
-                  type: event.target.value as Lesson["type"],
-                }))
-              }
-              className="h-11 rounded-lg border-2 border-input bg-slate-100 px-2.5 text-sm font-semibold outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
-            >
-              <option value="vocabulary">Vocabulary</option>
-              <option value="communication">Communication</option>
-            </select>
-            <select
-              value={form.difficulty}
-              onChange={(event) =>
-                setForm((current) => ({
-                  ...current,
-                  difficulty: event.target.value as Lesson["difficulty"],
-                }))
-              }
-              className="h-11 rounded-lg border-2 border-input bg-slate-100 px-2.5 text-sm font-semibold outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
-            >
-              <option value="Easy">Easy</option>
-              <option value="Medium">Medium</option>
-            </select>
-            <Input
-              type="number"
-              min="1"
-              value={form.xp}
-              onChange={(event) =>
-                setForm((current) => ({
-                  ...current,
-                  xp: event.target.value,
-                }))
-              }
-              placeholder="XP"
-              className="h-11 bg-slate-100"
-            />
-          </div>
-          <textarea
-            value={form.signHint}
-            onChange={(event) =>
-              setForm((current) => ({
-                ...current,
-                signHint: event.target.value,
-              }))
-            }
-            placeholder="Sign hint"
-            className="min-h-24 rounded-lg border-2 border-input bg-slate-100 px-2.5 py-2 text-sm font-semibold outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
-          />
-          <div className="flex flex-wrap justify-end gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              className="h-11 rounded-xl font-black"
-              onClick={onCancel}
-            >
-              <X className="size-4" />
-              Cancel
-            </Button>
-            <Button type="submit" className="h-11 rounded-xl font-black">
-              <Save className="size-4" />
-              Save lesson
-            </Button>
-          </div>
-        </form>
-      </CardContent>
-    </Card>
-  );
-}
-
-function ExerciseDialog({
-  title,
-  subtitle,
-  action,
-  onClose,
-  children,
-}: {
-  title: string;
-  subtitle: string;
-  action?: ReactNode;
-  onClose: () => void;
-  children: ReactNode;
-}) {
-  return (
-    <div
-      className="fixed inset-0 z-50 grid place-items-center bg-slate-950/45 p-4"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="exercise-dialog-title"
-      onMouseDown={onClose}
-    >
-      <div
-        className="max-h-[min(88vh,56rem)] w-full max-w-5xl overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl"
-        onMouseDown={(event) => event.stopPropagation()}
-      >
-        <div className="flex flex-col gap-4 border-b border-slate-200 p-4 sm:flex-row sm:items-start sm:justify-between">
-          <div>
-            <h2 id="exercise-dialog-title" className="text-xl font-black">
-              {title}
-            </h2>
-            <p className="mt-1 text-sm font-semibold text-slate-500">
-              {subtitle}
-            </p>
-          </div>
-          <div className="flex shrink-0 items-start gap-2 sm:justify-end">
-            {action}
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className="rounded-xl"
-              onClick={onClose}
-              aria-label="Close exercise dialog"
-            >
-              <X className="size-5" />
-            </Button>
-          </div>
-        </div>
-        <div className="max-h-[calc(min(88vh,56rem)-5.5rem)] overflow-y-auto p-4">
-          {children}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function ExerciseTypeSelect({
-  value,
-  onValueChange,
-}: {
-  value: ExerciseType;
-  onValueChange: (value: ExerciseType) => void;
-}) {
-  return (
-    <div className="w-full sm:w-64">
-      <Select value={value} onValueChange={(next) => onValueChange(next as ExerciseType)}>
-        <SelectTrigger className="h-11 rounded-xl border-2 border-primary/30 bg-primary/5 text-primary">
-          <SelectValue placeholder="Exercise type" />
-        </SelectTrigger>
-        <SelectContent>
-          {Object.entries(exerciseTypeMeta).map(([type, meta]) => {
-            const Icon = meta.icon;
-
-            return (
-              <SelectItem key={type} value={type}>
-                <span className="flex items-center gap-2">
-                  <Icon className="size-4" />
-                  {type}
-                </span>
-              </SelectItem>
-            );
-          })}
-        </SelectContent>
-      </Select>
-    </div>
-  );
-}
-
-function ExerciseEditPanel({
-  form,
-  setForm,
-  editing,
-  onCancel,
-  onSubmit,
-}: {
-  form: ExerciseForm;
-  setForm: React.Dispatch<React.SetStateAction<ExerciseForm>>;
-  editing: boolean;
-  onCancel: () => void;
-  onSubmit: (event: FormEvent<HTMLFormElement>) => void;
-}) {
-  return (
-        <form className="grid gap-3" onSubmit={onSubmit}>
-          <div className="grid gap-3 lg:grid-cols-2">
-            <Input
-              value={form.prompt}
-              onChange={(event) =>
-                setForm((current) => ({
-                  ...current,
-                  prompt: event.target.value,
-                }))
-              }
-              placeholder="Prompt"
-              className="h-11 bg-slate-100"
-            />
-            <Input
-              value={form.instruction}
-              onChange={(event) =>
-                setForm((current) => ({
-                  ...current,
-                  instruction: event.target.value,
-                }))
-              }
-              placeholder="Instruction"
-              className="h-11 bg-slate-100"
-            />
-          </div>
-
-          {form.type === "learning" ? (
-            <LearningExerciseFields form={form} setForm={setForm} />
-          ) : null}
-
-          {form.type === "sign_practice" ? (
-            <SignPracticeExerciseFields form={form} setForm={setForm} />
-          ) : null}
-
-          {form.type === "quiz" ? (
-            <QuizExerciseFields form={form} setForm={setForm} />
-          ) : null}
-
-          {form.type === "completion" ? (
-            <CompletionExerciseFields form={form} setForm={setForm} />
-          ) : null}
-
-          <textarea
-            value={form.explanation}
-            onChange={(event) =>
-              setForm((current) => ({
-                ...current,
-                explanation: event.target.value,
-              }))
-            }
-            placeholder="Explanation or feedback copy"
-            className="min-h-24 rounded-lg border-2 border-input bg-slate-100 px-2.5 py-2 text-sm font-semibold outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
-          />
-
-          <div className="flex flex-wrap justify-end gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              className="h-11 rounded-xl font-black"
-              onClick={onCancel}
-            >
-              <X className="size-4" />
-              Cancel
-            </Button>
-            <Button type="submit" className="h-11 rounded-xl font-black">
-              <Save className="size-4" />
-              {editing ? "Save exercise" : "Create exercise"}
-            </Button>
-          </div>
-        </form>
-  );
-}
-
-function LearningExerciseFields({
-  form,
-  setForm,
-}: {
-  form: ExerciseForm;
-  setForm: React.Dispatch<React.SetStateAction<ExerciseForm>>;
-}) {
-  return (
-    <>
-      <div className="grid gap-3 md:grid-cols-[1fr_12rem_1fr]">
+    <form className="grid gap-3" onSubmit={onSubmit}>
+      <div className="grid gap-3 md:grid-cols-2">
         <Input
           value={form.title}
           onChange={(event) =>
             setForm((current) => ({ ...current, title: event.target.value }))
           }
-          placeholder="Learning title"
+          placeholder="Lesson title"
           className="h-11 bg-slate-100"
         />
         <Input
-          value={form.targetWord}
+          value={form.phrase}
+          onChange={(event) =>
+            setForm((current) => ({ ...current, phrase: event.target.value }))
+          }
+          placeholder="Word or phrase"
+          className="h-11 bg-slate-100"
+        />
+      </div>
+      <div className="grid gap-3 md:grid-cols-[1fr_7rem_10rem_10rem_7rem]">
+        <Input
+          value={form.description}
           onChange={(event) =>
             setForm((current) => ({
               ...current,
-              targetWord: event.target.value,
+              description: event.target.value,
             }))
           }
-          placeholder="Target word"
+          placeholder="Lesson description"
           className="h-11 bg-slate-100"
         />
         <Input
-          value={form.sampleSignVideoUrl}
+          value={form.visual}
+          onChange={(event) =>
+            setForm((current) => ({ ...current, visual: event.target.value }))
+          }
+          placeholder="Visual"
+          className="h-11 bg-slate-100"
+        />
+        <select
+          value={form.type}
+          onChange={(event) =>
+            setForm((current) => ({ ...current, type: event.target.value }))
+          }
+          className="h-11 rounded-lg border-2 border-input bg-slate-100 px-2.5 text-sm font-semibold outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+        >
+          <option value="vocabulary">Vocabulary</option>
+          <option value="communication">Communication</option>
+        </select>
+        <select
+          value={form.difficulty}
           onChange={(event) =>
             setForm((current) => ({
               ...current,
-              sampleSignVideoUrl: event.target.value,
+              difficulty: event.target.value,
             }))
           }
-          placeholder="Sample sign video URL"
+          className="h-11 rounded-lg border-2 border-input bg-slate-100 px-2.5 text-sm font-semibold outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+        >
+          <option value="Easy">Easy</option>
+          <option value="Medium">Medium</option>
+        </select>
+        <Input
+          type="number"
+          min="1"
+          value={form.xp}
+          onChange={(event) =>
+            setForm((current) => ({ ...current, xp: event.target.value }))
+          }
+          placeholder="XP"
+          className="h-11 bg-slate-100"
+        />
+      </div>
+      <textarea
+        value={form.signHint}
+        onChange={(event) =>
+          setForm((current) => ({ ...current, signHint: event.target.value }))
+        }
+        placeholder="Sign hint"
+        className="min-h-24 rounded-lg border-2 border-input bg-slate-100 px-2.5 py-2 text-sm font-semibold outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+      />
+      <div className="flex justify-end">
+        <Button
+          type="submit"
+          className="h-11 rounded-xl font-black"
+          disabled={submitting}
+        >
+          <Save className="size-4" />
+          Save lesson
+        </Button>
+      </div>
+    </form>
+  );
+}
+
+function QuestionForm({
+  form,
+  setForm,
+  onSubmit,
+  submitting,
+}: {
+  form: QuestionFormState;
+  setForm: React.Dispatch<React.SetStateAction<QuestionFormState>>;
+  onSubmit: (event: FormEvent<HTMLFormElement>) => void;
+  submitting: boolean;
+}) {
+  return (
+    <form className="grid gap-3" onSubmit={onSubmit}>
+      <Input
+        value={form.prompt}
+        onChange={(event) =>
+          setForm((current) => ({ ...current, prompt: event.target.value }))
+        }
+        placeholder="Prompt"
+        className="h-11 bg-slate-100"
+      />
+      <div className="grid gap-3 md:grid-cols-2">
+        <Input
+          value={form.type}
+          onChange={(event) =>
+            setForm((current) => ({ ...current, type: event.target.value }))
+          }
+          placeholder="Question type"
+          className="h-11 bg-slate-100"
+        />
+        <Input
+          value={form.answer}
+          onChange={(event) =>
+            setForm((current) => ({ ...current, answer: event.target.value }))
+          }
+          placeholder="Correct answer"
+          className="h-11 bg-slate-100"
+        />
+      </div>
+      <textarea
+        value={form.options}
+        onChange={(event) =>
+          setForm((current) => ({ ...current, options: event.target.value }))
+        }
+        placeholder="Options, one per line"
+        className="min-h-32 rounded-lg border-2 border-input bg-slate-100 px-2.5 py-2 text-sm font-semibold outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+      />
+      <Input
+        value={form.hint}
+        onChange={(event) =>
+          setForm((current) => ({ ...current, hint: event.target.value }))
+        }
+        placeholder="Hint"
+        className="h-11 bg-slate-100"
+      />
+      <div className="flex justify-end">
+        <Button
+          type="submit"
+          className="h-11 rounded-xl font-black"
+          disabled={submitting}
+        >
+          Create question
+        </Button>
+      </div>
+    </form>
+  );
+}
+
+function ExerciseForm({
+  form,
+  setForm,
+  error,
+  onSubmit,
+  submitting,
+}: {
+  form: ExerciseFormState;
+  setForm: React.Dispatch<React.SetStateAction<ExerciseFormState>>;
+  error: string | null;
+  onSubmit: (event: FormEvent<HTMLFormElement>) => void;
+  submitting: boolean;
+}) {
+  return (
+    <form className="grid gap-3" onSubmit={onSubmit}>
+      <div className="grid gap-3 md:grid-cols-[1fr_8rem]">
+        <Input
+          value={form.type}
+          onChange={(event) =>
+            setForm((current) => ({ ...current, type: event.target.value }))
+          }
+          placeholder="Exercise type"
+          className="h-11 bg-slate-100"
+        />
+        <Input
+          type="number"
+          min="0"
+          value={form.sortOrder}
+          onChange={(event) =>
+            setForm((current) => ({ ...current, sortOrder: event.target.value }))
+          }
+          placeholder="Order"
           className="h-11 bg-slate-100"
         />
       </div>
@@ -1220,659 +656,106 @@ function LearningExerciseFields({
         onChange={(event) =>
           setForm((current) => ({ ...current, content: event.target.value }))
         }
-        placeholder="Learning content"
-        className="min-h-28 rounded-lg border-2 border-input bg-slate-100 px-2.5 py-2 text-sm font-semibold outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+        placeholder="JSON content"
+        className="min-h-56 rounded-lg border-2 border-input bg-slate-100 px-2.5 py-2 font-mono text-sm font-semibold outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
       />
-      <div className="rounded-xl border border-slate-200 bg-white p-3">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <div>
-            <p className="text-sm font-black">Examples</p>
-            <p className="text-xs font-semibold text-slate-500">
-              Add each example as a structured row.
-            </p>
-          </div>
-          <Button
-            type="button"
-            variant="outline"
-            className="h-9 rounded-xl font-black"
-            onClick={() =>
-              setForm((current) => ({
-                ...current,
-                examples: [
-                  ...current.examples,
-                  {
-                    id: createFormRowId("example"),
-                    text: "",
-                    translation: "",
-                    signVideoUrl: "",
-                  },
-                ],
-              }))
-            }
-          >
-            <Plus className="size-4" />
-            Add example
-          </Button>
-        </div>
-        <div className="mt-3 grid gap-2">
-          {form.examples.map((example) => (
-            <div
-              key={example.id}
-              className="grid gap-2 rounded-xl bg-slate-50 p-3 lg:grid-cols-[1fr_1fr_1fr_auto]"
-            >
-              <Input
-                value={example.text}
-                onChange={(event) =>
-                  setForm((current) => ({
-                    ...current,
-                    examples: current.examples.map((item) =>
-                      item.id === example.id
-                        ? { ...item, text: event.target.value }
-                        : item
-                    ),
-                  }))
-                }
-                placeholder="Example text"
-                className="h-10 bg-slate-100"
-              />
-              <Input
-                value={example.translation}
-                onChange={(event) =>
-                  setForm((current) => ({
-                    ...current,
-                    examples: current.examples.map((item) =>
-                      item.id === example.id
-                        ? { ...item, translation: event.target.value }
-                        : item
-                    ),
-                  }))
-                }
-                placeholder="Translation"
-                className="h-10 bg-slate-100"
-              />
-              <Input
-                value={example.signVideoUrl}
-                onChange={(event) =>
-                  setForm((current) => ({
-                    ...current,
-                    examples: current.examples.map((item) =>
-                      item.id === example.id
-                        ? { ...item, signVideoUrl: event.target.value }
-                        : item
-                    ),
-                  }))
-                }
-                placeholder="Sign video URL"
-                className="h-10 bg-slate-100"
-              />
-              <Button
-                type="button"
-                variant="ghost"
-                className="h-10 rounded-xl text-rose-600"
-                onClick={() =>
-                  setForm((current) => ({
-                    ...current,
-                    examples: current.examples.filter(
-                      (item) => item.id !== example.id
-                    ),
-                  }))
-                }
-                aria-label="Remove example"
-              >
-                <X className="size-4" />
-              </Button>
-            </div>
-          ))}
-        </div>
-      </div>
-    </>
-  );
-}
-
-function SignPracticeExerciseFields({
-  form,
-  setForm,
-}: {
-  form: ExerciseForm;
-  setForm: React.Dispatch<React.SetStateAction<ExerciseForm>>;
-}) {
-  return (
-    <div className="grid gap-3 md:grid-cols-[1fr_1fr_10rem_10rem_auto]">
-      <Input
-        value={form.targetWord}
-        onChange={(event) =>
-          setForm((current) => ({ ...current, targetWord: event.target.value }))
-        }
-        placeholder="Target word"
-        className="h-11 bg-slate-100"
-      />
-      <Input
-        value={form.targetSignVideoUrl}
-        onChange={(event) =>
-          setForm((current) => ({
-            ...current,
-            targetSignVideoUrl: event.target.value,
-          }))
-        }
-        placeholder="Target sign video URL"
-        className="h-11 bg-slate-100"
-      />
-      <Input
-        type="number"
-        min="1"
-        value={form.maxRecordSeconds}
-        onChange={(event) =>
-          setForm((current) => ({
-            ...current,
-            maxRecordSeconds: event.target.value,
-          }))
-        }
-        placeholder="Record sec"
-        className="h-11 bg-slate-100"
-      />
-      <Input
-        type="number"
-        min="0"
-        max="1"
-        step="0.01"
-        value={form.minConfidence}
-        onChange={(event) =>
-          setForm((current) => ({
-            ...current,
-            minConfidence: event.target.value,
-          }))
-        }
-        placeholder="Confidence"
-        className="h-11 bg-slate-100"
-      />
-      <label className="flex h-11 items-center gap-2 rounded-lg border-2 border-input bg-slate-100 px-3 text-sm font-black">
-        <input
-          type="checkbox"
-          checked={form.allowRetry}
-          onChange={(event) =>
-            setForm((current) => ({
-              ...current,
-              allowRetry: event.target.checked,
-            }))
-          }
-        />
-        Retry
-      </label>
-    </div>
-  );
-}
-
-function QuizExerciseFields({
-  form,
-  setForm,
-}: {
-  form: ExerciseForm;
-  setForm: React.Dispatch<React.SetStateAction<ExerciseForm>>;
-}) {
-  return (
-    <>
-      <Input
-        value={form.question}
-        onChange={(event) =>
-          setForm((current) => ({ ...current, question: event.target.value }))
-        }
-        placeholder="Quiz question"
-        className="h-11 bg-slate-100"
-      />
-      <div className="rounded-xl border border-slate-200 bg-white p-3">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <div>
-            <p className="text-sm font-black">Answer options</p>
-            <p className="text-xs font-semibold text-slate-500">
-              Mark one option as correct; no text parsing needed.
-            </p>
-          </div>
-          <Button
-            type="button"
-            variant="outline"
-            className="h-9 rounded-xl font-black"
-            onClick={() =>
-              setForm((current) => ({
-                ...current,
-                options: [
-                  ...current.options,
-                  {
-                    id: createFormRowId("option"),
-                    text: "",
-                    isCorrect: false,
-                    signVideoUrl: "",
-                  },
-                ],
-              }))
-            }
-          >
-            <Plus className="size-4" />
-            Add option
-          </Button>
-        </div>
-        <div className="mt-3 grid gap-2">
-          {form.options.map((option) => (
-            <div
-              key={option.id}
-              className="grid gap-2 rounded-xl bg-slate-50 p-3 lg:grid-cols-[auto_1fr_1fr_auto]"
-            >
-              <label className="flex h-10 items-center gap-2 rounded-lg border-2 border-input bg-slate-100 px-3 text-sm font-black">
-                <input
-                  type="radio"
-                  name="correctOption"
-                  checked={option.isCorrect}
-                  onChange={() =>
-                    setForm((current) => ({
-                      ...current,
-                      options: current.options.map((item) => ({
-                        ...item,
-                        isCorrect: item.id === option.id,
-                      })),
-                    }))
-                  }
-                />
-                Correct
-              </label>
-              <Input
-                value={option.text}
-                onChange={(event) =>
-                  setForm((current) => ({
-                    ...current,
-                    options: current.options.map((item) =>
-                      item.id === option.id
-                        ? { ...item, text: event.target.value }
-                        : item
-                    ),
-                  }))
-                }
-                placeholder="Option text"
-                className="h-10 bg-slate-100"
-              />
-              <Input
-                value={option.signVideoUrl}
-                onChange={(event) =>
-                  setForm((current) => ({
-                    ...current,
-                    options: current.options.map((item) =>
-                      item.id === option.id
-                        ? { ...item, signVideoUrl: event.target.value }
-                        : item
-                    ),
-                  }))
-                }
-                placeholder="Sign video URL"
-                className="h-10 bg-slate-100"
-              />
-              <Button
-                type="button"
-                variant="ghost"
-                className="h-10 rounded-xl text-rose-600"
-                onClick={() =>
-                  setForm((current) => ({
-                    ...current,
-                    options: current.options.filter(
-                      (item) => item.id !== option.id
-                    ),
-                  }))
-                }
-                aria-label="Remove option"
-              >
-                <X className="size-4" />
-              </Button>
-            </div>
-          ))}
-        </div>
-      </div>
-    </>
-  );
-}
-
-function CompletionExerciseFields({
-  form,
-  setForm,
-}: {
-  form: ExerciseForm;
-  setForm: React.Dispatch<React.SetStateAction<ExerciseForm>>;
-}) {
-  return (
-    <>
-      <div className="grid gap-3 md:grid-cols-4">
-        <Input
-          type="number"
-          value={form.score}
-          onChange={(event) =>
-            setForm((current) => ({ ...current, score: event.target.value }))
-          }
-          placeholder="Score"
-          className="h-11 bg-slate-100"
-        />
-        <Input
-          type="number"
-          value={form.xp}
-          onChange={(event) =>
-            setForm((current) => ({ ...current, xp: event.target.value }))
-          }
-          placeholder="XP"
-          className="h-11 bg-slate-100"
-        />
-        <Input
-          type="number"
-          value={form.correctCount}
-          onChange={(event) =>
-            setForm((current) => ({
-              ...current,
-              correctCount: event.target.value,
-            }))
-          }
-          placeholder="Correct count"
-          className="h-11 bg-slate-100"
-        />
-        <Input
-          type="number"
-          value={form.totalCount}
-          onChange={(event) =>
-            setForm((current) => ({
-              ...current,
-              totalCount: event.target.value,
-            }))
-          }
-          placeholder="Total count"
-          className="h-11 bg-slate-100"
-        />
-      </div>
-      <div className="rounded-xl border border-slate-200 bg-white p-3">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <div>
-            <p className="text-sm font-black">Mistakes</p>
-            <p className="text-xs font-semibold text-slate-500">
-              Add review items one by one.
-            </p>
-          </div>
-          <Button
-            type="button"
-            variant="outline"
-            className="h-9 rounded-xl font-black"
-            onClick={() =>
-              setForm((current) => ({
-                ...current,
-                mistakes: [
-                  ...current.mistakes,
-                  { id: createFormRowId("mistake"), text: "" },
-                ],
-              }))
-            }
-          >
-            <Plus className="size-4" />
-            Add mistake
-          </Button>
-        </div>
-        <div className="mt-3 grid gap-2">
-          {form.mistakes.map((mistake) => (
-            <div
-              key={mistake.id}
-              className="grid gap-2 rounded-xl bg-slate-50 p-3 sm:grid-cols-[1fr_auto]"
-            >
-              <Input
-                value={mistake.text}
-                onChange={(event) =>
-                  setForm((current) => ({
-                    ...current,
-                    mistakes: current.mistakes.map((item) =>
-                      item.id === mistake.id
-                        ? { ...item, text: event.target.value }
-                        : item
-                    ),
-                  }))
-                }
-                placeholder="Mistake text"
-                className="h-10 bg-slate-100"
-              />
-              <Button
-                type="button"
-                variant="ghost"
-                className="h-10 rounded-xl text-rose-600"
-                onClick={() =>
-                  setForm((current) => ({
-                    ...current,
-                    mistakes: current.mistakes.filter(
-                      (item) => item.id !== mistake.id
-                    ),
-                  }))
-                }
-                aria-label="Remove mistake"
-              >
-                <X className="size-4" />
-              </Button>
-            </div>
-          ))}
-        </div>
-      </div>
-    </>
-  );
-}
-
-function ExerciseCard({
-  exercise,
-  step,
-  total,
-  onEdit,
-}: {
-  exercise: LessonExercise;
-  step: number;
-  total: number;
-  onEdit: () => void;
-}) {
-  const meta = exerciseTypeMeta[exercise.type];
-  const Icon = meta.icon;
-
-  return (
-    <article className="relative grid gap-4 rounded-xl border border-slate-200 bg-slate-50 p-4 sm:grid-cols-[3.5rem_1fr_auto]">
-      <div className="z-10 grid size-12 place-items-center rounded-full border-4 border-white bg-primary text-primary-foreground shadow-sm">
-        <Icon className="size-5" />
-      </div>
-      <div className="min-w-0">
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="rounded-full bg-white px-2 py-1 text-xs font-black text-slate-500">
-            Exercise {step}/{total}
-          </span>
-          <ExerciseTypeBadge type={exercise.type} />
-          <Badge className="bg-white text-slate-700">{meta.label}</Badge>
-        </div>
-        <div className="mt-3">
-          <ExercisePreview exercise={exercise} />
-        </div>
-      </div>
-      <div className="flex items-start justify-end gap-2">
+      {error ? (
+        <p className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm font-bold text-rose-700">
+          {error}
+        </p>
+      ) : null}
+      <div className="flex justify-end">
         <Button
-          type="button"
-          variant="outline"
-          className="h-9 rounded-xl font-black"
-          onClick={onEdit}
+          type="submit"
+          className="h-11 rounded-xl font-black"
+          disabled={submitting}
         >
-          <Edit3 className="size-4" />
-          Edit
+          Create exercise
         </Button>
       </div>
-    </article>
+    </form>
   );
 }
 
-function ExercisePreview({ exercise }: { exercise: LessonExercise }) {
-  if (exercise.type === "learning") {
-    return <LearningPreview exercise={exercise} />;
-  }
-
-  if (exercise.type === "sign_practice") {
-    return <SignPracticePreview exercise={exercise} />;
-  }
-
-  if (exercise.type === "quiz") {
-    return <QuizPreview exercise={exercise} />;
-  }
-
-  return <CompletionPreview exercise={exercise} />;
-}
-
-function LearningPreview({ exercise }: { exercise: LearningExercise }) {
-  return (
-    <div>
-      <h3 className="text-lg font-black">{exercise.title}</h3>
-      <p className="mt-1 text-sm font-semibold text-slate-600">
-        {exercise.content}
+function ExerciseList({ exercises }: { exercises: Exercise[] }) {
+  if (!exercises.length) {
+    return (
+      <p className="rounded-xl border border-dashed border-slate-300 p-6 text-center font-bold text-slate-500">
+        No exercises yet.
       </p>
-      <div className="mt-3 flex flex-wrap gap-2">
-        {exercise.targetWord ? (
-          <Badge className="bg-primary/10 text-primary">
-            Target: {exercise.targetWord}
-          </Badge>
-        ) : null}
-        {exercise.sampleSignVideoUrl ? (
-          <Badge className="bg-cyan-100 text-cyan-800">
-            <Video className="size-3" />
-            Sample video
-          </Badge>
-        ) : null}
-      </div>
-      {exercise.examples?.length ? (
-        <div className="mt-3 grid gap-2">
-          {exercise.examples.map((example) => (
-            <div
-              key={`${example.text}-${example.translation ?? ""}`}
-              className="rounded-lg bg-white px-3 py-2 text-sm font-semibold text-slate-600"
-            >
-              {example.text}
-              {example.translation ? (
-                <span className="text-slate-400"> | {example.translation}</span>
-              ) : null}
+    );
+  }
+
+  return (
+    <div className="grid gap-3">
+      {exercises.map((exercise) => (
+        <Card key={exercise.id} className="rounded-xl border-slate-200 py-0">
+          <CardContent className="p-4">
+            <div className="mb-2 flex flex-wrap items-center gap-2">
+              <Badge className="bg-primary/10 text-primary">
+                {exercise.type}
+              </Badge>
+              <Badge className="bg-slate-100 text-slate-700">
+                Order {exercise.sort_order}
+              </Badge>
             </div>
-          ))}
-        </div>
-      ) : null}
+            <pre className="overflow-x-auto rounded-lg bg-slate-950 p-3 text-xs font-semibold text-white">
+              {JSON.stringify(exercise.content, null, 2)}
+            </pre>
+          </CardContent>
+        </Card>
+      ))}
     </div>
   );
 }
 
-function SignPracticePreview({
-  exercise,
+function Dialog({
+  title,
+  subtitle,
+  onClose,
+  children,
 }: {
-  exercise: SignPracticeExercise;
+  title: string;
+  subtitle: string;
+  onClose: () => void;
+  children: React.ReactNode;
 }) {
-  const confidence = exercise.minConfidence ?? 0.75;
-
   return (
-    <div>
-      <h3 className="text-lg font-black">Practice: {exercise.targetWord}</h3>
-      <p className="mt-1 text-sm font-semibold text-slate-600">
-        {exercise.instruction ??
-          "Record a short hand sign clip and compare it with the target word."}
-      </p>
-      <div className="mt-3 grid gap-3 lg:grid-cols-[1.1fr_0.9fr]">
-        <div className="rounded-xl border border-slate-200 bg-slate-950 p-5 text-center text-white">
-          <Camera className="mx-auto size-8" />
-          <p className="mt-2 text-sm font-black">Camera preview area</p>
-          <p className="mt-1 text-xs font-semibold text-slate-300">
-            getUserMedia, facingMode user, audio false, cleanup on unmount.
-          </p>
-        </div>
-        <div className="grid gap-2">
-          <StatusRow icon={CheckCircle2} text="Permission states handled" />
-          <StatusRow icon={PlayCircle} text="Record then analyze MVP" />
-          <StatusRow
-            icon={AlertCircle}
-            text={`Correct if label matches and confidence >= ${confidence}`}
-          />
-          <StatusRow icon={RotateCcw} text={exercise.allowRetry ? "Retry enabled" : "Retry disabled"} />
-        </div>
-      </div>
-      <div className="mt-3 flex flex-wrap gap-2">
-        <Badge className="bg-cyan-100 text-cyan-800">
-          Max record: {exercise.maxRecordSeconds ?? 5}s
-        </Badge>
-        <Badge className="bg-emerald-100 text-emerald-800">
-          Min confidence: {confidence}
-        </Badge>
-        {exercise.targetSignVideoUrl ? (
-          <Badge className="bg-primary/10 text-primary">
-            <Video className="size-3" />
-            Target video
-          </Badge>
-        ) : null}
-      </div>
-    </div>
-  );
-}
-
-function QuizPreview({ exercise }: { exercise: QuizExercise }) {
-  return (
-    <div>
-      <h3 className="text-lg font-black">{exercise.question}</h3>
-      <p className="mt-1 text-sm font-semibold text-slate-600">
-        Check is disabled until an option is selected; submitted answers lock
-        option changes.
-      </p>
-      <div className="mt-3 grid gap-2 sm:grid-cols-2">
-        {exercise.options.map((option) => (
-          <div
-            key={option.id}
-            className="rounded-xl border border-slate-200 bg-white p-3 text-sm font-black text-slate-700"
-          >
-            <div className="flex items-center justify-between gap-2">
-              <span>{option.text}</span>
-              {option.isCorrect ? (
-                <Badge className="bg-emerald-100 text-emerald-800">
-                  Correct
-                </Badge>
-              ) : null}
-            </div>
+    <div
+      className="fixed inset-0 z-50 grid place-items-center bg-slate-950/45 p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="admin-detail-dialog-title"
+      onMouseDown={onClose}
+    >
+      <div
+        className="max-h-[min(88vh,56rem)] w-full max-w-5xl overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl"
+        onMouseDown={(event) => event.stopPropagation()}
+      >
+        <div className="flex items-start justify-between gap-4 border-b border-slate-200 p-4">
+          <div>
+            <h2 id="admin-detail-dialog-title" className="text-xl font-black">
+              {title}
+            </h2>
+            <p className="mt-1 text-sm font-semibold text-slate-500">
+              {subtitle}
+            </p>
           </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function CompletionPreview({ exercise }: { exercise: CompletionExercise }) {
-  return (
-    <div>
-      <h3 className="text-lg font-black">
-        {exercise.prompt ?? "Lesson complete"}
-      </h3>
-      <p className="mt-1 text-sm font-semibold text-slate-600">
-        {exercise.explanation ??
-          "Show completion state, score, mistakes, and reward summary."}
-      </p>
-      <div className="mt-3 flex flex-wrap gap-2">
-        <Badge className="bg-emerald-100 text-emerald-800">
-          XP: {exercise.xp ?? 0}
-        </Badge>
-        <Badge className="bg-primary/10 text-primary">
-          Correct: {exercise.correctCount ?? 0}/{exercise.totalCount ?? 0}
-        </Badge>
-        <Badge className="bg-rose-100 text-rose-800">
-          Mistakes: {exercise.mistakes?.length ?? 0}
-        </Badge>
-      </div>
-      {exercise.mistakes?.length ? (
-        <div className="mt-3 grid gap-2">
-          {exercise.mistakes.map((mistake) => (
-            <div
-              key={mistake}
-              className="rounded-lg bg-white px-3 py-2 text-sm font-semibold text-slate-600"
-            >
-              {mistake}
-            </div>
-          ))}
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="rounded-xl"
+            onClick={onClose}
+            aria-label="Close dialog"
+          >
+            <X className="size-5" />
+          </Button>
         </div>
-      ) : null}
-    </div>
-  );
-}
-
-function StatusRow({ icon: Icon, text }: { icon: LucideIcon; text: string }) {
-  return (
-    <div className="flex items-center gap-2 rounded-lg bg-white px-3 py-2 text-sm font-semibold text-slate-600">
-      <Icon className="size-4 text-primary" />
-      {text}
+        <div className="max-h-[calc(min(88vh,56rem)-5.5rem)] overflow-y-auto p-4">
+          {children}
+        </div>
+      </div>
     </div>
   );
 }

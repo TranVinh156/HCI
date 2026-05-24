@@ -29,6 +29,8 @@ export function AdminShell({ children }: AdminShellProps) {
       homeTo="/admin"
       contentClassName="mx-auto max-w-7xl p-5"
       mobileNavBorder
+      requireAuth
+      requiredRole="admin"
     >
       {children}
     </AppSidebarLayout>

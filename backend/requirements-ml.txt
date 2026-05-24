@@ -1,0 +1,6 @@
+# ML dependencies — requires Python 3.9-3.12 (NOT 3.13/3.14)
+# Install separately after requirements.txt:
+#   pip install -r requirements-ml.txt
+
+tensorflow-cpu>=2.15.0,<2.17.0
+opencv-python-headless>=4.8.0

@@ -1,26 +1,52 @@
 import { ArrowRight, CheckCircle2 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useNavigate, useParams } from "react-router";
 
 import { OceanProgress } from "~/components/learning/ocean-progress";
 import { QuizOption } from "~/components/learning/quiz-option";
 import { StudentShell } from "~/components/learning/student-shell";
 import { Button } from "~/components/ui/button";
-import { getLesson, getLessonQuiz } from "~/lib/learning-data";
-import { completeLesson } from "~/lib/progress";
+import { useGetLesson } from "~/hooks/use-get-lessons";
+import { useGetQuizQuestions } from "~/hooks/use-get-quiz-question";
+import { useCompleteLesson, useProgressData } from "~/hooks/use-progress";
 
 export default function QuizRoute() {
   const params = useParams();
   const navigate = useNavigate();
-  const lesson = getLesson(params.lessonId ?? "");
-  const questions = useMemo(
-    () => getLessonQuiz(params.lessonId ?? ""),
-    [params.lessonId]
-  );
+  const lessonId = params.lessonId;
+  const {
+    data: lesson,
+    isLoading: isLessonLoading,
+    isError: isLessonError,
+  } = useGetLesson(lessonId);
+
+  const {
+    data: questions = [],
+    isLoading: isQuestionsLoading,
+    isError: isQuestionsError,
+  } = useGetQuizQuestions(lessonId);
+  const { data: progressData, isLoading: isProgressLoading } = useProgressData();
+  const completeLessonMutation = useCompleteLesson();
   const [questionIndex, setQuestionIndex] = useState(0);
   const [selected, setSelected] = useState("");
   const [checked, setChecked] = useState(false);
   const [correct, setCorrect] = useState(0);
+
+  if (isLessonLoading || isQuestionsLoading || isProgressLoading) {
+    return (
+      <StudentShell>
+        <p className="font-bold">Loading practice...</p>
+      </StudentShell>
+    );
+  }
+
+  if (isLessonError || isQuestionsError) {
+    return (
+      <StudentShell>
+        <p className="font-bold">Unable to load practice.</p>
+      </StudentShell>
+    );
+  }
 
   if (!lesson || questions.length === 0) {
     return (
@@ -30,12 +56,20 @@ export default function QuizRoute() {
     );
   }
 
+  if (!lessonId) {
+    return (
+      <StudentShell>
+        <p className="font-bold">Practice not found.</p>
+      </StudentShell>
+    );
+  }
+
+  const currentLessonId = lessonId;
   const question = questions[questionIndex];
   const isCorrect = selected === question.answer;
   const progressValue = Math.round((questionIndex / questions.length) * 100);
-  const lessonId = lesson.id;
 
-  function next() {
+  async function next() {
     if (!checked) {
       setChecked(true);
       if (isCorrect) setCorrect((value) => value + 1);
@@ -43,10 +77,17 @@ export default function QuizRoute() {
     }
 
     if (questionIndex === questions.length - 1) {
-      const finalCorrect = correct + (isCorrect ? 1 : 0);
-      completeLesson(lessonId, finalCorrect, questions.length);
+      const finalCorrect = correct;
+      if (progressData?.profile) {
+        await completeLessonMutation.mutateAsync({
+          profileId: progressData.profile.id,
+          lessonId: currentLessonId,
+          correct: finalCorrect,
+          total: questions.length,
+        });
+      }
       navigate(
-        `/result/${lessonId}?correct=${finalCorrect}&total=${questions.length}`
+        `/result/${currentLessonId}?correct=${finalCorrect}&total=${questions.length}`
       );
       return;
     }
@@ -88,7 +129,7 @@ export default function QuizRoute() {
           </div>
         </section>
         <Button
-          disabled={!selected}
+          disabled={!selected || completeLessonMutation.isPending}
           onClick={next}
           className="h-14 w-full rounded-2xl text-lg font-black"
         >
