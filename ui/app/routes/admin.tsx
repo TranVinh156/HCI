@@ -9,7 +9,10 @@ import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
-import { lessons, profiles, quizzes, topics } from "~/lib/learning-data";
+import { useGetLessons } from "~/hooks/use-get-lessons";
+import { useGetProfiles } from "~/hooks/use-get-profiles";
+import { useGetTopics } from "~/hooks/use-get-topics";
+import { useOverviewReport } from "~/hooks/use-reports";
 
 const adminShortcuts = [
   {
@@ -34,14 +37,18 @@ const adminShortcuts = [
 
 export default function AdminRoute() {
   const [query, setQuery] = useState("");
+  const { data: lessons = [], isLoading: isLessonsLoading } = useGetLessons();
+  const { data: profiles = [] } = useGetProfiles();
+  const { data: topics = [] } = useGetTopics();
+  const { data: overview } = useOverviewReport();
   const filteredLessons = useMemo(
     () =>
       lessons.filter((lesson) =>
-        `${lesson.title} ${lesson.phrase}`
+        `${lesson.title} ${lesson.phrase ?? ""}`
           .toLowerCase()
           .includes(query.toLowerCase())
       ),
-    [query]
+    [lessons, query]
   );
 
   return (
@@ -50,25 +57,25 @@ export default function AdminRoute() {
         <div className="grid gap-4 md:grid-cols-4">
           <StatCard
             label="Students"
-            value={String(profiles.length)}
-            detail="+2 active profiles"
+            value={String(overview?.total_students ?? profiles.length)}
+            detail="Active profiles"
             icon={Users}
           />
           <StatCard
             label="Topics"
-            value={String(topics.length)}
+            value={String(overview?.total_topics ?? topics.length)}
             detail="Ocean curriculum"
             icon={BookOpen}
           />
           <StatCard
             label="Lessons"
-            value={String(lessons.length)}
+            value={String(overview?.total_lessons ?? lessons.length)}
             detail="Vocabulary and communication"
             icon={GraduationCap}
           />
           <StatCard
             label="Quiz questions"
-            value={String(quizzes.length)}
+            value={String(overview?.total_questions ?? 0)}
             detail="Two checks per lesson"
             icon={ClipboardCheck}
           />
@@ -107,8 +114,8 @@ export default function AdminRoute() {
         <div className="grid gap-4 md:grid-cols-3">
           <StatCard
             label="Completion"
-            value="68%"
-            detail="Weekly sample data"
+            value={String(overview?.total_attempts ?? 0)}
+            detail="Total attempts"
             icon={BarChart3}
           />
           <StatCard
@@ -148,11 +155,11 @@ export default function AdminRoute() {
             data={profiles}
             columns={[
               { key: "name", header: "Name", render: (item) => item.name },
-              { key: "age", header: "Age", render: (item) => item.age },
+              { key: "age", header: "Age", render: (item) => item.age ?? "-" },
               {
                 key: "guardian",
                 header: "Guardian",
-                render: (item) => item.guardian,
+                render: (item) => item.guardian_name ?? "-",
               },
             ]}
           />
@@ -164,7 +171,7 @@ export default function AdminRoute() {
               {
                 key: "lessons",
                 header: "Lessons",
-                render: (item) => item.lessonIds.length,
+                render: (item) => item.lesson_count,
               },
               {
                 key: "status",
@@ -181,13 +188,13 @@ export default function AdminRoute() {
 
         <AdminTable
           title="Lessons and vocabulary"
-          data={filteredLessons}
+          data={isLessonsLoading ? [] : filteredLessons}
           columns={[
             { key: "title", header: "Lesson", render: (item) => item.title },
             {
               key: "phrase",
               header: "Word/Phrase",
-              render: (item) => item.phrase,
+              render: (item) => item.phrase ?? "-",
             },
             {
               key: "type",

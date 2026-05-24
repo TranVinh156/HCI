@@ -11,17 +11,22 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
-import { lessons } from "~/lib/learning-data";
-
-const communicationLessons = lessons.filter(
-  (lesson) => lesson.type === "communication"
-);
+import { useGetLessons } from "~/hooks/use-get-lessons";
 
 export default function CommunicationRoute() {
+  const { data: lessons = [], isLoading, isError } = useGetLessons();
+  const communicationLessons = lessons.filter(
+    (lesson) => lesson.type === "communication"
+  );
+
   return (
     <StudentShell>
       <div className="grid gap-4 md:grid-cols-3">
-        {communicationLessons.map((lesson) => (
+        {isLoading ? (
+          <p className="font-bold">Loading communication lessons...</p>
+        ) : isError ? (
+          <p className="font-bold">Unable to load communication lessons.</p>
+        ) : communicationLessons.map((lesson) => (
           <Card
             key={lesson.id}
             className="rounded-[2rem] border-slate-200 bg-white"
@@ -34,7 +39,7 @@ export default function CommunicationRoute() {
                 {lesson.title}
               </CardTitle>
               <CardDescription className="font-semibold">
-                {lesson.description}
+                {lesson.description ?? ""}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -43,7 +48,7 @@ export default function CommunicationRoute() {
                   Sentence parts
                 </p>
                 <div className="mt-2 flex flex-wrap gap-2">
-                  {lesson.phrase.split(" ").map((word) => (
+                  {(lesson.phrase ?? lesson.title).split(" ").map((word) => (
                     <Badge key={word} className="bg-white text-primary">
                       {word}
                     </Badge>

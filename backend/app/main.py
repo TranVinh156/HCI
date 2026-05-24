@@ -1,6 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+import app.models  # noqa: F401 - register SQLAlchemy models
+from app.database import Base, engine
 from app.routers import auth, profiles, topics, lessons, exercises, quizzes, progress, reports, translate
 
 app = FastAPI(title="SignOcean API", version="1.0.0")
@@ -22,6 +24,12 @@ app.include_router(quizzes.router)
 app.include_router(progress.router)
 app.include_router(reports.router)
 app.include_router(translate.router)
+
+
+@app.on_event("startup")
+async def ensure_database_tables():
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
 
 
 @app.get("/health")

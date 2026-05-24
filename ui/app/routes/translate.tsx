@@ -21,7 +21,7 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
-import { api } from "~/lib/api-client";
+import { useSignToText } from "~/hooks/use-translate";
 
 type TranslateMode = "handsign-to-text" | "text-to-handsign";
 type SignKind = "alphabet" | "word";
@@ -60,6 +60,7 @@ export default function TranslateRoute() {
   const [isCapturing, setIsCapturing] = useState(false);
   const [autoCapture, setAutoCapture] = useState(false);
   const [stubWarning, setStubWarning] = useState(false);
+  const signToTextMutation = useSignToText();
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
@@ -121,7 +122,10 @@ export default function TranslateRoute() {
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
       const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
 
-      const result = await api.translate.signToText(dataUrl, kind);
+      const result = await signToTextMutation.mutateAsync({
+        image: dataUrl,
+        kind,
+      });
       setStubWarning(!result.model_loaded);
 
       if (result.confidence >= 0.5 || !result.model_loaded) {

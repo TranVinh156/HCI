@@ -4,21 +4,35 @@ import { Link, useParams, useSearchParams } from "react-router";
 import { RewardSummary } from "~/components/learning/reward-summary";
 import { StudentShell } from "~/components/learning/student-shell";
 import { Button } from "~/components/ui/button";
-import { getLesson, lessons } from "~/lib/learning-data";
-import { readProgress } from "~/lib/progress";
+import { useGetLesson, useGetLessons } from "~/hooks/use-get-lessons";
+import { useProgressData } from "~/hooks/use-progress";
 
 export default function ResultRoute() {
   const params = useParams();
   const [searchParams] = useSearchParams();
-  const lesson = getLesson(params.lessonId ?? "");
-  const progress = readProgress();
+  const {
+    data: lesson,
+    isLoading: isLessonLoading,
+    isError: isLessonError,
+  } = useGetLesson(params.lessonId);
+  const { data: lessons = [] } = useGetLessons();
+  const { data: progressData, isLoading: isProgressLoading } = useProgressData();
+  const progress = progressData?.progress;
   const correct = Number(searchParams.get("correct") ?? 0);
   const total = Number(searchParams.get("total") ?? 2);
   const nextLesson =
-    lessons.find((item) => !progress.completedLessonIds.includes(item.id)) ??
+    lessons.find((item) => !progress?.completed_lesson_ids.includes(item.id)) ??
     lessons[0];
 
-  if (!lesson) {
+  if (isLessonLoading || isProgressLoading) {
+    return (
+      <StudentShell>
+        <p className="font-bold">Loading result...</p>
+      </StudentShell>
+    );
+  }
+
+  if (isLessonError || !lesson || !progress) {
     return (
       <StudentShell>
         <p className="font-bold">Result not found.</p>
@@ -47,7 +61,7 @@ export default function ResultRoute() {
             </Link>
           </Button>
           <Button asChild className="h-13 rounded-2xl font-black">
-            <Link to={`/lesson/${nextLesson.id}`}>
+            <Link to={`/lesson/${nextLesson?.id ?? lesson.id}`}>
               Keep learning
               <ArrowRight className="size-5" />
             </Link>

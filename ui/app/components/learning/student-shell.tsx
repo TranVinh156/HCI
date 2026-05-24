@@ -23,7 +23,7 @@ const navItems = [
   { to: "/communication", label: "Talk", icon: MessageCircle },
   { to: "/practice", label: "Practice", icon: Dumbbell },
   { to: "/profile", label: "Profile", icon: User },
-  { to: "/admin", label: "Admin", icon: Shield },
+  { to: "/admin", label: "Admin", icon: Shield, adminOnly: true },
 ];
 
 export function StudentShell({ children }: StudentShellProps) {
@@ -33,6 +33,7 @@ export function StudentShell({ children }: StudentShellProps) {
       navLabel="Student"
       homeTo="/learn"
       contentClassName="mx-auto max-w-6xl px-4 py-6 lg:px-8"
+      requireAuth
     >
       {children}
     </AppSidebarLayout>
