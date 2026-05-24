@@ -1,10 +1,11 @@
 import { LogIn, LogOut, type LucideIcon } from "lucide-react";
-import { type ReactNode, useEffect, useState } from "react";
+import { type ReactNode, useEffect } from "react";
 import { Link, NavLink, useLocation, useNavigate } from "react-router";
 
+import { getToken } from "~/api/request";
+import type { UserRole } from "~/api/types";
 import { Button } from "~/components/ui/button";
-import { getCurrentUser, isLoggedIn, logout } from "~/lib/auth";
-import type { User, UserRole } from "~/api/types";
+import { useCurrentUser, useLogout } from "~/hooks/use-auth";
 import { cn } from "~/lib/utils";
 
 export type AppSidebarNavItem = {
@@ -40,65 +41,37 @@ export function AppSidebarLayout({
 }: AppSidebarLayoutProps) {
   const navigate = useNavigate();
   const location = useLocation();
-  const [loggedIn, setLoggedIn] = useState(false);
-  const [user, setUser] = useState<User | null>(null);
-  const [isCheckingAuth, setIsCheckingAuth] = useState(Boolean(requireAuth));
+  const hasToken = Boolean(getToken());
+  const logout = useLogout();
+  const { data: user, isLoading, isError } = useCurrentUser();
+  const loggedIn = Boolean(user);
+  const isCheckingAuth = Boolean(requireAuth && hasToken && isLoading);
 
   useEffect(() => {
-    let ignore = false;
+    if (!requireAuth) return;
 
-    async function checkAuth() {
-      const hasToken = isLoggedIn();
-      setLoggedIn(hasToken);
-
-      if (!hasToken) {
-        setUser(null);
-        setIsCheckingAuth(false);
-        if (requireAuth) {
-          const next = encodeURIComponent(`${location.pathname}${location.search}`);
-          navigate(`/login?redirectTo=${next}`, { replace: true });
-        }
-        return;
-      }
-
-      setIsCheckingAuth(true);
-      const currentUser = await getCurrentUser();
-      if (ignore) return;
-
-      if (!currentUser) {
-        setUser(null);
-        setLoggedIn(false);
-        setIsCheckingAuth(false);
-        if (requireAuth) {
-          const next = encodeURIComponent(`${location.pathname}${location.search}`);
-          navigate(`/login?redirectTo=${next}`, { replace: true });
-        }
-        return;
-      }
-
-      if (requiredRole && currentUser.role !== requiredRole) {
-        setUser(currentUser);
-        setLoggedIn(true);
-        navigate("/learn", { replace: true });
-        return;
-      }
-
-      setUser(currentUser);
-      setLoggedIn(true);
-      setIsCheckingAuth(false);
+    if (!hasToken || isError) {
+      const next = encodeURIComponent(`${location.pathname}${location.search}`);
+      navigate(`/login?redirectTo=${next}`, { replace: true });
+      return;
     }
 
-    void checkAuth();
-
-    return () => {
-      ignore = true;
-    };
-  }, [location.pathname, location.search, navigate, requireAuth, requiredRole]);
+    if (requiredRole && user && user.role !== requiredRole) {
+      navigate("/learn", { replace: true });
+    }
+  }, [
+    hasToken,
+    isError,
+    location.pathname,
+    location.search,
+    navigate,
+    requireAuth,
+    requiredRole,
+    user,
+  ]);
 
   function handleLogout() {
     logout();
-    setLoggedIn(false);
-    setUser(null);
     navigate("/login");
   }
 

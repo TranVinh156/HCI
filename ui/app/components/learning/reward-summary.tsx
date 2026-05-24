@@ -1,18 +1,15 @@
 import { Award, Star, Trophy, Zap } from "lucide-react";
 
-import { badges } from "~/lib/learning-data";
-import type { ProgressState } from "~/lib/progress";
+import type { Progress } from "~/api/types";
 
 type RewardSummaryProps = {
-  progress: ProgressState;
+  progress: Progress;
   correct: number;
   total: number;
 };
 
 export function RewardSummary({ progress, correct, total }: RewardSummaryProps) {
-  const earnedBadges = badges.filter((badge) =>
-    progress.earnedBadgeIds.includes(badge.id)
-  );
+  const earnedBadges = progress.earned_badges;
 
   return (
     <div className="grid gap-4 sm:grid-cols-3">

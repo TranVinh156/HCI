@@ -5,14 +5,27 @@ import { CameraPractice } from "~/components/learning/camera-practice";
 import { LessonCard } from "~/components/learning/lesson-card";
 import { StudentShell } from "~/components/learning/student-shell";
 import { Button } from "~/components/ui/button";
-import { getLesson, getTopic } from "~/lib/learning-data";
+import { useGetLesson } from "~/hooks/use-get-lessons";
+import { useGetTopic } from "~/hooks/use-get-topics";
 
 export default function LessonRoute() {
   const params = useParams();
-  const lesson = getLesson(params.lessonId ?? "");
-  const topic = lesson ? getTopic(lesson.topicId) : undefined;
+  const {
+    data: lesson,
+    isLoading: isLessonLoading,
+    isError: isLessonError,
+  } = useGetLesson(params.lessonId);
+  const { data: topic } = useGetTopic(lesson?.topic_id);
 
-  if (!lesson) {
+  if (isLessonLoading) {
+    return (
+      <StudentShell>
+        <p className="font-bold">Loading lesson...</p>
+      </StudentShell>
+    );
+  }
+
+  if (isLessonError || !lesson) {
     return (
       <StudentShell>
         <p className="font-bold">Lesson not found.</p>

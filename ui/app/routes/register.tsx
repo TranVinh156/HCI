@@ -10,8 +10,8 @@ import {
   CardTitle,
 } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
-import { authApi } from "~/api/auth";
-import { profilesApi } from "~/api/profiles";
+import { useCreateProfile } from "~/hooks/use-get-profiles";
+import { useLogin, useRegister } from "~/hooks/use-auth";
 
 export default function RegisterRoute() {
   const navigate = useNavigate();
@@ -22,23 +22,28 @@ export default function RegisterRoute() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const registerMutation = useRegister();
+  const loginMutation = useLogin();
+  const createProfileMutation = useCreateProfile();
+  const isSubmitting =
+    registerMutation.isPending ||
+    loginMutation.isPending ||
+    createProfileMutation.isPending;
 
   async function submitRegister(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
-    setIsSubmitting(true);
 
     try {
-      await authApi.register({
+      await registerMutation.mutateAsync({
         email,
         username,
         password,
       });
-      await authApi.login(username, password);
+      await loginMutation.mutateAsync({ username, password });
 
       if (name.trim()) {
-        await profilesApi.create({
+        await createProfileMutation.mutateAsync({
           name: name.trim(),
           age: null,
           avatar: null,
@@ -49,8 +54,6 @@ export default function RegisterRoute() {
       navigate(resolveRedirect(redirectTo), { replace: true });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to create account");
-    } finally {
-      setIsSubmitting(false);
     }
   }
 

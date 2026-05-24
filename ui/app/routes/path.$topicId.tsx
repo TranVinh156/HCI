@@ -3,9 +3,9 @@ import { Link, useParams } from "react-router";
 import { PathNode } from "~/components/learning/path-node";
 import { StudentShell } from "~/components/learning/student-shell";
 import { Button } from "~/components/ui/button";
+import { getLessonStatus, useProgressData } from "~/hooks/use-progress";
 import { useGetTopic } from "~/hooks/use-get-topics";
 import { useGetTopicLessons } from "~/hooks/use-get-topics-lessons";
-import { getLessonStatus, readProgress } from "~/lib/progress";
 
 export default function PathRoute() {
   const params = useParams();
@@ -20,8 +20,9 @@ export default function PathRoute() {
     isLoading: isLessonsLoading,
     isError: isLessonsError,
   } = useGetTopicLessons(topicId);
+  const { data: progressData, isLoading: isProgressLoading } = useProgressData();
   const orderedLessonIds = lessons.map((lesson) => lesson.id);
-  const progress = readProgress();
+  const progress = progressData?.progress;
 
   if (!topicId) {
     return (
@@ -31,7 +32,7 @@ export default function PathRoute() {
     );
   }
 
-  if (isTopicLoading || isLessonsLoading) {
+  if (isTopicLoading || isLessonsLoading || isProgressLoading) {
     return (
       <StudentShell>
         <p className="font-bold">Loading learning path...</p>

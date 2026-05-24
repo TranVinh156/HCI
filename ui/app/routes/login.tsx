@@ -11,8 +11,7 @@ import {
   CardTitle,
 } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
-import { authApi } from "~/api/auth";
-import { getCurrentUser } from "~/lib/auth";
+import { useCurrentUser, useLogin } from "~/hooks/use-auth";
 
 export default function LoginRoute() {
   const navigate = useNavigate();
@@ -24,37 +23,24 @@ export default function LoginRoute() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const loginMutation = useLogin();
+  const { data: currentUser } = useCurrentUser();
+  const isSubmitting = loginMutation.isPending;
 
   useEffect(() => {
-    let ignore = false;
-
-    async function redirectAuthenticatedUser() {
-      const user = await getCurrentUser();
-      if (ignore || !user) return;
-      navigate(resolveRedirect(redirectTo, user.role), { replace: true });
-    }
-
-    void redirectAuthenticatedUser();
-
-    return () => {
-      ignore = true;
-    };
-  }, [navigate, redirectTo]);
+    if (!currentUser) return;
+    navigate(resolveRedirect(redirectTo, currentUser.role), { replace: true });
+  }, [currentUser, navigate, redirectTo]);
 
   async function submitLogin(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
-    setIsSubmitting(true);
 
     try {
-      await authApi.login(username, password);
-      const user = await authApi.me();
+      const user = await loginMutation.mutateAsync({ username, password });
       navigate(resolveRedirect(redirectTo, user.role), { replace: true });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to log in");
-    } finally {
-      setIsSubmitting(false);
     }
   }
 

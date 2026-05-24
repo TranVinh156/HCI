@@ -1,6 +1,6 @@
 import { ArrowRight, ClipboardCheck, RotateCcw } from "lucide-react";
 import { Link } from "react-router";
-import type { Lesson, Topic } from "~/api/types";
+import type { Lesson } from "~/api/types";
 
 import { StudentShell } from "~/components/learning/student-shell";
 import { Badge } from "~/components/ui/badge";
@@ -13,18 +13,23 @@ import {
   CardTitle,
 } from "~/components/ui/card";
 import { useGetLessons } from "~/hooks/use-get-lessons";
-import { readProgress } from "~/lib/progress";
+import { useProgressData } from "~/hooks/use-progress";
 
 export default function PracticeRoute() {
-  const progress = readProgress();
   const { data, isLoading, isError } = useGetLessons();
+  const { data: progressData, isLoading: isProgressLoading } = useProgressData();
+  const completedLessonIds = progressData?.progress?.completed_lesson_ids ?? [];
   const practiceLessons: Lesson[] = data ?? [];
 
   return (
     <StudentShell>
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {practiceLessons.map((lesson) => {
-          const completed = progress.completedLessonIds.includes(lesson.id);
+        {isLoading || isProgressLoading ? (
+          <p className="font-bold">Loading practice...</p>
+        ) : isError ? (
+          <p className="font-bold">Unable to load practice.</p>
+        ) : practiceLessons.map((lesson) => {
+          const completed = completedLessonIds.includes(lesson.id);
 
           return (
             <Card
