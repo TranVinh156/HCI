@@ -1,11 +1,12 @@
 import { ArrowRight, Hand, Keyboard } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router";
+import type { Topic } from "~/api/types";
 
 import { StudentShell } from "~/components/learning/student-shell";
 import { Button } from "~/components/ui/button";
 import { BlockyCard, CardContent } from "~/components/ui/card";
-import { topics } from "~/lib/learning-data";
+import { useGetTopics } from "~/hooks/use-get-topics";
 
 const tabs = [
   { id: "handsign", label: "Handsign", icon: Hand },
@@ -23,6 +24,8 @@ const fingerspellingCards = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").map(
 );
 
 export default function LearnRoute() {
+  const { data, isLoading, isError } = useGetTopics();
+  const topicList: Topic[] = data ?? [];
   const [activeTab, setActiveTab] = useState<LearnTab>("handsign");
 
   return (
@@ -38,11 +41,10 @@ export default function LearnRoute() {
                 key={tab.id}
                 type="button"
                 onClick={() => setActiveTab(tab.id)}
-                className={`w-40 flex h-12 flex-1 items-center justify-center gap-2 rounded-[1.25rem] px-4 text-sm font-black transition-colors sm:flex-none ${
-                  selected
-                    ? "bg-primary text-primary-foreground"
-                    : "text-slate-600 hover:bg-primary/10 hover:text-primary"
-                }`}
+                className={`w-40 flex h-12 flex-1 items-center justify-center gap-2 rounded-[1.25rem] px-4 text-sm font-black transition-colors sm:flex-none ${selected
+                  ? "bg-primary text-primary-foreground"
+                  : "text-slate-600 hover:bg-primary/10 hover:text-primary"
+                  }`}
                 aria-pressed={selected}
               >
                 <Icon className="size-4" />
@@ -54,27 +56,37 @@ export default function LearnRoute() {
 
         {activeTab === "handsign" ? (
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {topics.map((topic) => (
-              <BlockyCard key={topic.id} className="h-full">
-                <CardContent className="flex h-full flex-col pb-2">
-                  <div className={`mb-5 rounded-[1.5rem]`}>
-                    <h2 className="text-2xl font-black">{topic.title}</h2>
-                  </div>
-                  <p className="min-h-12 grow text-sm font-semibold text-slate-600">
-                    {topic.description}
-                  </p>
-                  <Button
-                    asChild
-                    className="mt-5 h-12 w-full rounded-2xl font-black"
-                  >
-                    <Link to={`/path/${topic.id}`}>
-                      Open path
-                      <ArrowRight className="size-5" />
-                    </Link>
-                  </Button>
-                </CardContent>
-              </BlockyCard>
-            ))}
+            {isLoading ? (
+              <div className="col-span-full text-sm font-semibold text-slate-600">
+                Loading topics...
+              </div>
+            ) : isError ? (
+              <div className="col-span-full text-sm font-semibold text-rose-600">
+                Unable to load topics. Please try again.
+              </div>
+            ) : (
+              topicList.map((topic) => (
+                <BlockyCard key={topic.id} className="h-full">
+                  <CardContent className="flex h-full flex-col pb-2">
+                    <div className={`mb-5 rounded-[1.5rem]`}>
+                      <h2 className="text-2xl font-black">{topic.title}</h2>
+                    </div>
+                    <p className="min-h-12 grow text-sm font-semibold text-slate-600">
+                      {topic.description ?? ""}
+                    </p>
+                    <Button
+                      asChild
+                      className="mt-5 h-12 w-full rounded-2xl font-black"
+                    >
+                      <Link to={`/path/${topic.id}`}>
+                        Open path
+                        <ArrowRight className="size-5" />
+                      </Link>
+                    </Button>
+                  </CardContent>
+                </BlockyCard>
+              ))
+            )}
           </div>
         ) : (
           <div className="grid gap-5 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">

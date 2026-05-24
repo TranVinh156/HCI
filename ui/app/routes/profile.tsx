@@ -54,7 +54,6 @@ export default function ProfileRoute() {
           <h1 className="mt-4 text-3xl font-black">{displayName}</h1>
           {profile ? (
             <p className="font-semibold text-slate-500">
-              {profile.age ? `Age ${profile.age}` : "Age not set"} · Guardian:{" "}
               {profile.guardian_name ?? user?.username ?? "Not set"}
             </p>
           ) : (
