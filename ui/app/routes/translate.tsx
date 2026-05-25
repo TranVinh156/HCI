@@ -27,8 +27,12 @@ import {
   getSpokenToSignedPoseUrl,
   getSpokenToSignedVideoUrl,
   loadOfflineModel,
+  postProcessSignWriting,
+  splitSignWritingTokens,
+  type SignWritingObj,
   translateSpokenToSignWriting,
 } from "~/services/translation.service";
+import { SkeletonPoseViewer } from "~/components/SkeletonPoseViewer";
 
 type TranslateMode = "handsign-to-text" | "text-to-handsign";
 type SignKind = "alphabet" | "word";
@@ -62,6 +66,7 @@ export default function TranslateRoute() {
   const [kind, setKind] = useState<SignKind>("alphabet");
   const [textInput, setTextInput] = useState("Hello thank you");
   const [signWritingText, setSignWritingText] = useState("");
+  const [signWritingSigns, setSignWritingSigns] = useState<SignWritingObj[]>([]);
   const [translateError, setTranslateError] = useState<string | null>(null);
   const [isTranslating, setIsTranslating] = useState(false);
   const [poseUrl, setPoseUrl] = useState("");
@@ -178,6 +183,7 @@ export default function TranslateRoute() {
     const trimmed = textInput.trim();
     if (!trimmed) {
       setSignWritingText("");
+      setSignWritingSigns([]);
       setPoseUrl("");
       setVideoUrl("");
       setNetworkError(null);
@@ -191,7 +197,14 @@ export default function TranslateRoute() {
 
     try {
       const result = await translateSpokenToSignWriting(trimmed);
-      setSignWritingText(result);
+      console.log("Raw translation result:", result);
+      const cleaned = postProcessSignWriting(result);
+      console.log("Cleaned FSW string:", cleaned);
+      setSignWritingText(cleaned);
+
+      const tokens = splitSignWritingTokens(cleaned);
+      console.log("Parsed FSW tokens:", tokens);
+      setSignWritingSigns(tokens);
 
       setIsNetworkLoading(true);
       const poseLink = getSpokenToSignedPoseUrl(trimmed);
@@ -214,6 +227,7 @@ export default function TranslateRoute() {
           ? error.message
           : "Unable to translate offline.";
       setTranslateError(message);
+      setSignWritingSigns([]);
       setPoseUrl("");
       setVideoUrl("");
     } finally {
@@ -233,6 +247,7 @@ export default function TranslateRoute() {
       setTranslateError(null);
       setIsTranslating(false);
       setSignWritingText("");
+      setSignWritingSigns([]);
       setPoseUrl("");
       setVideoUrl("");
       setNetworkError(null);
@@ -509,15 +524,6 @@ export default function TranslateRoute() {
                 </div>
               ) : (
                 <>
-                  <div className="rounded-[1.5rem] border-2 border-dashed border-primary/40 bg-secondary/40 p-4 text-sm font-black text-slate-800">
-                    {signWritingText ? (
-                      <p className="break-words">{signWritingText}</p>
-                    ) : (
-                      <span className="text-slate-400">
-                        Translate text to see SignWriting…
-                      </span>
-                    )}
-                  </div>
                   {isNetworkLoading ? (
                     <p className="text-xs font-semibold text-slate-600">
                       Fetching Pose and Video assets from Cloud...
@@ -529,17 +535,9 @@ export default function TranslateRoute() {
                     </p>
                   ) : null}
                   {poseUrl ? (
-                    <p className="text-xs font-semibold text-slate-700">
-                      Pose URL:{" "}
-                      <a
-                        href={poseUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-primary underline"
-                      >
-                        {poseUrl}
-                      </a>
-                    </p>
+                    <div className="w-full rounded-[1.5rem] border-2 border-slate-900 bg-slate-950 p-3">
+                      <SkeletonPoseViewer src={poseUrl} />
+                    </div>
                   ) : null}
                   {videoUrl ? (
                     <video
@@ -554,25 +552,6 @@ export default function TranslateRoute() {
                       {translateError}
                     </p>
                   ) : null}
-                  <div className="grid grow content-start gap-3 rounded-[1.5rem] bg-muted p-4 sm:grid-cols-2">
-                    {textToSignsResult.length > 0 ? (
-                      textToSignsResult.map((word, index) => (
-                        <div
-                          key={`${word}-${index}`}
-                          className="grid min-h-28 place-items-center rounded-2xl border-2 border-slate-200 bg-white p-3 text-center"
-                        >
-                          <Hand className="mb-2 size-8 text-primary" />
-                          <span className="text-sm font-black uppercase text-slate-800">
-                            {word}
-                          </span>
-                        </div>
-                      ))
-                    ) : (
-                      <div className="text-lg font-black text-slate-400">
-                        Handsign
-                      </div>
-                    )}
-                  </div>
                 </>
               )}
 

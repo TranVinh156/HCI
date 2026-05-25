@@ -7,6 +7,10 @@ type TranslationResponse = {
   text: string;
 };
 
+export interface SignWritingObj {
+  fsw: string;
+}
+
 type ModelRegistry = Record<
   string,
   {
@@ -42,11 +46,77 @@ let workerInstance: BergamotWorker | null = null;
 let workerPromise: Promise<BergamotWorker> | null = null;
 let modelPromise: Promise<void> | null = null;
 let modelLoaded = false;
+const MAX_SEGMENT_WORDS = 14;
+
+const PHRASE_REPLACEMENTS: Array<[RegExp, string]> = [
+  [/\bcan't\b/gi, "cannot"],
+  [/\bwon't\b/gi, "will not"],
+  [/\bdon't\b/gi, "do not"],
+  [/\bdoesn't\b/gi, "does not"],
+  [/\bdidn't\b/gi, "did not"],
+  [/\bisn't\b/gi, "is not"],
+  [/\baren't\b/gi, "are not"],
+  [/\bwasn't\b/gi, "was not"],
+  [/\bweren't\b/gi, "were not"],
+  [/\bit's\b/gi, "it is"],
+  [/\bI'm\b/gi, "I am"],
+  [/\byou're\b/gi, "you are"],
+  [/\bwe're\b/gi, "we are"],
+  [/\bthey're\b/gi, "they are"],
+  [/\bgonna\b/gi, "going to"],
+  [/\bwanna\b/gi, "want to"],
+  [/\bgotta\b/gi, "have to"],
+  [/\blet's\b/gi, "let us"],
+];
 
 function ensureBrowser() {
   if (typeof window === "undefined") {
     throw new Error("Offline translation is only available in the browser.");
   }
+}
+
+export function preProcessSpokenText(text: string): string {
+  let normalized = text.normalize("NFKC");
+  normalized = normalized
+    .replace(/[“”]/g, '"')
+    .replace(/[’]/g, "'")
+    .replace(/\r?\n|\r/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  for (const [pattern, replacement] of PHRASE_REPLACEMENTS) {
+    normalized = normalized.replace(pattern, replacement);
+  }
+
+  return normalized;
+}
+
+export function segmentSpokenText(text: string): string[] {
+  if (!text) return [];
+
+  const sentenceMarkers = text
+    .replace(/([.!?]+)\s+/g, "$1|")
+    .replace(/([;:]+)\s+/g, "$1|");
+
+  const roughSegments = sentenceMarkers
+    .split("|")
+    .map((segment) => segment.trim())
+    .filter(Boolean);
+
+  const segments: string[] = [];
+  for (const segment of roughSegments) {
+    const words = segment.split(/\s+/);
+    if (words.length <= MAX_SEGMENT_WORDS) {
+      segments.push(segment);
+      continue;
+    }
+
+    for (let i = 0; i < words.length; i += MAX_SEGMENT_WORDS) {
+      segments.push(words.slice(i, i + MAX_SEGMENT_WORDS).join(" "));
+    }
+  }
+
+  return segments;
 }
 
 export async function initWorker(): Promise<BergamotWorker> {
@@ -103,9 +173,18 @@ export async function loadOfflineModel(): Promise<void> {
 
   if (!modelPromise) {
     modelPromise = (async () => {
-      const worker = await initWorker();
-      await worker.loadModel(SOURCE_LANGUAGE, TARGET_LANGUAGE, createModelRegistry());
-      modelLoaded = true;
+      try {
+        const worker = await initWorker();
+        await worker.loadModel(
+          SOURCE_LANGUAGE,
+          TARGET_LANGUAGE,
+          createModelRegistry()
+        );
+        modelLoaded = true;
+      } catch (error) {
+        console.error("Offline model load error:", error);
+        throw error;
+      }
     })().catch((error) => {
       modelPromise = null;
       throw error;
@@ -116,27 +195,56 @@ export async function loadOfflineModel(): Promise<void> {
 }
 
 export async function translateSpokenToSignWriting(text: string): Promise<string> {
-  const trimmed = text.trim();
-  if (!trimmed) {
+  const cleanText = preProcessSpokenText(text);
+  if (!cleanText) {
     return "";
   }
 
-  const worker = await initWorker();
-  await loadOfflineModel();
+  try {
+    const worker = await initWorker();
+    await loadOfflineModel();
+    const segments = segmentSpokenText(cleanText);
+    if (segments.length === 0) {
+      return "";
+    }
 
-  const taggedText = `$${SOURCE_LANGUAGE} $${TARGET_LANGUAGE} ${trimmed}`;
-  const [result] = await worker.translate(
-    SOURCE_LANGUAGE,
-    TARGET_LANGUAGE,
-    [taggedText],
-    [{ isHtml: false }]
-  );
+    const payload = segments.map(
+      (segment) => `$${SOURCE_LANGUAGE} $${TARGET_LANGUAGE} ${segment}`
+    );
+    console.log("Payload sent to Worker:", payload);
 
-  const raw = result?.text ?? "";
-  return raw
-    .replace(/\$en\s*\$ase\s*/gi, "")
+    const results = await worker.translate(
+      SOURCE_LANGUAGE,
+      TARGET_LANGUAGE,
+      payload,
+      payload.map(() => ({ isHtml: false }))
+    );
+
+    const rawChunks = results.map((result) =>
+      typeof result === "string" ? result : (result?.text ?? "")
+    );
+
+    return rawChunks.join(" ").trim();
+  } catch (error) {
+    console.error("Translation Worker Error:", error);
+    return "";
+  }
+}
+
+export function postProcessSignWriting(translationText: string): string {
+  return translationText
+    .replace(/\$[^\s]+/g, " ")
+    .replace(/(\d)M/g, "$1 M")
     .replace(/\s+/g, " ")
     .trim();
+}
+
+export function splitSignWritingTokens(cleanedText: string): SignWritingObj[] {
+  return cleanedText
+    .split(/\s+/)
+    .map((token) => token.trim())
+    .filter((token) => token.length > 0 && /^M\d+/i.test(token))
+    .map((fsw) => ({ fsw }));
 }
 
 export function getSpokenToSignedPoseUrl(text: string): string {
@@ -168,5 +276,18 @@ export async function fetchPoseData(url: string): Promise<unknown> {
     const message =
       error instanceof Error ? error.message : "Unable to fetch pose data.";
     throw new Error(message);
+  }
+}
+
+export class TranslationService {
+  getSpokenToSignedPoseUrl(
+    text: string,
+    spokenLanguage: string,
+    signedLanguage: string
+  ): string {
+    const encodedText = encodeURIComponent(text);
+    return `${SPOKEN_TO_SIGNED_POSE_ENDPOINT}?spoken=${encodeURIComponent(
+      spokenLanguage
+    )}&signed=${encodeURIComponent(signedLanguage)}&text=${encodedText}`;
   }
 }

@@ -128,3 +128,22 @@
     @apply font-sans;
   }
 }
+
+/* Protect SignWriting SVGs from Tailwind Preflight */
+fsw-sign {
+  display: inline-flex !important;
+  justify-content: center;
+  align-items: center;
+  min-height: 150px;
+  min-width: 100px;
+  overflow: visible !important;
+}
+
+fsw-sign svg {
+  overflow: visible !important;
+  display: block !important;
+  width: auto !important;
+  height: auto !important;
+  transform: scale(1.5);
+  transform-origin: center center;
+}
