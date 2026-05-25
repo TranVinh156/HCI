@@ -11,6 +11,9 @@ class Settings(BaseSettings):
     jwt_secret: str = "changeme"
     jwt_algorithm: str = "HS256"
     jwt_expire_minutes: int = 1440
+    admin_email: str = "admin@signocean.local"
+    admin_username: str = "admin"
+    admin_password: str = "admin123"
 
     model_config = {"env_file": BACKEND_DIR / ".env"}
 

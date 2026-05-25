@@ -23,7 +23,7 @@ async def register(body: RegisterRequest, db: AsyncSession = Depends(get_db)):
         email=body.email,
         username=body.username,
         password_hash=hash_password(body.password),
-        role=body.role if body.role in ("admin", "guardian") else "guardian",
+        role="guardian",
     )
     db.add(user)
     await db.commit()
