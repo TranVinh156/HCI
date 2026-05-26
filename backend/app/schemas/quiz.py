@@ -21,6 +21,7 @@ class QuizQuestionUpdate(BaseModel):
 class QuizQuestionOut(BaseModel):
     id: uuid.UUID
     lesson_id: uuid.UUID
+    topic_id: uuid.UUID
     prompt: str
     type: str
     options: list[str]

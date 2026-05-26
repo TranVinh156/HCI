@@ -1,5 +1,6 @@
 from pathlib import Path
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings
 
 
@@ -11,8 +12,18 @@ class Settings(BaseSettings):
     jwt_secret: str = "changeme"
     jwt_algorithm: str = "HS256"
     jwt_expire_minutes: int = 1440
+    admin_email: str = "admin@signocean.local"
+    admin_username: str = "admin"
+    admin_password: str = "admin123"
 
     model_config = {"env_file": BACKEND_DIR / ".env"}
+
+    @field_validator("database_url")
+    @classmethod
+    def use_async_postgres_driver(cls, value: str) -> str:
+        if value.startswith("postgresql://"):
+            return value.replace("postgresql://", "postgresql+asyncpg://", 1)
+        return value
 
 
 settings = Settings()

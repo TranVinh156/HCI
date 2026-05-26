@@ -94,7 +94,14 @@ async def list_questions(lesson_id: uuid.UUID, db: AsyncSession = Depends(get_db
 
 @router.post("/{lesson_id}/questions", response_model=QuizQuestionOut, status_code=201)
 async def create_question(lesson_id: uuid.UUID, body: QuizQuestionCreate, db: AsyncSession = Depends(get_db), _=Depends(require_admin)):
-    question = QuizQuestion(lesson_id=lesson_id, **body.model_dump())
+    lesson = (await db.execute(select(Lesson).where(Lesson.id == lesson_id))).scalar_one_or_none()
+    if not lesson:
+        raise HTTPException(404, "Lesson not found")
+    question = QuizQuestion(
+        lesson_id=lesson_id,
+        topic_id=lesson.topic_id,
+        **body.model_dump(),
+    )
     db.add(question)
     await db.commit()
     await db.refresh(question)

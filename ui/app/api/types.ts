@@ -56,6 +56,7 @@ export type Exercise = {
 export type QuizQuestion = {
   id: string;
   lesson_id: string;
+  topic_id: string;
   prompt: string;
   type: string;
   options: string[];

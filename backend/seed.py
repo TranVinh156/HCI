@@ -115,6 +115,7 @@ async def seed():
         for q in QUIZ_QUESTIONS:
             data = {k: v for k, v in q.items() if k != "lesson_idx"}
             data["lesson_id"] = lesson_objs[q["lesson_idx"]].id
+            data["topic_id"] = lesson_objs[q["lesson_idx"]].topic_id
             db.add(QuizQuestion(**data))
 
         # Seed badges
