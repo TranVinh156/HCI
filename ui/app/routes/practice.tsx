@@ -35,24 +35,30 @@ export default function PracticeRoute() {
           quizTopics.map(({ topic, questionCount }) => (
             <Card
               key={topic.id}
-              className="rounded-[2rem] border-slate-200 bg-white"
+              className="rounded-[2rem] border-slate-200 bg-white transition hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-lg"
             >
-              <CardHeader>
-                <div className="mb-3 flex items-center justify-between gap-3">
-                  <div className="grid size-14 place-items-center rounded-2xl bg-primary/10 text-primary">
-                    <ClipboardCheck className="size-7" />
+              <Link
+                to={`/topic-quiz-history/${topic.id}`}
+                className="block rounded-[2rem] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+              >
+                <CardHeader>
+                  <div className="mb-3 flex items-center justify-between gap-3">
+                    <div className="grid size-14 place-items-center rounded-2xl bg-primary/10 text-primary">
+                      <ClipboardCheck className="size-7" />
+                    </div>
+                    <Badge className="bg-primary/10 text-primary">
+                      {questionCount} questions
+                    </Badge>
                   </div>
-                  <Badge className="bg-primary/10 text-primary">
-                    {questionCount} questions
-                  </Badge>
-                </div>
-                <CardTitle className="text-xl font-black">
-                  {topic.title}
-                </CardTitle>
-                <CardDescription className="font-semibold">
-                  {topic.description ?? "Practice all quiz questions in this topic."}
-                </CardDescription>
-              </CardHeader>
+                  <CardTitle className="text-xl font-black">
+                    {topic.title}
+                  </CardTitle>
+                  <CardDescription className="font-semibold">
+                    {topic.description ??
+                      "Practice all quiz questions in this topic."}
+                  </CardDescription>
+                </CardHeader>
+              </Link>
               <CardContent>
                 <Button asChild className="h-12 w-full rounded-2xl font-black">
                   <Link to={`/topic-quiz/${topic.id}`}>

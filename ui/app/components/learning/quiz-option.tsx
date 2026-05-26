@@ -20,8 +20,8 @@ export function QuizOption({
       className={cn(
         "min-h-16 rounded-[1.5rem] border-2 bg-white p-2 text-center text-2xl font-black text-slate-800 transition hover:-translate-y-0.5 hover:border-primary/40",
         selected && "border-primary bg-primary/10",
-        selected && state === "correct" && "border-emerald-500 bg-emerald-50",
-        selected && state === "wrong" && "border-rose-400 bg-rose-50"
+        state === "correct" && "border-emerald-500 bg-emerald-50",
+        state === "wrong" && "border-rose-400 bg-rose-50"
       )}
     >
       {option}

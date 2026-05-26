@@ -11,6 +11,7 @@ export default [
   route("path/:topicId", "routes/path.$topicId.tsx"),
   route("lesson/:lessonId", "routes/lesson.$lessonId.tsx"),
   route("quiz/:lessonId", "routes/quiz.$lessonId.tsx"),
+  route("topic-quiz-history/:topicId", "routes/topic-quiz-history.$topicId.tsx"),
   route("topic-quiz/:topicId", "routes/topic-quiz.$topicId.tsx"),
   route("result/:lessonId", "routes/result.$lessonId.tsx"),
   route("profile", "routes/profile.tsx"),

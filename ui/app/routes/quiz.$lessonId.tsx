@@ -120,11 +120,11 @@ export default function QuizRoute() {
                 option={option}
                 selected={selected === option}
                 state={
-                  checked && selected === option
-                    ? isCorrect
-                      ? "correct"
-                      : "wrong"
-                    : "idle"
+                  checked && option === question.answer
+                    ? "correct"
+                    : checked && selected === option
+                      ? "wrong"
+                      : "idle"
                 }
                 onSelect={() => {
                   if (!checked) setSelected(option);
