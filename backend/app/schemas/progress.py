@@ -9,6 +9,12 @@ class CompleteLessonRequest(BaseModel):
     total: int
 
 
+class CompleteTopicQuizRequest(BaseModel):
+    topic_id: uuid.UUID
+    correct: int
+    total: int
+
+
 class BadgeOut(BaseModel):
     id: uuid.UUID
     slug: str
@@ -21,6 +27,17 @@ class BadgeOut(BaseModel):
 
 class LessonAttemptOut(BaseModel):
     lesson_id: uuid.UUID
+    correct: int
+    total: int
+    completed_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+class TopicQuizAttemptOut(BaseModel):
+    id: uuid.UUID
+    student_profile_id: uuid.UUID
+    topic_id: uuid.UUID
     correct: int
     total: int
     completed_at: datetime

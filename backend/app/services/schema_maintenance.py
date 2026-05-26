@@ -63,3 +63,32 @@ async def ensure_quiz_question_topic_relation(conn: AsyncConnection) -> None:
         )
     )
     await conn.execute(text("ALTER TABLE quiz_questions ALTER COLUMN topic_id SET NOT NULL"))
+
+
+async def ensure_topic_quiz_attempts_table(conn: AsyncConnection) -> None:
+    await conn.execute(
+        text(
+            """
+            CREATE TABLE IF NOT EXISTS topic_quiz_attempts (
+                id UUID PRIMARY KEY,
+                student_profile_id UUID NOT NULL
+                    REFERENCES student_profiles(id)
+                    ON DELETE CASCADE,
+                topic_id UUID NOT NULL
+                    REFERENCES topics(id)
+                    ON DELETE CASCADE,
+                correct INTEGER NOT NULL DEFAULT 0,
+                total INTEGER NOT NULL DEFAULT 0,
+                completed_at TIMESTAMP WITHOUT TIME ZONE DEFAULT now()
+            )
+            """
+        )
+    )
+    await conn.execute(
+        text(
+            """
+            CREATE INDEX IF NOT EXISTS ix_topic_quiz_attempts_profile_topic
+            ON topic_quiz_attempts(student_profile_id, topic_id)
+            """
+        )
+    )

@@ -46,6 +46,20 @@ class LessonAttempt(Base):
     lesson: Mapped["Lesson"] = relationship("Lesson")
 
 
+class TopicQuizAttempt(Base):
+    __tablename__ = "topic_quiz_attempts"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    student_profile_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("student_profiles.id", ondelete="CASCADE"), nullable=False)
+    topic_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("topics.id", ondelete="CASCADE"), nullable=False)
+    correct: Mapped[int] = mapped_column(Integer, default=0)
+    total: Mapped[int] = mapped_column(Integer, default=0)
+    completed_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+
+    profile: Mapped["StudentProfile"] = relationship("StudentProfile", back_populates="topic_quiz_attempts")
+    topic: Mapped["Topic"] = relationship("Topic")
+
+
 class EarnedBadge(Base):
     __tablename__ = "earned_badges"
 
