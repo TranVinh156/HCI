@@ -16,6 +16,7 @@ class QuizQuestion(Base):
     type: Mapped[str] = mapped_column(String(20), nullable=False)  # 'image-choice' | 'sign-choice' | 'sentence-order'
     options: Mapped[list] = mapped_column(JSONB, nullable=False, default=list)
     answer: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    video_url: Mapped[str | None] = mapped_column(Text, nullable=True)
     hint: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     lesson: Mapped["Lesson"] = relationship("Lesson", back_populates="quiz_questions")

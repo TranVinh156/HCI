@@ -7,6 +7,7 @@ class QuizQuestionCreate(BaseModel):
     type: str
     options: list[str]
     answer: str
+    video_url: str | None = None
     hint: str | None = None
 
 
@@ -15,6 +16,7 @@ class QuizQuestionUpdate(BaseModel):
     type: str | None = None
     options: list[str] | None = None
     answer: str | None = None
+    video_url: str | None = None
     hint: str | None = None
 
 
@@ -26,6 +28,7 @@ class QuizQuestionOut(BaseModel):
     type: str
     options: list[str]
     answer: str
+    video_url: str | None
     hint: str | None
 
     model_config = {"from_attributes": True}

@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncConnection
 
 async def ensure_quiz_question_topic_relation(conn: AsyncConnection) -> None:
     await conn.execute(text("ALTER TABLE quiz_questions ADD COLUMN IF NOT EXISTS topic_id UUID"))
+    await conn.execute(text("ALTER TABLE quiz_questions ADD COLUMN IF NOT EXISTS video_url TEXT"))
     await conn.execute(
         text(
             """
@@ -12,6 +13,24 @@ async def ensure_quiz_question_topic_relation(conn: AsyncConnection) -> None:
             FROM lessons AS l
             WHERE q.lesson_id = l.id
               AND q.topic_id IS NULL
+            """
+        )
+    )
+    await conn.execute(
+        text(
+            """
+            UPDATE quiz_questions AS q
+            SET video_url = COALESCE(
+                substring(q.hint FROM 'https?://[^[:space:]]+'),
+                substring(l.sign_hint FROM 'https?://[^[:space:]]+')
+            )
+            FROM lessons AS l
+            WHERE q.lesson_id = l.id
+              AND q.video_url IS NULL
+              AND (
+                q.hint ~ 'https?://'
+                OR l.sign_hint ~ 'https?://'
+              )
             """
         )
     )

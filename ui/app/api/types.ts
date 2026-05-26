@@ -47,6 +47,7 @@ export type QuizQuestion = {
   type: string;
   options: string[];
   answer: string;
+  video_url: string | null;
   hint: string | null;
 };
 

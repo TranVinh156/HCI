@@ -40,6 +40,7 @@ type QuestionFormState = {
   type: string;
   options: string;
   answer: string;
+  videoUrl: string;
   hint: string;
 };
 
@@ -54,6 +55,7 @@ const defaultQuestionForm: QuestionFormState = {
   type: "sign-choice",
   options: "",
   answer: "",
+  videoUrl: "",
   hint: "",
 };
 
@@ -203,6 +205,7 @@ export default function AdminLessonDetailRoute() {
         type: questionForm.type,
         options: options.includes(answer) ? options : [answer, ...options],
         answer,
+        video_url: questionForm.videoUrl.trim() || null,
         hint: questionForm.hint.trim() || null,
       },
     });
@@ -594,6 +597,14 @@ function QuestionForm({
         }
         placeholder="Options, one per line"
         className="min-h-32 rounded-lg border-2 border-input bg-slate-100 px-2.5 py-2 text-sm font-semibold outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+      />
+      <Input
+        value={form.videoUrl}
+        onChange={(event) =>
+          setForm((current) => ({ ...current, videoUrl: event.target.value }))
+        }
+        placeholder="Answer video URL"
+        className="h-11 bg-slate-100"
       />
       <Input
         value={form.hint}
