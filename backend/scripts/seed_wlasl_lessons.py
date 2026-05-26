@@ -664,6 +664,7 @@ def build_exercises(payload: dict[str, Any]) -> list[dict[str, Any]]:
 
 
 def build_questions(payload: dict[str, Any], distractors: list[str]) -> list[dict[str, Any]]:
+    metadata = payload["metadata"]
     phrase = payload["phrase"]
     options = [phrase, *[item for item in distractors if item != phrase]][:4]
     return [
@@ -672,6 +673,7 @@ def build_questions(payload: dict[str, Any], distractors: list[str]) -> list[dic
             "type": "image-choice",
             "options": options,
             "answer": phrase,
+            "video_url": metadata["reference_url"],
             "hint": payload["sign_hint"],
         },
         {
@@ -679,6 +681,7 @@ def build_questions(payload: dict[str, Any], distractors: list[str]) -> list[dic
             "type": "sign-choice",
             "options": options,
             "answer": phrase,
+            "video_url": metadata["reference_url"],
             "hint": "Use the WLASL reference sign in the lesson card.",
         },
     ]

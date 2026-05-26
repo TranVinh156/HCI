@@ -45,6 +45,45 @@ export function useCompleteLesson() {
   });
 }
 
+export function useTopicQuizAttempts(profileId?: string, topicId?: string) {
+  return useQuery({
+    queryKey: ["topic-quiz-attempts", profileId ?? "none", topicId ?? "none"],
+    queryFn: () => progressApi.listTopicQuizAttempts(profileId!, topicId!),
+    enabled: Boolean(profileId && topicId),
+    retry: false,
+    staleTime: 60 * 1000,
+  });
+}
+
+export function useCompleteTopicQuiz() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      profileId,
+      topicId,
+      correct,
+      total,
+    }: {
+      profileId: string;
+      topicId: string;
+      correct: number;
+      total: number;
+    }) => progressApi.completeTopicQuiz(profileId, topicId, correct, total),
+    onSuccess: (_attempt, variables) => {
+      void queryClient.invalidateQueries({
+        queryKey: [
+          "topic-quiz-attempts",
+          variables.profileId,
+          variables.topicId,
+        ],
+      });
+      void queryClient.invalidateQueries({ queryKey: ["progress-data"] });
+      void queryClient.invalidateQueries({ queryKey: ["profile-data"] });
+    },
+  });
+}
+
 export function getLessonStatus(
   lessonId: string,
   orderedLessonIds: string[],

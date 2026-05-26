@@ -3,11 +3,13 @@ import { useState } from "react";
 import { Link, useParams } from "react-router";
 
 import { OceanProgress } from "~/components/learning/ocean-progress";
+import { QuestionVideo } from "~/components/learning/question-video";
 import { QuizOption } from "~/components/learning/quiz-option";
 import { StudentShell } from "~/components/learning/student-shell";
 import { Button } from "~/components/ui/button";
 import { useGetTopicQuestions } from "~/hooks/use-get-topic-questions";
 import { useGetTopic } from "~/hooks/use-get-topics";
+import { useCompleteTopicQuiz, useProgressData } from "~/hooks/use-progress";
 
 export default function TopicQuizRoute() {
   const params = useParams();
@@ -22,13 +24,17 @@ export default function TopicQuizRoute() {
     isLoading: isQuestionsLoading,
     isError: isQuestionsError,
   } = useGetTopicQuestions(topicId);
+  const { data: progressData, isLoading: isProgressLoading } =
+    useProgressData();
+  const completeTopicQuiz = useCompleteTopicQuiz();
   const [questionIndex, setQuestionIndex] = useState(0);
   const [selected, setSelected] = useState("");
   const [checked, setChecked] = useState(false);
   const [correct, setCorrect] = useState(0);
   const [finished, setFinished] = useState(false);
+  const [saveError, setSaveError] = useState("");
 
-  if (isTopicLoading || isQuestionsLoading) {
+  if (isTopicLoading || isQuestionsLoading || isProgressLoading) {
     return (
       <StudentShell>
         <p className="font-bold">Loading quiz...</p>
@@ -64,7 +70,9 @@ export default function TopicQuizRoute() {
   const isCorrect = selected === question.answer;
   const progressValue = Math.round((questionIndex / questions.length) * 100);
 
-  function next() {
+  async function next() {
+    setSaveError("");
+
     if (!checked) {
       setChecked(true);
       if (isCorrect) setCorrect((value) => value + 1);
@@ -72,7 +80,27 @@ export default function TopicQuizRoute() {
     }
 
     if (questionIndex === questions.length - 1) {
-      setFinished(true);
+      const profileId = progressData?.profile?.id;
+      if (!profileId || !topicId) {
+        setSaveError("Unable to save this attempt. Student profile was not found.");
+        return;
+      }
+
+      try {
+        await completeTopicQuiz.mutateAsync({
+          profileId,
+          topicId,
+          correct,
+          total: questions.length,
+        });
+        setFinished(true);
+      } catch (error) {
+        setSaveError(
+          error instanceof Error
+            ? error.message
+            : "Unable to save this attempt. Please try again."
+        );
+      }
       return;
     }
 
@@ -113,8 +141,8 @@ export default function TopicQuizRoute() {
               Practice again
             </Button>
             <Button asChild className="h-12 rounded-2xl font-black">
-              <Link to="/practice">
-                Back to quizzes
+              <Link to={`/topic-quiz-history/${topicId}`}>
+                View attempts
                 <ArrowRight className="size-5" />
               </Link>
             </Button>
@@ -126,30 +154,34 @@ export default function TopicQuizRoute() {
 
   return (
     <StudentShell>
-      <div className="mx-auto max-w-3xl space-y-5">
+      <div className="mx-auto max-w-3xl space-y-2">
         <OceanProgress
           value={progressValue}
           label={`Question ${questionIndex + 1}`}
         />
         <section className="rounded-[2rem] bg-white p-5">
-          <div className="mb-5 rounded-[1.5rem] p-5 text-center">
+          <QuestionVideo
+            title={`Answer video for ${question.answer}`}
+            url={question.video_url}
+          />
+          <div className="mb-5 rounded-[1.5rem] p-1 text-center">
             <p className="text-sm font-black uppercase text-primary">
               {topic.title}
             </p>
-            <h1 className="mt-2 text-3xl font-black">{question.prompt}</h1>
+            <h1 className="mt-1 text-3xl font-black">{question.prompt}</h1>
           </div>
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="grid gap-2 sm:grid-cols-2">
             {question.options.map((option) => (
               <QuizOption
                 key={option}
                 option={option}
                 selected={selected === option}
                 state={
-                  checked && selected === option
-                    ? isCorrect
-                      ? "correct"
-                      : "wrong"
-                    : "idle"
+                  checked && option === question.answer
+                    ? "correct"
+                    : checked && selected === option
+                      ? "wrong"
+                      : "idle"
                 }
                 onSelect={() => {
                   if (!checked) setSelected(option);
@@ -158,12 +190,19 @@ export default function TopicQuizRoute() {
             ))}
           </div>
         </section>
+        {saveError ? (
+          <p className="rounded-2xl bg-red-50 px-4 py-3 text-center font-bold text-red-700">
+            {saveError}
+          </p>
+        ) : null}
         <Button
-          disabled={!selected}
+          disabled={!selected || completeTopicQuiz.isPending}
           onClick={next}
           className="h-14 w-full rounded-2xl text-lg font-black"
         >
-          {checked ? (
+          {completeTopicQuiz.isPending ? (
+            "Saving..."
+          ) : checked ? (
             <>
               Continue
               <ArrowRight className="size-5" />

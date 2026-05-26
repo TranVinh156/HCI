@@ -47,7 +47,17 @@ export type QuizQuestion = {
   type: string;
   options: string[];
   answer: string;
+  video_url: string | null;
   hint: string | null;
+};
+
+export type TopicQuizAttempt = {
+  id: string;
+  student_profile_id: string;
+  topic_id: string;
+  correct: number;
+  total: number;
+  completed_at: string;
 };
 
 export type Lesson = {
