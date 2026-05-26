@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Link, useParams } from "react-router";
 
 import { OceanProgress } from "~/components/learning/ocean-progress";
+import { QuestionVideo } from "~/components/learning/question-video";
 import { QuizOption } from "~/components/learning/quiz-option";
 import { StudentShell } from "~/components/learning/student-shell";
 import { Button } from "~/components/ui/button";
@@ -132,6 +133,10 @@ export default function TopicQuizRoute() {
           label={`Question ${questionIndex + 1}`}
         />
         <section className="rounded-[2rem] bg-white p-5">
+          <QuestionVideo
+            title={`Answer video for ${question.answer}`}
+            url={question.video_url}
+          />
           <div className="mb-5 rounded-[1.5rem] p-5 text-center">
             <p className="text-sm font-black uppercase text-primary">
               {topic.title}
