@@ -40,7 +40,12 @@ class Lesson(Base):
 
     topic: Mapped["Topic"] = relationship("Topic", back_populates="lessons")
     exercises: Mapped[list["Exercise"]] = relationship("Exercise", back_populates="lesson", cascade="all, delete", order_by="Exercise.sort_order")
-    quiz_questions: Mapped[list["QuizQuestion"]] = relationship("QuizQuestion", back_populates="lesson", cascade="all, delete")
+    quiz_questions: Mapped[list["QuizQuestion"]] = relationship(
+        "QuizQuestion",
+        back_populates="lesson",
+        cascade="all, delete",
+        order_by="QuizQuestion.id",
+    )
 
 
 class Exercise(Base):

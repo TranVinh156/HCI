@@ -31,20 +31,6 @@ export type Topic = {
   lesson_count: number;
 };
 
-export type Lesson = {
-  id: string;
-  topic_id: string;
-  type: string;
-  title: string;
-  phrase: string | null;
-  description: string | null;
-  visual: string | null;
-  sign_hint: string | null;
-  difficulty: string;
-  xp: number;
-  sort_order: number;
-};
-
 export type Exercise = {
   id: string;
   lesson_id: string;
@@ -62,6 +48,30 @@ export type QuizQuestion = {
   options: string[];
   answer: string;
   hint: string | null;
+};
+
+export type Lesson = {
+  id: string;
+  topic_id: string;
+  type: string;
+  title: string;
+  phrase: string | null;
+  description: string | null;
+  visual: string | null;
+  sign_hint: string | null;
+  difficulty: string;
+  xp: number;
+  sort_order: number;
+  exercises?: Exercise[];
+  questions?: QuizQuestion[];
+};
+
+export type PaginatedResponse<T> = {
+  items: T[];
+  total: number;
+  page: number;
+  page_size: number;
+  pages: number;
 };
 
 export type Badge = {

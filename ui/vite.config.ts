@@ -4,6 +4,9 @@ import { defineConfig } from "vite";
 
 export default defineConfig({
   plugins: [tailwindcss(), reactRouter()],
+  optimizeDeps: {
+    exclude: ["@sutton-signwriting/sgnw-components"],
+  },
   resolve: {
     tsconfigPaths: true,
   },

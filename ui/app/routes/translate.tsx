@@ -22,6 +22,17 @@ import {
   CardTitle,
 } from "~/components/ui/card";
 import { useSignToText } from "~/hooks/use-translate";
+import {
+  fetchPoseData,
+  getSpokenToSignedPoseUrl,
+  getSpokenToSignedVideoUrl,
+  loadOfflineModel,
+  postProcessSignWriting,
+  splitSignWritingTokens,
+  type SignWritingObj,
+  translateSpokenToSignWriting,
+} from "~/services/translation.service";
+import { SkeletonPoseViewer } from "~/components/SkeletonPoseViewer";
 
 type TranslateMode = "handsign-to-text" | "text-to-handsign";
 type SignKind = "alphabet" | "word";
@@ -54,6 +65,14 @@ export default function TranslateRoute() {
   const [mode, setMode] = useState<TranslateMode>("handsign-to-text");
   const [kind, setKind] = useState<SignKind>("alphabet");
   const [textInput, setTextInput] = useState("Hello thank you");
+  const [signWritingText, setSignWritingText] = useState("");
+  const [signWritingSigns, setSignWritingSigns] = useState<SignWritingObj[]>([]);
+  const [translateError, setTranslateError] = useState<string | null>(null);
+  const [isTranslating, setIsTranslating] = useState(false);
+  const [poseUrl, setPoseUrl] = useState("");
+  const [videoUrl, setVideoUrl] = useState("");
+  const [isNetworkLoading, setIsNetworkLoading] = useState(false);
+  const [networkError, setNetworkError] = useState<string | null>(null);
   const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [predictions, setPredictions] = useState<Prediction[]>([]);
@@ -151,11 +170,69 @@ export default function TranslateRoute() {
 
   async function copyText() {
     try {
-      await navigator.clipboard.writeText(
-        isHandsignToText ? recognizedText : textInput
-      );
+      const textToCopy = isHandsignToText
+        ? recognizedText
+        : signWritingText || textInput;
+      await navigator.clipboard.writeText(textToCopy);
     } catch {
       /* ignore */
+    }
+  }
+
+  async function handleTranslate() {
+    const trimmed = textInput.trim();
+    if (!trimmed) {
+      setSignWritingText("");
+      setSignWritingSigns([]);
+      setPoseUrl("");
+      setVideoUrl("");
+      setNetworkError(null);
+      setIsNetworkLoading(false);
+      return;
+    }
+
+    setIsTranslating(true);
+    setTranslateError(null);
+    setNetworkError(null);
+
+    try {
+      const result = await translateSpokenToSignWriting(trimmed);
+      console.log("Raw translation result:", result);
+      const cleaned = postProcessSignWriting(result);
+      console.log("Cleaned FSW string:", cleaned);
+      setSignWritingText(cleaned);
+
+      const tokens = splitSignWritingTokens(cleaned);
+      console.log("Parsed FSW tokens:", tokens);
+      setSignWritingSigns(tokens);
+
+      setIsNetworkLoading(true);
+      const poseLink = getSpokenToSignedPoseUrl(trimmed);
+      const videoLink = getSpokenToSignedVideoUrl(trimmed);
+      setPoseUrl(poseLink);
+      setVideoUrl(videoLink);
+
+      try {
+        await fetchPoseData(poseLink);
+      } catch (error) {
+        const message =
+          error instanceof Error
+            ? error.message
+            : "Unable to fetch pose data.";
+        setNetworkError(message);
+      }
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Unable to translate offline.";
+      setTranslateError(message);
+      setSignWritingSigns([]);
+      setPoseUrl("");
+      setVideoUrl("");
+    } finally {
+      setIsTranslating(false);
+      setIsNetworkLoading(false);
     }
   }
 
@@ -164,6 +241,34 @@ export default function TranslateRoute() {
       videoRef.current.srcObject = cameraStream;
     }
   }, [cameraStream]);
+
+  useEffect(() => {
+    if (isHandsignToText) {
+      setTranslateError(null);
+      setIsTranslating(false);
+      setSignWritingText("");
+      setSignWritingSigns([]);
+      setPoseUrl("");
+      setVideoUrl("");
+      setNetworkError(null);
+      setIsNetworkLoading(false);
+      return;
+    }
+
+    let isActive = true;
+    loadOfflineModel().catch((error) => {
+      if (!isActive) return;
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Unable to load offline model.";
+      setTranslateError(message);
+    });
+
+    return () => {
+      isActive = false;
+    };
+  }, [isHandsignToText]);
 
   useEffect(() => {
     if (!isHandsignToText && cameraStream) {
@@ -356,12 +461,29 @@ export default function TranslateRoute() {
                   ) : null}
                 </>
               ) : (
-                <textarea
-                  value={textInput}
-                  onChange={(event) => setTextInput(event.target.value)}
-                  className="min-h-72 resize-none rounded-[1.5rem] border-2 border-slate-200 bg-white p-4 text-2xl font-black text-slate-900 outline-none transition-colors placeholder:text-slate-300 focus:border-primary focus:ring-3 focus:ring-primary/20"
-                  placeholder="Enter text"
-                />
+                <>
+                  <textarea
+                    value={textInput}
+                    onChange={(event) => setTextInput(event.target.value)}
+                    className="min-h-72 resize-none rounded-[1.5rem] border-2 border-slate-200 bg-white p-4 text-2xl font-black text-slate-900 outline-none transition-colors placeholder:text-slate-300 focus:border-primary focus:ring-3 focus:ring-primary/20"
+                    placeholder="Enter text"
+                  />
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      type="button"
+                      onClick={handleTranslate}
+                      disabled={isTranslating || !textInput.trim()}
+                      className="h-11 rounded-2xl font-black"
+                    >
+                      {isTranslating ? (
+                        <Loader2 className="size-4 animate-spin" />
+                      ) : (
+                        <Languages className="size-4" />
+                      )}
+                      Translate offline
+                    </Button>
+                  </div>
+                </>
               )}
             </CardContent>
           </Card>
@@ -401,25 +523,36 @@ export default function TranslateRoute() {
                   )}
                 </div>
               ) : (
-                <div className="grid grow content-start gap-3 rounded-[1.5rem] bg-muted p-4 sm:grid-cols-2">
-                  {textToSignsResult.length > 0 ? (
-                    textToSignsResult.map((word, index) => (
-                      <div
-                        key={`${word}-${index}`}
-                        className="grid min-h-28 place-items-center rounded-2xl border-2 border-slate-200 bg-white p-3 text-center"
-                      >
-                        <Hand className="mb-2 size-8 text-primary" />
-                        <span className="text-sm font-black uppercase text-slate-800">
-                          {word}
-                        </span>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="text-lg font-black text-slate-400">
-                      Handsign
+                <>
+                  {isNetworkLoading ? (
+                    <p className="text-xs font-semibold text-slate-600">
+                      Fetching Pose and Video assets from Cloud...
+                    </p>
+                  ) : null}
+                  {networkError ? (
+                    <p className="text-xs font-semibold text-rose-500">
+                      {networkError}
+                    </p>
+                  ) : null}
+                  {poseUrl ? (
+                    <div className="w-full rounded-[1.5rem] border-2 border-slate-900 bg-slate-950 p-3">
+                      <SkeletonPoseViewer src={poseUrl} />
                     </div>
-                  )}
-                </div>
+                  ) : null}
+                  {videoUrl ? (
+                    <video
+                      src={videoUrl}
+                      controls
+                      width={320}
+                      className="rounded-xl border-2 border-slate-200 bg-white"
+                    />
+                  ) : null}
+                  {translateError ? (
+                    <p className="text-xs font-semibold text-rose-500">
+                      {translateError}
+                    </p>
+                  ) : null}
+                </>
               )}
 
               <div className="flex flex-wrap gap-2">

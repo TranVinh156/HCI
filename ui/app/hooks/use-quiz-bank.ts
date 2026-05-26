@@ -6,16 +6,10 @@ export function useQuizBank() {
   return useQuery({
     queryKey: ["quiz-bank"],
     queryFn: async () => {
-      const lessons = await lessonsApi.list();
-      const questionGroups = await Promise.all(
-        lessons.map(async (lesson) => ({
-          lesson,
-          questions: await lessonsApi.questions(lesson.id),
-        }))
-      );
+      const lessons = await lessonsApi.listAll({ pageSize: 100 });
 
-      return questionGroups.flatMap(({ lesson, questions }) =>
-        questions.map((question) => ({
+      return lessons.flatMap((lesson) =>
+        (lesson.questions ?? []).map((question) => ({
           ...question,
           lesson_title: lesson.title,
         }))
