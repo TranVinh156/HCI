@@ -127,7 +127,7 @@ export default function TopicQuizRoute() {
 
   return (
     <StudentShell>
-      <div className="mx-auto max-w-3xl space-y-5">
+      <div className="mx-auto max-w-3xl space-y-2">
         <OceanProgress
           value={progressValue}
           label={`Question ${questionIndex + 1}`}
@@ -137,13 +137,13 @@ export default function TopicQuizRoute() {
             title={`Answer video for ${question.answer}`}
             url={question.video_url}
           />
-          <div className="mb-5 rounded-[1.5rem] p-5 text-center">
+          <div className="mb-5 rounded-[1.5rem] p-1 text-center">
             <p className="text-sm font-black uppercase text-primary">
               {topic.title}
             </p>
-            <h1 className="mt-2 text-3xl font-black">{question.prompt}</h1>
+            <h1 className="mt-1 text-3xl font-black">{question.prompt}</h1>
           </div>
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="grid gap-2 sm:grid-cols-2">
             {question.options.map((option) => (
               <QuizOption
                 key={option}

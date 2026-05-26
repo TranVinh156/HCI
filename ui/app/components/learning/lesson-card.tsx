@@ -100,7 +100,7 @@ export function LessonCard({ lesson }: LessonCardProps) {
   return (
     <Card className="rounded-[2rem] border-slate-200 bg-white/95">
       <CardHeader className="text-center">
-        <div className="mx-auto mb-3 grid size-32 place-items-center rounded-[2rem] text-7xl ring-1 ring-slate-200">
+        <div className="mx-auto mb-3 grid size-20 place-items-center rounded-[2rem] text-4xl ring-1 ring-slate-200">
           {lesson.visual}
         </div>
         <CardTitle className="text-3xl font-black text-slate-900">
