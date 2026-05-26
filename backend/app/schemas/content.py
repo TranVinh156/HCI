@@ -1,5 +1,7 @@
 import uuid
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+
+from app.schemas.quiz import QuizQuestionOut
 
 
 class TopicCreate(BaseModel):
@@ -91,3 +93,19 @@ class ExerciseOut(BaseModel):
     sort_order: int
 
     model_config = {"from_attributes": True}
+
+
+class LessonDetailOut(LessonOut):
+    exercises: list[ExerciseOut] = Field(default_factory=list)
+    questions: list[QuizQuestionOut] = Field(
+        default_factory=list,
+        validation_alias="quiz_questions",
+    )
+
+
+class LessonPageOut(BaseModel):
+    items: list[LessonDetailOut]
+    total: int
+    page: int
+    page_size: int
+    pages: int

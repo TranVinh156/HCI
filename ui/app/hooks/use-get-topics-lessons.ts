@@ -9,3 +9,22 @@ export function useGetTopicLessons(topicId?: string) {
         retry: false,
     });
 }
+
+export function useGetTopicLessonsPage(
+    topicId?: string,
+    page = 1,
+    pageSize = 20
+) {
+    return useQuery({
+        queryKey: ["lessons", topicId ?? "all", "page", page, pageSize],
+        queryFn: () =>
+            lessonsApi.listPage({
+                topicId,
+                page,
+                pageSize,
+            }),
+        staleTime: 3 * 60 * 1000,
+        retry: false,
+        enabled: Boolean(topicId),
+    });
+}

@@ -2,6 +2,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowRight,
   BookOpen,
+  ChevronLeft,
+  ChevronRight,
   FileVideo,
   GraduationCap,
   Plus,
@@ -19,7 +21,7 @@ import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
-import { useGetTopicLessons } from "~/hooks/use-get-topics-lessons";
+import { useGetTopicLessonsPage } from "~/hooks/use-get-topics-lessons";
 import { useGetTopics } from "~/hooks/use-get-topics";
 import { cn } from "~/lib/utils";
 
@@ -55,6 +57,8 @@ const defaultLessonForm: LessonFormState = {
   xp: "10",
 };
 
+const LESSON_PAGE_SIZE = 20;
+
 export default function AdminLessonsRoute() {
   const queryClient = useQueryClient();
   const { data: topics = [], isLoading: isTopicsLoading } = useGetTopics();
@@ -62,15 +66,23 @@ export default function AdminLessonsRoute() {
   const [query, setQuery] = useState("");
   const [showTopicForm, setShowTopicForm] = useState(false);
   const [showLessonForm, setShowLessonForm] = useState(false);
+  const [lessonPage, setLessonPage] = useState(1);
   const [topicForm, setTopicForm] = useState(defaultTopicForm);
   const [lessonForm, setLessonForm] = useState(defaultLessonForm);
 
   const selectedTopic = topics.find((topic) => topic.id === selectedTopicId);
   const {
-    data: topicLessons = [],
+    data: topicLessonPage,
     isLoading: isLessonsLoading,
     isError: isLessonsError,
-  } = useGetTopicLessons(selectedTopicId || undefined);
+  } = useGetTopicLessonsPage(
+    selectedTopicId || undefined,
+    lessonPage,
+    LESSON_PAGE_SIZE
+  );
+  const topicLessons = topicLessonPage?.items ?? [];
+  const totalLessons = topicLessonPage?.total ?? 0;
+  const totalLessonPages = topicLessonPage?.pages ?? 0;
 
   useEffect(() => {
     if (!selectedTopicId && topics[0]) {
@@ -87,6 +99,16 @@ export default function AdminLessonsRoute() {
       setSelectedTopicId(topics[0].id);
     }
   }, [selectedTopicId, topics]);
+
+  useEffect(() => {
+    setLessonPage(1);
+  }, [selectedTopicId]);
+
+  useEffect(() => {
+    if (totalLessonPages > 0 && lessonPage > totalLessonPages) {
+      setLessonPage(totalLessonPages);
+    }
+  }, [lessonPage, totalLessonPages]);
 
   const filteredLessons = useMemo(
     () =>
@@ -152,7 +174,7 @@ export default function AdminLessonsRoute() {
       sign_hint: lessonForm.signHint.trim() || "Add a sign hint for learners.",
       difficulty: lessonForm.difficulty,
       xp: Math.max(1, Number.parseInt(lessonForm.xp, 10) || 10),
-      sort_order: topicLessons.length,
+      sort_order: totalLessons,
     });
   }
 
@@ -313,8 +335,50 @@ export default function AdminLessonsRoute() {
             ) : filteredLessons.length ? (
               <div className="grid gap-3">
                 {filteredLessons.map((lesson, index) => (
-                  <LessonRow key={lesson.id} lesson={lesson} index={index} />
+                  <LessonRow
+                    key={lesson.id}
+                    lesson={lesson}
+                    index={(lessonPage - 1) * LESSON_PAGE_SIZE + index}
+                  />
                 ))}
+                {totalLessonPages > 1 ? (
+                  <div className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-3 sm:flex-row sm:items-center sm:justify-between">
+                    <p className="text-sm font-bold text-slate-500">
+                      Page {lessonPage} of {totalLessonPages} - {totalLessons}{" "}
+                      lessons
+                    </p>
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="h-10 rounded-xl font-black"
+                        disabled={lessonPage <= 1 || isLessonsLoading}
+                        onClick={() =>
+                          setLessonPage((current) => Math.max(1, current - 1))
+                        }
+                      >
+                        <ChevronLeft className="size-4" />
+                        Previous
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="h-10 rounded-xl font-black"
+                        disabled={
+                          lessonPage >= totalLessonPages || isLessonsLoading
+                        }
+                        onClick={() =>
+                          setLessonPage((current) =>
+                            Math.min(totalLessonPages, current + 1)
+                          )
+                        }
+                      >
+                        Next
+                        <ChevronRight className="size-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ) : null}
               </div>
             ) : (
               <Card className="rounded-xl border border-dashed border-slate-300 py-0">
