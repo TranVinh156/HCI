@@ -19,6 +19,7 @@ class Topic(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
 
     lessons: Mapped[list["Lesson"]] = relationship("Lesson", back_populates="topic", cascade="all, delete", order_by="Lesson.sort_order")
+    quiz_questions: Mapped[list["QuizQuestion"]] = relationship("QuizQuestion", back_populates="topic", cascade="all, delete")
 
 
 class Lesson(Base):

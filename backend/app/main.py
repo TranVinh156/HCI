@@ -5,6 +5,7 @@ import app.models  # noqa: F401 - register SQLAlchemy models
 from app.database import Base, engine
 from app.routers import auth, profiles, topics, lessons, exercises, quizzes, progress, reports, translate
 from app.services.admin_seed import ensure_admin_user
+from app.services.schema_maintenance import ensure_quiz_question_topic_relation
 
 app = FastAPI(title="SignOcean API", version="1.0.0")
 
@@ -31,6 +32,7 @@ app.include_router(translate.router)
 async def ensure_database_tables():
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+        await ensure_quiz_question_topic_relation(conn)
     await ensure_admin_user()
 
 

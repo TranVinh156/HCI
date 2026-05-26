@@ -384,6 +384,15 @@ function TopicButton({
   );
 }
 
+function signHintPreview(signHint: string | null): string {
+  return (
+    signHint
+      ?.replace(/\s*Reference video:\s*https?:\/\/\S+/i, "")
+      .replace(/\s+/g, " ")
+      .trim() ?? ""
+  );
+}
+
 function LessonRow({ lesson, index }: { lesson: Lesson; index: number }) {
   return (
     <Link
@@ -415,7 +424,7 @@ function LessonRow({ lesson, index }: { lesson: Lesson; index: number }) {
               {lesson.phrase ?? "-"}
             </p>
             <p className="mt-1 line-clamp-2 text-sm text-slate-500">
-              {lesson.sign_hint}
+              {signHintPreview(lesson.sign_hint)}
             </p>
           </div>
           <div className="flex flex-wrap gap-2 md:justify-end">

@@ -36,7 +36,7 @@ export const lessonsApi = {
 
   createQuestion: (
     lessonId: string,
-    body: Omit<QuizQuestion, "id" | "lesson_id">
+    body: Omit<QuizQuestion, "id" | "lesson_id" | "topic_id">
   ) =>
     request<QuizQuestion>(`/api/lessons/${lessonId}/questions`, {
       method: "POST",
