@@ -58,6 +58,15 @@ type Flashcard = {
   tag: string;
 };
 
+type FlashcardDeck = {
+  id: string;
+  source: FlashcardSource;
+  title: string;
+  description?: string | null;
+  lessonCount?: number;
+  cards: Flashcard[];
+};
+
 type FlashcardDraft = {
   front: string;
   back: string;
@@ -103,16 +112,25 @@ export default function PracticeRoute() {
     { enabled: publicFlashcardsEnabled }
   );
   const quizTopics = getTopicQuizzes(topics, questions);
-  const publicFlashcardLessons = useMemo(
-    () => publicLessonPages?.pages.flatMap((page) => page.items) ?? [],
-    [publicLessonPages]
-  );
-  const publicFlashcards = useMemo(
-    () => getPublicFlashcardsFromLessons(topics, publicFlashcardLessons),
+  const publicFlashcardLessons = useMemo(() => {
+    const lessons: Lesson[] = [];
+
+    for (const page of publicLessonPages?.pages ?? []) {
+      lessons.push(...page.items);
+    }
+
+    return lessons;
+  }, [publicLessonPages]);
+  const publicFlashcardDecks = useMemo(
+    () => getPublicFlashcardDecks(topics, publicFlashcardLessons),
     [topics, publicFlashcardLessons]
   );
   const [customFlashcards, setCustomFlashcards] = useState<Flashcard[]>(
     starterCustomFlashcards
+  );
+  const customFlashcardDecks = useMemo(
+    () => getCustomFlashcardDecks(customFlashcards),
+    [customFlashcards]
   );
   const [customCardsLoaded, setCustomCardsLoaded] = useState(false);
   const [draft, setDraft] = useState<FlashcardDraft>({
@@ -283,8 +301,8 @@ export default function PracticeRoute() {
                 </h1>
                 <p className="text-sm font-semibold text-slate-600">
                   {activeFlashcardMode === "public"
-                    ? `${publicFlashcards.length} public cards`
-                    : `${customFlashcards.length} tự tạo cards`}
+                    ? `${publicFlashcardDecks.length} public decks, ${publicFlashcardLessons.length} lessons loaded`
+                    : `${customFlashcardDecks.length} tự tạo decks, ${customFlashcards.length} cards`}
                 </p>
               </div>
               <SegmentedTabs
@@ -383,10 +401,10 @@ export default function PracticeRoute() {
               ) : null}
 
               <FlashcardGrid
-                cards={
+                decks={
                   activeFlashcardMode === "public"
-                    ? publicFlashcards
-                    : customFlashcards
+                    ? publicFlashcardDecks
+                    : customFlashcardDecks
                 }
                 isLoading={
                   activeFlashcardMode === "public" &&
@@ -572,7 +590,7 @@ function QuizTopicGrid({
 }
 
 type FlashcardGridProps = {
-  cards: Flashcard[];
+  decks: FlashcardDeck[];
   isLoading: boolean;
   isError: boolean;
   emptyMessage: string;
@@ -585,7 +603,7 @@ type FlashcardGridProps = {
 };
 
 function FlashcardGrid({
-  cards,
+  decks,
   isLoading,
   isError,
   emptyMessage,
@@ -600,6 +618,7 @@ function FlashcardGrid({
   const loadMoreNodeRef = useRef<HTMLDivElement | null>(null);
   const loadingMoreRef = useRef(false);
   const canLoadMore = Boolean(hasMore && onLoadMore && !isLoadingMore);
+  const cardCount = getDeckCardCount(decks);
 
   const loadMore = useCallback(() => {
     if (!hasMore || !onLoadMore || loadingMoreRef.current) return;
@@ -658,7 +677,7 @@ function FlashcardGrid({
       window.removeEventListener("scroll", loadIfNearBottom);
       window.removeEventListener("resize", loadIfNearBottom);
     };
-  }, [canLoadMore, cards.length, loadMore]);
+  }, [canLoadMore, cardCount, loadMore]);
 
   useEffect(() => {
     return () => {
@@ -674,17 +693,17 @@ function FlashcardGrid({
     return <p className="font-bold">Unable to load flash cards.</p>;
   }
 
-  if (!cards.length && !hasMore) {
+  if (!decks.length && !hasMore) {
     return <p className="font-bold">{emptyMessage}</p>;
   }
 
   return (
     <>
-      <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-        {cards.map((card) => (
-          <FlipFlashcard
-            key={card.id}
-            card={card}
+      <div className="space-y-8">
+        {decks.map((deck) => (
+          <FlashcardDeckSection
+            key={deck.id}
+            deck={deck}
             onDelete={onDelete}
             onEdit={onEdit}
             onClone={onClone}
@@ -719,6 +738,71 @@ function FlashcardGrid({
         </div>
       ) : null}
     </>
+  );
+}
+
+type FlashcardDeckSectionProps = {
+  deck: FlashcardDeck;
+  onDelete?: (cardId: string) => void;
+  onEdit?: (card: Flashcard) => void;
+  onClone?: (card: Flashcard) => void;
+};
+
+function FlashcardDeckSection({
+  deck,
+  onDelete,
+  onEdit,
+  onClone,
+}: FlashcardDeckSectionProps) {
+  const titleId = `flashcard-deck-${deck.id}`;
+  const DeckIcon = deck.source === "public" ? Library : User;
+
+  return (
+    <section aria-labelledby={titleId} className="space-y-3">
+      <div className="flex flex-col gap-3 border-b-2 border-[#036678]/20 pb-3 sm:flex-row sm:items-end sm:justify-between">
+        <div className="flex min-w-0 items-start gap-3">
+          <div className="grid size-11 shrink-0 place-items-center rounded-2xl bg-primary/10 text-primary">
+            <DeckIcon className="size-5" />
+          </div>
+          <div className="min-w-0">
+            <h2
+              id={titleId}
+              className="truncate text-xl font-black leading-tight text-slate-950"
+            >
+              {deck.title}
+            </h2>
+            {deck.description ? (
+              <p className="mt-1 max-w-2xl text-sm font-semibold text-slate-600">
+                {deck.description}
+              </p>
+            ) : null}
+          </div>
+        </div>
+        <div className="flex shrink-0 flex-wrap gap-2">
+          <Badge className="bg-primary/10 text-primary">
+            {deck.cards.length} cards
+          </Badge>
+          {deck.lessonCount ? (
+            <Badge variant="outline">{deck.lessonCount} lessons</Badge>
+          ) : null}
+        </div>
+      </div>
+      {deck.cards.length ? (
+        <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+          {deck.cards.map((card) => (
+            <FlipFlashcard
+              key={card.id}
+              card={card}
+              onDelete={onDelete}
+              onEdit={onEdit}
+              onClone={onClone}
+            />
+          ))}
+        </div>
+      ) : (
+        <p className="font-bold text-slate-600">No cards in this deck.</p>
+      )}
+    </section>
   );
 }
 
@@ -760,7 +844,6 @@ function FlipFlashcard({
           >
             <FlashcardFaceHeader
               label="Question"
-              tag={card.tag}
               source={card.source}
             />
             <p className="max-h-36 overflow-auto break-words text-center text-xl font-black leading-snug text-slate-900 sm:text-2xl">
@@ -779,7 +862,6 @@ function FlipFlashcard({
           >
             <FlashcardFaceHeader
               label="Answer"
-              tag={card.tag}
               source={card.source}
               inverted
             />
@@ -847,34 +929,34 @@ function FlipFlashcard({
 
 type FlashcardFaceHeaderProps = {
   label: string;
-  tag: string;
   source: FlashcardSource;
   inverted?: boolean;
 };
 
 function FlashcardFaceHeader({
   label,
-  tag,
   source,
   inverted = false,
 }: FlashcardFaceHeaderProps) {
   return (
     <div className="flex items-center justify-between gap-3">
-      <Badge
-        className={cn(
-          "rounded-full px-3 py-1 font-black",
-          inverted ? "bg-white/15 text-white" : "bg-amber-100 text-amber-800"
-        )}
-      >
-        {label}
-      </Badge>
       <span
         className={cn(
-          "truncate text-xs font-black",
+          "text-xs font-black uppercase",
           inverted ? "text-cyan-100" : "text-slate-500"
         )}
       >
-        {source === "public" ? `Public - ${tag}` : tag}
+        {label}
+      </span>
+      <span
+        className={cn(
+          "rounded-full px-2 py-1 text-xs font-black",
+          inverted
+            ? "bg-white/10 text-cyan-100"
+            : "bg-primary/10 text-primary"
+        )}
+      >
+        {source === "public" ? "Public" : "Custom"}
       </span>
     </div>
   );
@@ -916,24 +998,77 @@ function getTopicQuizzes(topics: Topic[], questions: QuizQuestion[]) {
     .filter((quiz) => quiz.questionCount > 0);
 }
 
-function getPublicFlashcardsFromLessons(
+function getPublicFlashcardDecks(
   topics: Topic[],
   lessons: Lesson[]
-): Flashcard[] {
-  const topicTitleById = new Map(
-    topics.map((topic) => [topic.id, topic.title])
-  );
+): FlashcardDeck[] {
+  const topicById = new Map(topics.map((topic) => [topic.id, topic]));
+  const deckByTopicId = new Map<string, FlashcardDeck>();
+  const decks: FlashcardDeck[] = [];
 
-  return lessons.flatMap((lesson) =>
-    (lesson.questions ?? []).map((question) => ({
-      id: `public-${question.id}`,
-      source: "public" as const,
-      front: question.prompt,
-      back: question.answer,
-      hint: question.hint ?? getAnswerOptionsHint(question),
-      tag: topicTitleById.get(question.topic_id) ?? lesson.title,
-    }))
-  );
+  for (const lesson of lessons) {
+    const topic = topicById.get(lesson.topic_id);
+    const deckTitle = topic?.title ?? "Public deck";
+    let deck = deckByTopicId.get(lesson.topic_id);
+
+    if (!deck) {
+      deck = {
+        id: `public-${lesson.topic_id}`,
+        source: "public",
+        title: deckTitle,
+        description: topic?.description,
+        lessonCount: 0,
+        cards: [],
+      };
+      deckByTopicId.set(lesson.topic_id, deck);
+      decks.push(deck);
+    }
+
+    deck.lessonCount = (deck.lessonCount ?? 0) + 1;
+
+    for (const question of lesson.questions ?? []) {
+      deck.cards.push({
+        id: `public-${question.id}`,
+        source: "public",
+        front: question.prompt,
+        back: question.answer || lesson.phrase || lesson.title,
+        hint: question.hint ?? getAnswerOptionsHint(question),
+        tag: deckTitle,
+      });
+    }
+  }
+
+  return decks.filter((deck) => deck.cards.length > 0);
+}
+
+function getCustomFlashcardDecks(cards: Flashcard[]): FlashcardDeck[] {
+  const deckByTag = new Map<string, FlashcardDeck>();
+  const decks: FlashcardDeck[] = [];
+
+  for (const card of cards) {
+    const title = card.tag.trim() || "My deck";
+    const key = title.toLowerCase();
+    let deck = deckByTag.get(key);
+
+    if (!deck) {
+      deck = {
+        id: `custom-${slugifyDeckId(title) || decks.length + 1}`,
+        source: "custom",
+        title,
+        cards: [],
+      };
+      deckByTag.set(key, deck);
+      decks.push(deck);
+    }
+
+    deck.cards.push({ ...card, tag: title });
+  }
+
+  return decks;
+}
+
+function getDeckCardCount(decks: FlashcardDeck[]) {
+  return decks.reduce((count, deck) => count + deck.cards.length, 0);
 }
 
 function getAnswerOptionsHint(question: QuizQuestion) {
@@ -950,6 +1085,14 @@ function getAnswerOptionsHint(question: QuizQuestion) {
 
 function createCustomFlashcardId() {
   return `custom-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function slugifyDeckId(value: string) {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
 }
 
 function handleTabListKeyDown<T extends string>(
