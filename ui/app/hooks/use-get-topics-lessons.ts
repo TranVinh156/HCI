@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { lessonsApi } from "~/api/lessons";
 
 export function useGetTopicLessons(topicId?: string) {
@@ -24,6 +24,24 @@ export function useGetTopicLessonsPage(
                 page,
                 pageSize,
             }),
+        staleTime: 3 * 60 * 1000,
+        retry: false,
+        enabled: Boolean(topicId),
+    });
+}
+
+export function useInfiniteTopicLessons(topicId?: string, pageSize = 10) {
+    return useInfiniteQuery({
+        queryKey: ["lessons", "topic", topicId ?? "none", "infinite", pageSize],
+        queryFn: ({ pageParam }) =>
+            lessonsApi.listPage({
+                topicId: topicId!,
+                page: pageParam,
+                pageSize,
+            }),
+        initialPageParam: 1,
+        getNextPageParam: (lastPage) =>
+            lastPage.page < lastPage.pages ? lastPage.page + 1 : undefined,
         staleTime: 3 * 60 * 1000,
         retry: false,
         enabled: Boolean(topicId),
