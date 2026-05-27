@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useNavigate, useParams } from "react-router";
 
 import { OceanProgress } from "~/components/learning/ocean-progress";
+import { QuestionVideo } from "~/components/learning/question-video";
 import { QuizOption } from "~/components/learning/quiz-option";
 import { StudentShell } from "~/components/learning/student-shell";
 import { Button } from "~/components/ui/button";
@@ -102,6 +103,10 @@ export default function QuizRoute() {
       <div className="mx-auto max-w-3xl space-y-5">
         <OceanProgress value={progressValue} label={`Question ${questionIndex + 1}`} />
         <section className="rounded-[2rem] bg-white p-5">
+          <QuestionVideo
+            title={`Answer video for ${question.answer}`}
+            url={question.video_url}
+          />
           <div className="mb-5 rounded-[1.5rem] p-5 text-center">
             <p className="text-sm font-black uppercase text-primary">
               {lesson.title}
@@ -115,11 +120,11 @@ export default function QuizRoute() {
                 option={option}
                 selected={selected === option}
                 state={
-                  checked && selected === option
-                    ? isCorrect
-                      ? "correct"
-                      : "wrong"
-                    : "idle"
+                  checked && option === question.answer
+                    ? "correct"
+                    : checked && selected === option
+                      ? "wrong"
+                      : "idle"
                 }
                 onSelect={() => {
                   if (!checked) setSelected(option);

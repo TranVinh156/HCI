@@ -1,14 +1,28 @@
 import uuid
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
 from app.database import get_db
+from app.models.content import Lesson
 from app.models.quiz import QuizQuestion
 from app.schemas.quiz import QuizQuestionUpdate, QuizQuestionOut
-from app.dependencies import require_admin
+from app.dependencies import get_current_user, require_admin
 
 router = APIRouter(prefix="/api/questions", tags=["quizzes"])
+
+
+@router.get("", response_model=list[QuizQuestionOut])
+async def list_questions(
+    topic_id: uuid.UUID | None = Query(default=None),
+    db: AsyncSession = Depends(get_db),
+    _=Depends(get_current_user),
+):
+    query = select(QuizQuestion).join(Lesson).order_by(Lesson.sort_order, QuizQuestion.id)
+    if topic_id:
+        query = query.where(QuizQuestion.topic_id == topic_id)
+    result = await db.execute(query)
+    return result.scalars().all()
 
 
 @router.put("/{question_id}", response_model=QuizQuestionOut)

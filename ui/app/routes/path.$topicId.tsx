@@ -6,6 +6,7 @@ import { Button } from "~/components/ui/button";
 import { getLessonStatus, useProgressData } from "~/hooks/use-progress";
 import { useGetTopic } from "~/hooks/use-get-topics";
 import { useGetTopicLessons } from "~/hooks/use-get-topics-lessons";
+import { ArrowRight } from "lucide-react";
 
 export default function PathRoute() {
   const params = useParams();
@@ -56,6 +57,8 @@ export default function PathRoute() {
     );
   }
 
+  const practiceTopicId = topic?.id ?? topicId;
+
   return (
     <StudentShell>
       <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
@@ -67,13 +70,25 @@ export default function PathRoute() {
               </p>
               <h1 className="text-4xl font-black">{topic.title}</h1>
             </div>
-            <Button
-              asChild
-              variant="outline"
-              className="h-11 w-fit shrink-0 rounded-2xl"
-            >
-              <Link to="/topics">Back to topics</Link>
-            </Button>
+            <div className="flex gap-4">
+              <Button
+                asChild
+                variant="outline"
+                className="h-11 w-fit shrink-0 rounded-2xl"
+              >
+                <Link to="/topics">Back to topics</Link>
+              </Button>
+              <Button
+                asChild
+                variant="outline"
+                className="h-11 w-fit shrink-0 rounded-2xl"
+              >
+                <Link to={`/topic-quiz/${practiceTopicId}`}>
+                  Practice
+                  <ArrowRight className="size-5" />
+                </Link>
+              </Button>
+            </div>
           </div>
           <p className="mt-2 max-w-2xl font-semibold text-slate-600">
             {topic.description}

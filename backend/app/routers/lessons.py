@@ -1,29 +1,62 @@
 import uuid
+from math import ceil
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import func, select
+from sqlalchemy.orm import selectinload
 
 from app.database import get_db
 from app.models.content import Lesson, Exercise
 from app.models.quiz import QuizQuestion
-from app.schemas.content import LessonCreate, LessonUpdate, LessonOut, ExerciseCreate, ExerciseUpdate, ExerciseOut
+from app.schemas.content import (
+    ExerciseCreate,
+    ExerciseOut,
+    ExerciseUpdate,
+    LessonCreate,
+    LessonDetailOut,
+    LessonOut,
+    LessonPageOut,
+    LessonUpdate,
+)
 from app.schemas.quiz import QuizQuestionCreate, QuizQuestionUpdate, QuizQuestionOut
 from app.dependencies import get_current_user, require_admin
 
 router = APIRouter(prefix="/api/lessons", tags=["lessons"])
 
 
-@router.get("", response_model=list[LessonOut])
+@router.get("", response_model=LessonPageOut)
 async def list_lessons(
     topic_id: uuid.UUID | None = Query(default=None),
+    page: int = Query(default=1, ge=1),
+    page_size: int = Query(default=20, ge=1, le=100),
     db: AsyncSession = Depends(get_db),
     _=Depends(get_current_user),
 ):
-    q = select(Lesson).order_by(Lesson.sort_order)
+    count_query = select(func.count(Lesson.id))
+    q = (
+        select(Lesson)
+        .options(
+            selectinload(Lesson.exercises),
+            selectinload(Lesson.quiz_questions),
+        )
+        .order_by(Lesson.sort_order, Lesson.id)
+        .offset((page - 1) * page_size)
+        .limit(page_size)
+    )
     if topic_id:
+        count_query = count_query.where(Lesson.topic_id == topic_id)
         q = q.where(Lesson.topic_id == topic_id)
+
+    total = (await db.execute(count_query)).scalar_one()
     result = await db.execute(q)
-    return result.scalars().all()
+    lessons = result.scalars().all()
+    return LessonPageOut(
+        items=lessons,
+        total=total,
+        page=page,
+        page_size=page_size,
+        pages=ceil(total / page_size) if total else 0,
+    )
 
 
 @router.post("", response_model=LessonOut, status_code=201)
@@ -35,9 +68,16 @@ async def create_lesson(body: LessonCreate, db: AsyncSession = Depends(get_db), 
     return lesson
 
 
-@router.get("/{lesson_id}", response_model=LessonOut)
+@router.get("/{lesson_id}", response_model=LessonDetailOut)
 async def get_lesson(lesson_id: uuid.UUID, db: AsyncSession = Depends(get_db), _=Depends(get_current_user)):
-    result = await db.execute(select(Lesson).where(Lesson.id == lesson_id))
+    result = await db.execute(
+        select(Lesson)
+        .options(
+            selectinload(Lesson.exercises),
+            selectinload(Lesson.quiz_questions),
+        )
+        .where(Lesson.id == lesson_id)
+    )
     lesson = result.scalar_one_or_none()
     if not lesson:
         raise HTTPException(404, "Lesson not found")
@@ -94,7 +134,14 @@ async def list_questions(lesson_id: uuid.UUID, db: AsyncSession = Depends(get_db
 
 @router.post("/{lesson_id}/questions", response_model=QuizQuestionOut, status_code=201)
 async def create_question(lesson_id: uuid.UUID, body: QuizQuestionCreate, db: AsyncSession = Depends(get_db), _=Depends(require_admin)):
-    question = QuizQuestion(lesson_id=lesson_id, **body.model_dump())
+    lesson = (await db.execute(select(Lesson).where(Lesson.id == lesson_id))).scalar_one_or_none()
+    if not lesson:
+        raise HTTPException(404, "Lesson not found")
+    question = QuizQuestion(
+        lesson_id=lesson_id,
+        topic_id=lesson.topic_id,
+        **body.model_dump(),
+    )
     db.add(question)
     await db.commit()
     await db.refresh(question)

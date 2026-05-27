@@ -31,6 +31,35 @@ export type Topic = {
   lesson_count: number;
 };
 
+export type Exercise = {
+  id: string;
+  lesson_id: string;
+  type: string;
+  content: Record<string, unknown>;
+  sort_order: number;
+};
+
+export type QuizQuestion = {
+  id: string;
+  lesson_id: string;
+  topic_id: string;
+  prompt: string;
+  type: string;
+  options: string[];
+  answer: string;
+  video_url: string | null;
+  hint: string | null;
+};
+
+export type TopicQuizAttempt = {
+  id: string;
+  student_profile_id: string;
+  topic_id: string;
+  correct: number;
+  total: number;
+  completed_at: string;
+};
+
 export type Lesson = {
   id: string;
   topic_id: string;
@@ -43,24 +72,16 @@ export type Lesson = {
   difficulty: string;
   xp: number;
   sort_order: number;
+  exercises?: Exercise[];
+  questions?: QuizQuestion[];
 };
 
-export type Exercise = {
-  id: string;
-  lesson_id: string;
-  type: string;
-  content: Record<string, unknown>;
-  sort_order: number;
-};
-
-export type QuizQuestion = {
-  id: string;
-  lesson_id: string;
-  prompt: string;
-  type: string;
-  options: string[];
-  answer: string;
-  hint: string | null;
+export type PaginatedResponse<T> = {
+  items: T[];
+  total: number;
+  page: number;
+  page_size: number;
+  pages: number;
 };
 
 export type Badge = {

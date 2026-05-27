@@ -7,7 +7,6 @@ class RegisterRequest(BaseModel):
     email: EmailStr
     username: str
     password: str
-    role: str = "guardian"
 
 
 class LoginRequest(BaseModel):
