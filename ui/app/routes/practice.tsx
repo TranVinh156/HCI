@@ -1,5 +1,5 @@
 import type { FormEvent, KeyboardEvent } from "react";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { LucideIcon } from "lucide-react";
 import {
   ArrowRight,
@@ -15,7 +15,7 @@ import {
   X,
 } from "lucide-react";
 import { Link } from "react-router";
-import type { QuizQuestion, Topic } from "~/api/types";
+import type { Lesson, QuizQuestion, Topic } from "~/api/types";
 
 import { StudentShell } from "~/components/learning/student-shell";
 import { Badge } from "~/components/ui/badge";
@@ -30,6 +30,7 @@ import {
 } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { cn } from "~/lib/utils";
+import { useInfiniteLessons } from "~/hooks/use-get-lessons";
 import { useGetQuestions } from "~/hooks/use-get-topic-questions";
 import { useGetTopics } from "~/hooks/use-get-topics";
 
@@ -64,6 +65,7 @@ type FlashcardDraft = {
 };
 
 const customFlashcardsStorageKey = "hihihaha.custom-flashcards";
+const PUBLIC_FLASHCARD_PAGE_SIZE = 12;
 
 const starterCustomFlashcards: Flashcard[] = [
   {
@@ -77,21 +79,38 @@ const starterCustomFlashcards: Flashcard[] = [
 ];
 
 export default function PracticeRoute() {
+  const [activeTrainingTab, setActiveTrainingTab] =
+    useState<TrainingTab>("quizzes");
+  const [activeFlashcardMode, setActiveFlashcardMode] =
+    useState<FlashcardMode>("public");
+  const publicFlashcardsEnabled =
+    activeTrainingTab === "flashcards" && activeFlashcardMode === "public";
   const { data: topics = [], isLoading, isError } = useGetTopics();
   const {
     data: questions = [],
     isLoading: isQuestionsLoading,
     isError: isQuestionsError,
-  } = useGetQuestions();
-  const quizTopics = getTopicQuizzes(topics, questions);
-  const publicFlashcards = useMemo(
-    () => getPublicFlashcards(topics, questions),
-    [topics, questions]
+  } = useGetQuestions(activeTrainingTab === "quizzes");
+  const {
+    data: publicLessonPages,
+    isLoading: isPublicFlashcardsLoading,
+    isError: isPublicFlashcardsError,
+    hasNextPage: hasNextPublicFlashcardPage,
+    fetchNextPage: fetchNextPublicFlashcardPage,
+    isFetchingNextPage: isFetchingNextPublicFlashcardPage,
+  } = useInfiniteLessons(
+    { pageSize: PUBLIC_FLASHCARD_PAGE_SIZE },
+    { enabled: publicFlashcardsEnabled }
   );
-  const [activeTrainingTab, setActiveTrainingTab] =
-    useState<TrainingTab>("quizzes");
-  const [activeFlashcardMode, setActiveFlashcardMode] =
-    useState<FlashcardMode>("public");
+  const quizTopics = getTopicQuizzes(topics, questions);
+  const publicFlashcardLessons = useMemo(
+    () => publicLessonPages?.pages.flatMap((page) => page.items) ?? [],
+    [publicLessonPages]
+  );
+  const publicFlashcards = useMemo(
+    () => getPublicFlashcardsFromLessons(topics, publicFlashcardLessons),
+    [topics, publicFlashcardLessons]
+  );
   const [customFlashcards, setCustomFlashcards] = useState<Flashcard[]>(
     starterCustomFlashcards
   );
@@ -102,6 +121,10 @@ export default function PracticeRoute() {
     tag: "My deck",
   });
   const [editingCardId, setEditingCardId] = useState<string | null>(null);
+  const loadMorePublicFlashcards = useCallback(
+    () => fetchNextPublicFlashcardPage(),
+    [fetchNextPublicFlashcardPage]
+  );
 
   useEffect(() => {
     try {
@@ -367,11 +390,11 @@ export default function PracticeRoute() {
                 }
                 isLoading={
                   activeFlashcardMode === "public" &&
-                  (isLoading || isQuestionsLoading)
+                  (isLoading || isPublicFlashcardsLoading)
                 }
                 isError={
                   activeFlashcardMode === "public" &&
-                  (isError || isQuestionsError)
+                  (isError || isPublicFlashcardsError)
                 }
                 emptyMessage={
                   activeFlashcardMode === "public"
@@ -391,6 +414,19 @@ export default function PracticeRoute() {
                 onClone={
                   activeFlashcardMode === "custom"
                     ? cloneCustomFlashcard
+                    : undefined
+                }
+                hasMore={
+                  activeFlashcardMode === "public" &&
+                  Boolean(hasNextPublicFlashcardPage)
+                }
+                isLoadingMore={
+                  activeFlashcardMode === "public" &&
+                  isFetchingNextPublicFlashcardPage
+                }
+                onLoadMore={
+                  activeFlashcardMode === "public"
+                    ? loadMorePublicFlashcards
                     : undefined
                 }
               />
@@ -543,6 +579,9 @@ type FlashcardGridProps = {
   onDelete?: (cardId: string) => void;
   onEdit?: (card: Flashcard) => void;
   onClone?: (card: Flashcard) => void;
+  hasMore?: boolean;
+  isLoadingMore?: boolean;
+  onLoadMore?: () => Promise<unknown> | void;
 };
 
 function FlashcardGrid({
@@ -553,7 +592,80 @@ function FlashcardGrid({
   onDelete,
   onEdit,
   onClone,
+  hasMore,
+  isLoadingMore,
+  onLoadMore,
 }: FlashcardGridProps) {
+  const observerRef = useRef<IntersectionObserver | null>(null);
+  const loadMoreNodeRef = useRef<HTMLDivElement | null>(null);
+  const loadingMoreRef = useRef(false);
+  const canLoadMore = Boolean(hasMore && onLoadMore && !isLoadingMore);
+
+  const loadMore = useCallback(() => {
+    if (!hasMore || !onLoadMore || loadingMoreRef.current) return;
+
+    loadingMoreRef.current = true;
+    void Promise.resolve(onLoadMore()).finally(() => {
+      loadingMoreRef.current = false;
+    });
+  }, [hasMore, onLoadMore]);
+
+  useEffect(() => {
+    if (!isLoadingMore) {
+      loadingMoreRef.current = false;
+    }
+  }, [isLoadingMore]);
+
+  const loadMoreRef = useCallback(
+    (node: HTMLDivElement | null) => {
+      loadMoreNodeRef.current = node;
+      observerRef.current?.disconnect();
+
+      if (!node || !hasMore) return;
+
+      observerRef.current = new IntersectionObserver(
+        ([entry]) => {
+          if (entry.isIntersecting) {
+            loadMore();
+          }
+        },
+        { rootMargin: "320px 0px" }
+      );
+
+      observerRef.current.observe(node);
+    },
+    [hasMore, loadMore]
+  );
+
+  useEffect(() => {
+    if (!canLoadMore) return;
+
+    function loadIfNearBottom() {
+      const node = loadMoreNodeRef.current;
+      if (!node) return;
+
+      const { top } = node.getBoundingClientRect();
+      if (top <= window.innerHeight + 320) {
+        loadMore();
+      }
+    }
+
+    window.addEventListener("scroll", loadIfNearBottom, { passive: true });
+    window.addEventListener("resize", loadIfNearBottom);
+    loadIfNearBottom();
+
+    return () => {
+      window.removeEventListener("scroll", loadIfNearBottom);
+      window.removeEventListener("resize", loadIfNearBottom);
+    };
+  }, [canLoadMore, cards.length, loadMore]);
+
+  useEffect(() => {
+    return () => {
+      observerRef.current?.disconnect();
+    };
+  }, []);
+
   if (isLoading) {
     return <p className="font-bold">Loading flash cards...</p>;
   }
@@ -562,22 +674,51 @@ function FlashcardGrid({
     return <p className="font-bold">Unable to load flash cards.</p>;
   }
 
-  if (!cards.length) {
+  if (!cards.length && !hasMore) {
     return <p className="font-bold">{emptyMessage}</p>;
   }
 
   return (
-    <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-      {cards.map((card) => (
-        <FlipFlashcard
-          key={card.id}
-          card={card}
-          onDelete={onDelete}
-          onEdit={onEdit}
-          onClone={onClone}
-        />
-      ))}
-    </div>
+    <>
+      <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+        {cards.map((card) => (
+          <FlipFlashcard
+            key={card.id}
+            card={card}
+            onDelete={onDelete}
+            onEdit={onEdit}
+            onClone={onClone}
+          />
+        ))}
+      </div>
+      {hasMore ? (
+        <div ref={loadMoreRef} className="flex justify-center py-5">
+          <div
+            role="status"
+            aria-live="polite"
+            aria-label={
+              isLoadingMore
+                ? "Loading more flash cards"
+                : "More flash cards available"
+            }
+            className="inline-flex h-11 items-center gap-1.5 "
+          >
+            {[0, 1, 2].map((dot) => (
+              <span
+                key={dot}
+                className="size-2.5 animate-bounce rounded-full bg-primary [animation-duration:0.8s]"
+                style={{ animationDelay: `${dot * 120}ms` }}
+              />
+            ))}
+            <span className="sr-only">
+              {isLoadingMore
+                ? "Loading more flash cards..."
+                : "More flash cards available"}
+            </span>
+          </div>
+        </div>
+      ) : null}
+    </>
   );
 }
 
@@ -775,22 +916,24 @@ function getTopicQuizzes(topics: Topic[], questions: QuizQuestion[]) {
     .filter((quiz) => quiz.questionCount > 0);
 }
 
-function getPublicFlashcards(
+function getPublicFlashcardsFromLessons(
   topics: Topic[],
-  questions: QuizQuestion[]
+  lessons: Lesson[]
 ): Flashcard[] {
   const topicTitleById = new Map(
     topics.map((topic) => [topic.id, topic.title])
   );
 
-  return questions.map((question) => ({
-    id: `public-${question.id}`,
-    source: "public",
-    front: question.prompt,
-    back: question.answer,
-    hint: question.hint ?? getAnswerOptionsHint(question),
-    tag: topicTitleById.get(question.topic_id) ?? "Public",
-  }));
+  return lessons.flatMap((lesson) =>
+    (lesson.questions ?? []).map((question) => ({
+      id: `public-${question.id}`,
+      source: "public" as const,
+      front: question.prompt,
+      back: question.answer,
+      hint: question.hint ?? getAnswerOptionsHint(question),
+      tag: topicTitleById.get(question.topic_id) ?? lesson.title,
+    }))
+  );
 }
 
 function getAnswerOptionsHint(question: QuizQuestion) {

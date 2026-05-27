@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { lessonsApi, type LessonListParams } from "~/api/lessons";
 
 export function useGetLessons(params?: LessonListParams) {
@@ -17,6 +17,29 @@ export function useGetLessonsPage(params?: LessonListParams) {
         staleTime: 3 * 60 * 1000,
         retry: false
     })
+}
+
+export function useInfiniteLessons(
+    params?: LessonListParams,
+    options?: { enabled?: boolean }
+) {
+    const pageSize = params?.pageSize ?? 10;
+
+    return useInfiniteQuery({
+        queryKey: ["lessons", "infinite", params ?? {}, pageSize],
+        queryFn: ({ pageParam }) =>
+            lessonsApi.listPage({
+                ...params,
+                page: pageParam,
+                pageSize,
+            }),
+        initialPageParam: 1,
+        getNextPageParam: (lastPage) =>
+            lastPage.page < lastPage.pages ? lastPage.page + 1 : undefined,
+        staleTime: 3 * 60 * 1000,
+        retry: false,
+        enabled: options?.enabled ?? true,
+    });
 }
 
 export function useGetLesson(lessonId?: string) {

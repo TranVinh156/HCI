@@ -2,10 +2,11 @@ import { useQuery } from "@tanstack/react-query";
 
 import { questionsApi } from "~/api/questions";
 
-export function useGetQuestions() {
+export function useGetQuestions(enabled = true) {
   return useQuery({
     queryKey: ["quiz", "questions"],
     queryFn: () => questionsApi.list(),
+    enabled,
     retry: false,
     staleTime: 3 * 60 * 1000,
   });
