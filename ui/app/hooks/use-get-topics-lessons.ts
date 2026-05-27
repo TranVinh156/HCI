@@ -3,10 +3,11 @@ import { lessonsApi } from "~/api/lessons";
 
 export function useGetTopicLessons(topicId?: string) {
     return useQuery({
-        queryKey: ["lessons", topicId ?? "all"],
-        queryFn: () => lessonsApi.list(topicId),
+        queryKey: ["lessons", "topic", topicId ?? "none"],
+        queryFn: () => lessonsApi.list({ topicId: topicId! }),
         staleTime: 3 * 60 * 1000,
         retry: false,
+        enabled: Boolean(topicId),
     });
 }
 
@@ -16,10 +17,10 @@ export function useGetTopicLessonsPage(
     pageSize = 20
 ) {
     return useQuery({
-        queryKey: ["lessons", topicId ?? "all", "page", page, pageSize],
+        queryKey: ["lessons", "topic", topicId ?? "none", "page", page, pageSize],
         queryFn: () =>
             lessonsApi.listPage({
-                topicId,
+                topicId: topicId!,
                 page,
                 pageSize,
             }),

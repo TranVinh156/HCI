@@ -7,7 +7,7 @@ export type LessonListParams = {
   pageSize?: number;
 };
 
-const DEFAULT_LIST_PAGE_SIZE = 100;
+const DEFAULT_LIST_PAGE_SIZE = 10;
 
 function normalizeListParams(input?: string | LessonListParams): LessonListParams {
   return typeof input === "string" ? { topicId: input } : input ?? {};
