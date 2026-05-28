@@ -4,7 +4,7 @@ import { Link, useParams, useSearchParams } from "react-router";
 import { RewardSummary } from "~/components/learning/reward-summary";
 import { StudentShell } from "~/components/learning/student-shell";
 import { Button } from "~/components/ui/button";
-import { useGetLesson, useGetLessons } from "~/hooks/use-get-lessons";
+import { useGetLesson } from "~/hooks/use-get-lessons";
 import { useProgressData } from "~/hooks/use-progress";
 
 export default function ResultRoute() {
@@ -15,14 +15,10 @@ export default function ResultRoute() {
     isLoading: isLessonLoading,
     isError: isLessonError,
   } = useGetLesson(params.lessonId);
-  const { data: lessons = [] } = useGetLessons();
   const { data: progressData, isLoading: isProgressLoading } = useProgressData();
   const progress = progressData?.progress;
   const correct = Number(searchParams.get("correct") ?? 0);
   const total = Number(searchParams.get("total") ?? 2);
-  const nextLesson =
-    lessons.find((item) => !progress?.completed_lesson_ids.includes(item.id)) ??
-    lessons[0];
 
   if (isLessonLoading || isProgressLoading) {
     return (
@@ -61,8 +57,14 @@ export default function ResultRoute() {
             </Link>
           </Button>
           <Button asChild className="h-13 rounded-2xl font-black">
-            <Link to={`/lesson/${nextLesson?.id ?? lesson.id}`}>
-              Keep learning
+            <Link
+              to={
+                lesson.next_lesson_id
+                  ? `/lesson/${lesson.next_lesson_id}`
+                  : "/learn"
+              }
+            >
+              {lesson.next_lesson_id ? "Keep learning" : "Choose next path"}
               <ArrowRight className="size-5" />
             </Link>
           </Button>
