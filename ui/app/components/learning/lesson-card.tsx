@@ -1,5 +1,5 @@
 import { RotateCcw, Video } from "lucide-react";
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
@@ -11,9 +11,18 @@ import {
   CardTitle,
 } from "~/components/ui/card";
 import type { Lesson } from "~/api/types";
+import { useHolisticTracking } from "~/hooks/use-holistic-tracking";
 
 type LessonCardProps = {
   lesson: Lesson;
+  videoRef?: React.RefObject<HTMLVideoElement | null>;
+  canvasRef?: React.RefObject<HTMLCanvasElement | null>;
+  onGroundTruthSequenceRef?: (
+    ref: React.MutableRefObject<HolisticSequence>
+  ) => void;
+  onVideoPlay?: () => void;
+  onVideoPause?: () => void;
+  onVideoEnded?: () => void;
 };
 
 type SignReference = {
@@ -22,6 +31,38 @@ type SignReference = {
   embedUrl: string | null;
   kind: "video" | "youtube" | "link" | null;
 };
+
+type Landmark = {
+  x: number;
+  y: number;
+  z?: number;
+  visibility?: number;
+};
+
+type HolisticFrame = {
+  pose: Landmark[];
+  leftHand: Landmark[];
+  rightHand: Landmark[];
+};
+
+type HolisticSequence = HolisticFrame[];
+
+const API_BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
+
+function shouldProxyVideo(url: string): boolean {
+  try {
+    const parsed = new URL(url);
+    return parsed.hostname === "aslsignbank.haskins.yale.edu";
+  } catch {
+    return false;
+  }
+}
+
+function buildProxyUrl(url: string): string {
+  const proxyUrl = new URL("/api/media/proxy", API_BASE_URL);
+  proxyUrl.searchParams.set("url", url);
+  return proxyUrl.toString();
+}
 
 function getYoutubeEmbedUrl(url: string): string | null {
   try {
@@ -70,10 +111,11 @@ function parseSignReference(signHint: string | null): SignReference {
   }
 
   if (url.toLowerCase().split("?")[0].endsWith(".mp4")) {
+    const proxiedUrl = shouldProxyVideo(url) ? buildProxyUrl(url) : url;
     return {
       hint: cleanedHint,
       url,
-      embedUrl: url,
+      embedUrl: proxiedUrl,
       kind: "video",
     };
   }
@@ -86,9 +128,38 @@ function parseSignReference(signHint: string | null): SignReference {
   };
 }
 
-export function LessonCard({ lesson }: LessonCardProps) {
-  const videoRef = useRef<HTMLVideoElement>(null);
+export function LessonCard({
+  lesson,
+  videoRef: videoRefProp,
+  canvasRef: canvasRefProp,
+  onGroundTruthSequenceRef,
+  onVideoPlay,
+  onVideoPause,
+  onVideoEnded,
+}: LessonCardProps) {
+  const fallbackVideoRef = useRef<HTMLVideoElement>(null);
+  const fallbackCanvasRef = useRef<HTMLCanvasElement>(null);
+  const videoRef = videoRefProp ?? fallbackVideoRef;
+  const canvasRef = canvasRefProp ?? fallbackCanvasRef;
+  const [isTracking, setIsTracking] = useState(false);
   const signReference = parseSignReference(lesson.sign_hint);
+  const { sequenceRef: groundTruthSequenceRef } = useHolisticTracking({
+    videoRef,
+    canvasRef,
+    enabled: isTracking && signReference.kind === "video",
+  });
+
+  useEffect(() => {
+    if (onGroundTruthSequenceRef) {
+      onGroundTruthSequenceRef(
+        groundTruthSequenceRef as React.MutableRefObject<HolisticSequence>
+      );
+    }
+  }, [groundTruthSequenceRef, onGroundTruthSequenceRef]);
+
+  useEffect(() => {
+    groundTruthSequenceRef.current = [];
+  }, [groundTruthSequenceRef, signReference.embedUrl]);
 
   function replaySign() {
     if (!videoRef.current) return;
@@ -113,14 +184,34 @@ export function LessonCard({ lesson }: LessonCardProps) {
       <CardContent className="space-y-5">
         <div className="rounded-[1.5rem] border border-slate-200 p-5 text-center">
           {signReference.kind === "video" && signReference.embedUrl ? (
-            <video
-              ref={videoRef}
-              className="mb-4 aspect-video w-full rounded-[1.25rem] bg-slate-950 object-contain"
-              controls
-              playsInline
-              preload="metadata"
-              src={signReference.embedUrl}
-            />
+            <div className="relative mb-4 aspect-video w-full overflow-hidden rounded-[1.25rem] bg-slate-950">
+              <video
+                ref={videoRef}
+                className="size-full object-contain"
+                controls
+                crossOrigin="anonymous"
+                playsInline
+                preload="metadata"
+                src={signReference.embedUrl}
+                onPlay={() => {
+                  setIsTracking(true);
+                  onVideoPlay?.();
+                }}
+                onPause={() => {
+                  setIsTracking(false);
+                  onVideoPause?.();
+                }}
+                onEnded={() => {
+                  setIsTracking(false);
+                  onVideoEnded?.();
+                }}
+              />
+              <canvas
+                ref={canvasRef}
+                className="pointer-events-none absolute inset-0 size-full"
+                aria-hidden="true"
+              />
+            </div>
           ) : signReference.kind === "youtube" && signReference.embedUrl ? (
             <iframe
               className="mb-4 aspect-video w-full rounded-[1.25rem] bg-slate-950"

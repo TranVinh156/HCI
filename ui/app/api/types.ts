@@ -1,3 +1,5 @@
+import type { SignScoringMetadataInput } from "~/services/scoring.service";
+
 export type UserRole = "admin" | "guardian";
 
 export type User = {
@@ -72,6 +74,7 @@ export type Lesson = {
   difficulty: string;
   xp: number;
   sort_order: number;
+  scoring_metadata?: SignScoringMetadataInput | null;
   exercises?: Exercise[];
   questions?: QuizQuestion[];
 };
