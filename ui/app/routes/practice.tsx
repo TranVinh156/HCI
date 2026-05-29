@@ -199,11 +199,11 @@ export default function PracticeRoute() {
         currentCards.map((card) =>
           card.id === editingCardId
             ? {
-                ...card,
-                front,
-                back,
-                tag,
-              }
+              ...card,
+              front,
+              back,
+              tag,
+            }
             : card
         )
       );
@@ -294,7 +294,7 @@ export default function PracticeRoute() {
             aria-labelledby="training-tab-flashcards"
             className="space-y-5"
           >
-            <div className="flex flex-col gap-4 rounded-[1.75rem] border-2 border-[#036678] bg-white p-4 shadow-[2px_4px_0_#036678] sm:flex-row sm:items-center sm:justify-between">
+            {/* <div className="flex flex-col gap-4 rounded-[1.75rem] border-2 border-[#036678] bg-white p-4 shadow-[2px_4px_0_#036678] sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <h1 className="text-2xl font-black leading-tight">
                   Flash cards
@@ -315,7 +315,13 @@ export default function PracticeRoute() {
                 tabIdPrefix="flashcard"
                 controlledPanelId="flashcard-panel"
               />
-            </div>
+            </div> */}
+
+            <QuizTopicGrid
+              quizTopics={quizTopics}
+              isLoading={isLoading || isQuestionsLoading}
+              isError={isError || isQuestionsError}
+            />
 
             <div
               id="flashcard-panel"
@@ -536,7 +542,7 @@ type QuizTopicGridProps = {
 function QuizTopicGrid({
   quizTopics,
   isLoading,
-  isError,
+  isError
 }: QuizTopicGridProps) {
   return (
     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">

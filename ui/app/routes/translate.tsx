@@ -2,6 +2,7 @@ import {
   ArrowLeftRight,
   Camera,
   Copy,
+  Download,
   Eraser,
   Hand,
   Languages,
@@ -480,7 +481,7 @@ export default function TranslateRoute() {
                       ) : (
                         <Languages className="size-4" />
                       )}
-                      Translate offline
+                      Translate
                     </Button>
                   </div>
                 </>
@@ -539,14 +540,14 @@ export default function TranslateRoute() {
                       <SkeletonPoseViewer src={poseUrl} />
                     </div>
                   ) : null}
-                  {videoUrl ? (
+                  {/* {videoUrl ? (
                     <video
                       src={videoUrl}
                       controls
                       width={320}
                       className="rounded-xl border-2 border-slate-200 bg-white"
                     />
-                  ) : null}
+                  ) : null} */}
                   {translateError ? (
                     <p className="text-xs font-semibold text-rose-500">
                       {translateError}
@@ -561,16 +562,10 @@ export default function TranslateRoute() {
                   onClick={copyText}
                   className="h-11 rounded-2xl font-black"
                 >
-                  <Copy className="size-4" />
-                  Copy
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="h-11 rounded-2xl font-black"
-                >
-                  <Mic className="size-4" />
-                  Speak
+                  <a className="flex gap-2 items-center" href={videoUrl}>
+                    <Download className="size-5" />
+                    Download
+                  </a>
                 </Button>
               </div>
             </CardContent>

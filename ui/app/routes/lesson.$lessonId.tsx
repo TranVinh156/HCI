@@ -7,7 +7,6 @@ import { StudentShell } from "~/components/learning/student-shell";
 import { Button } from "~/components/ui/button";
 import { useGetLesson } from "~/hooks/use-get-lessons";
 import { useGetTopic } from "~/hooks/use-get-topics";
-import { useGetTopicLessons } from "~/hooks/use-get-topics-lessons";
 
 export default function LessonRoute() {
   const params = useParams();
@@ -17,13 +16,8 @@ export default function LessonRoute() {
     isError: isLessonError,
   } = useGetLesson(params.lessonId);
   const { data: topic } = useGetTopic(lesson?.topic_id);
-  const {
-    data: topicLessons = [],
-    isLoading: isTopicLessonsLoading,
-    isError: isTopicLessonsError,
-  } = useGetTopicLessons(lesson?.topic_id);
 
-  if (isLessonLoading || isTopicLessonsLoading) {
+  if (isLessonLoading) {
     return (
       <StudentShell>
         <p className="font-bold">Loading lesson...</p>
@@ -31,19 +25,13 @@ export default function LessonRoute() {
     );
   }
 
-  if (isLessonError || isTopicLessonsError || !lesson) {
+  if (isLessonError || !lesson) {
     return (
       <StudentShell>
         <p className="font-bold">Lesson not found.</p>
       </StudentShell>
     );
   }
-
-  const currentLessonIndex = topicLessons.findIndex(
-    (item) => item.id === lesson.id
-  );
-  const nextLesson =
-    currentLessonIndex >= 0 ? topicLessons[currentLessonIndex + 1] : undefined;
 
   return (
     <StudentShell>
@@ -58,9 +46,9 @@ export default function LessonRoute() {
       <div className="mx-auto max-w-3xl space-y-5">
         <LessonCard lesson={lesson} />
         <CameraPractice lesson={lesson} />
-        {nextLesson ? (
+        {lesson.next_lesson_id ? (
           <Button asChild className="h-14 w-full rounded-2xl text-lg font-black">
-            <Link to={`/lesson/${nextLesson.id}`}>
+            <Link to={`/lesson/${lesson.next_lesson_id}`}>
               Next
               <ArrowRight className="size-5" />
             </Link>
