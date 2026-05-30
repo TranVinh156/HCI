@@ -13,3 +13,9 @@ export function useSignToText() {
     }) => translateApi.signToText(image, kind),
   });
 }
+
+export function useSignKeypoints() {
+  return useMutation({
+    mutationFn: (frames: number[][][]) => translateApi.signKeypoints(frames),
+  });
+}

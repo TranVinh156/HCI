@@ -3,6 +3,7 @@ Seed database with initial data matching the frontend mock data.
 Run: python seed.py
 """
 import asyncio
+import string
 from app.database import engine, AsyncSessionLocal, Base
 from app.models import *  # noqa: F401, F403 — import all models so Base.metadata is populated
 
@@ -12,6 +13,7 @@ TOPICS = [
     {"title": "Màu sắc", "description": "Học các màu sắc cơ bản", "icon": "Palette", "color": "blue", "sort_order": 1},
     {"title": "Cảm xúc", "description": "Biểu đạt cảm xúc và tâm trạng", "icon": "Smile", "color": "yellow", "sort_order": 2},
     {"title": "Trường học", "description": "Từ vựng về trường học và học tập", "icon": "BookOpen", "color": "green", "sort_order": 3},
+    {"title": "ASL Alphabet (A-Z)", "description": "Học bảng chữ cái ASL — chấm điểm thật bằng AI", "icon": "Type", "color": "purple", "sort_order": 4},
 ]
 
 LESSONS = [
@@ -32,6 +34,21 @@ LESSONS = [
     {"topic_idx": 3, "type": "vocabulary", "title": "Sách", "phrase": "Sách", "description": "Ký hiệu cho cuốn sách", "visual": "📚", "sign_hint": "Hai lòng bàn tay úp vào nhau rồi mở ra như cuốn sách", "difficulty": "Easy", "xp": 10, "sort_order": 1},
     {"topic_idx": 3, "type": "communication", "title": "Cảm ơn", "phrase": "Cảm ơn", "description": "Nói lời cảm ơn", "visual": "🙌", "sign_hint": "Chạm ngón tay vào cằm rồi đưa tay ra phía trước", "difficulty": "Easy", "xp": 10, "sort_order": 2},
 ]
+
+# ASL Alphabet (A-Z) — appended to LESSONS; AI scoring uses ASL.h5
+for _i, _letter in enumerate(string.ascii_uppercase):
+    LESSONS.append({
+        "topic_idx": 4,
+        "type": "vocabulary",
+        "title": f"Chữ {_letter}",
+        "phrase": _letter,
+        "description": f"Ký hiệu ASL cho chữ {_letter}",
+        "visual": _letter,
+        "sign_hint": f"Tạo hình chữ {_letter} bằng bàn tay theo bảng ASL",
+        "difficulty": "Easy",
+        "xp": 5,
+        "sort_order": _i,
+    })
 
 QUIZ_QUESTIONS = [
     # lesson 0: hello-family

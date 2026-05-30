@@ -6,6 +6,6 @@ tensorflow-cpu>=2.15.0,<2.17.0
 Pillow>=10.0.0
 numpy>=1.24.0
 
-# WLASL Transformer (optional — uncomment to re-enable /sign-keypoints):
-# torch>=2.0.0
-# mediapipe>=0.10.13
+# WLASL Transformer (keypoint-based word recognition)
+torch>=2.0.0
+# mediapipe not needed on backend — keypoint extraction happens in browser
