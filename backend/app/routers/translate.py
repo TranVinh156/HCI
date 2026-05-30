@@ -1,27 +1,44 @@
-from fastapi import APIRouter, Depends, UploadFile, File, Form
+from fastapi import APIRouter, Depends, HTTPException
+
 from app.dependencies import get_current_user
-from app.schemas.translate import TranslateRequest, TranslateResponse
-from app.services.sign_recognition import recognize
+from app.schemas.translate import (
+    ImageTranslateRequest,
+    KeypointTranslateRequest,
+    TranslateResponse,
+)
+from app.services.alphabet_service import recognize_image
+from app.services.sign_service import NUM_KEYPOINTS, KP_DIMS, recognize_keypoints
 
 router = APIRouter(prefix="/api/translate", tags=["translate"])
 
 
 @router.post("/sign-to-text", response_model=TranslateResponse)
-async def sign_to_text(body: TranslateRequest, _=Depends(get_current_user)):
-    """Predict a sign label from a base64-encoded image."""
-    result = recognize(body.kind, body.image)
-    return result
+async def sign_to_text(body: ImageTranslateRequest, _=Depends(get_current_user)):
+    """Predict ASL alphabet (A-Z + del/nothing/space) from a single image."""
+    if body.kind == "word":
+        return {
+            "kind": "word",
+            "label": "—",
+            "confidence": 0.0,
+            "top_k": [],
+            "model_loaded": False,
+        }
+    try:
+        return recognize_image(body.image)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc))
 
 
-@router.post("/sign-to-text/upload", response_model=TranslateResponse)
-async def sign_to_text_upload(
-    file: UploadFile = File(...),
-    kind: str = Form(default="alphabet"),
-    _=Depends(get_current_user),
-):
-    """Same as sign-to-text but accepts a multipart file upload."""
-    image_bytes = await file.read()
-    if kind not in ("alphabet", "word"):
-        kind = "alphabet"
-    result = recognize(kind, image_bytes)  # type: ignore[arg-type]
-    return result
+@router.post("/sign-keypoints", response_model=TranslateResponse)
+async def sign_keypoints(body: KeypointTranslateRequest, _=Depends(get_current_user)):
+    """Predict an ASL word from a clip of MediaPipe keypoints.
+
+    Expects `frames` of shape (T, 75, 3) extracted in the browser.
+    """
+    for frame in body.frames:
+        if len(frame) != NUM_KEYPOINTS or any(len(pt) != KP_DIMS for pt in frame):
+            raise HTTPException(
+                status_code=422,
+                detail=f"Each frame must be {NUM_KEYPOINTS} keypoints of {KP_DIMS} dims.",
+            )
+    return recognize_keypoints(body.frames)

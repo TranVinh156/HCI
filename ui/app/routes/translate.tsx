@@ -332,7 +332,9 @@ export default function TranslateRoute() {
                 clearPredictions();
               }}
               variant={kind === "word" ? "default" : "outline"}
-              className="h-9 rounded-xl font-black"
+              disabled
+              title="Coming soon — only alphabet recognition is available"
+              className="h-9 rounded-xl font-black opacity-50 cursor-not-allowed"
             >
               Vocabulary
             </Button>

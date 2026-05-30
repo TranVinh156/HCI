@@ -1,6 +1,11 @@
 # ML dependencies — requires Python 3.9-3.12 (NOT 3.13/3.14)
-# Install separately after requirements.txt:
-#   pip install -r requirements-ml.txt
+# Install: pip install -r requirements-ml.txt
 
+# Alphabet CNN (ASL.h5 — Keras)
 tensorflow-cpu>=2.15.0,<2.17.0
-opencv-python-headless>=4.8.0
+Pillow>=10.0.0
+numpy>=1.24.0
+
+# WLASL Transformer (optional — uncomment to re-enable /sign-keypoints):
+# torch>=2.0.0
+# mediapipe>=0.10.13
