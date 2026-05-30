@@ -13,5 +13,13 @@ python-dotenv>=1.0.0
 email-validator>=2.0.0
 
 # ML / Computer Vision (see requirements-ml.txt — needs Python 3.11)
+tensorflow
 Pillow>=10.0.0
 numpy>=1.24.0
+
+# WLASL word-recognition transformer (keypoints extracted in browser; CPU inference)
+# Install CPU wheel: pip install torch --index-url https://download.pytorch.org/whl/cpu
+torch>=2.0.0
+
+# Sign translation service
+httpx>=0.27.0       # SignGemma API client

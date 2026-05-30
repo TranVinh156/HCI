@@ -1,10 +1,15 @@
-from typing import Literal
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
-class TranslateRequest(BaseModel):
-    image: str  # base64 or data URL
-    kind: Literal["alphabet", "word"] = "alphabet"
+class KeypointTranslateRequest(BaseModel):
+    # frames: (T, 75, 3) — per-frame MediaPipe keypoints (33 pose + 21 LH + 21 RH).
+    # Extracted in the browser; the backend normalizes and runs the model.
+    frames: list[list[list[float]]] = Field(..., min_length=1)
+
+
+class ImageTranslateRequest(BaseModel):
+    image: str = Field(..., description="Base64 data URL or raw base64 image")
+    kind: str = Field(default="alphabet", description="alphabet | word")
 
 
 class PredictionItem(BaseModel):

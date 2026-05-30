@@ -1,0 +1,5 @@
+embed.weight (256, 225)
+head.0.weight (128, 256)
+head.3.weight (300, 128)
+cls_token (1, 1, 256)
+num encoder layers: 4
