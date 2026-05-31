@@ -7,4 +7,9 @@ export const translateApi = {
       method: "POST",
       body: JSON.stringify({ image, kind }),
     }),
+  signKeypoints: (frames: number[][][]) =>
+    request<TranslateResult>("/api/translate/sign-keypoints", {
+      method: "POST",
+      body: JSON.stringify({ frames }),
+    }),
 };

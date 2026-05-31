@@ -18,7 +18,8 @@ import {
   CardTitle,
 } from "~/components/ui/card";
 import { Skeleton } from "~/components/ui/skeleton";
-import type { Lesson } from "~/api/types";
+import type { Lesson, TranslateResult } from "~/api/types";
+import { useSignToText } from "~/hooks/use-translate";
 
 type CameraPracticeProps = {
   lesson: Lesson;
@@ -32,6 +33,8 @@ const checklist = [
   "Move slowly like the sample",
 ];
 
+const NON_HAND_LABELS = new Set(["nothing", "del", "space"]);
+
 export function CameraPractice({ lesson }: CameraPracticeProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -39,6 +42,14 @@ export function CameraPractice({ lesson }: CameraPracticeProps) {
   const [error, setError] = useState("");
   const [feedback, setFeedback] = useState<FeedbackState>("idle");
   const [attempts, setAttempts] = useState(0);
+  const [lastResult, setLastResult] = useState<TranslateResult | null>(null);
+  const signToTextMutation = useSignToText();
+
+  const expectedLetter =
+    lesson.phrase && lesson.phrase.length === 1 && /^[A-Z]$/i.test(lesson.phrase)
+      ? lesson.phrase.toUpperCase()
+      : null;
+  const isAlphabetLesson = expectedLetter !== null;
 
   useEffect(() => {
     return () => stopCamera();
@@ -80,8 +91,8 @@ export function CameraPractice({ lesson }: CameraPracticeProps) {
     setIsCameraOn(false);
   }
 
-  function checkPractice() {
-    if (!isCameraOn) {
+  async function checkPractice() {
+    if (!isCameraOn || !videoRef.current) {
       setError("Turn on the camera before checking the sign.");
       return;
     }
@@ -89,12 +100,44 @@ export function CameraPractice({ lesson }: CameraPracticeProps) {
     setError("");
     setFeedback("checking");
 
-    window.setTimeout(() => {
+    const video = videoRef.current;
+    const canvas = document.createElement("canvas");
+    canvas.width = video.videoWidth || 640;
+    canvas.height = video.videoHeight || 480;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) {
+      setError("Browser does not support canvas capture.");
+      setFeedback("idle");
+      return;
+    }
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
+
+    try {
+      const result = await signToTextMutation.mutateAsync({
+        image: dataUrl,
+        kind: "alphabet",
+      });
+      setLastResult(result);
       const nextAttempts = attempts + 1;
       setAttempts(nextAttempts);
-      setFeedback(nextAttempts % 3 === 1 ? "retry" : "correct");
-    }, 900);
+
+      let correct: boolean;
+      if (isAlphabetLesson) {
+        correct = result.label.toUpperCase() === expectedLetter;
+      } else {
+        const handDetected = !NON_HAND_LABELS.has(result.label.toLowerCase());
+        correct = handDetected && (nextAttempts >= 2 || Math.random() < 0.5);
+      }
+      setFeedback(correct ? "correct" : "retry");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Scoring failed");
+      setFeedback("idle");
+    }
   }
+
+  const confidencePct = Math.round((lastResult?.confidence ?? 0) * 100);
+  const seenLabel = lastResult?.label ?? "?";
 
   const feedbackCopy = {
     idle: {
@@ -110,14 +153,22 @@ export function CameraPractice({ lesson }: CameraPracticeProps) {
       icon: Sparkles,
     },
     correct: {
-      title: "Looks good",
-      text: "Your hands and timing look close to the sample. Nice practice.",
+      title: isAlphabetLesson
+        ? `Đúng rồi! AI nhận diện: ${seenLabel}`
+        : "Looks good",
+      text: isAlphabetLesson
+        ? `Độ tin cậy: ${confidencePct}%`
+        : "Your hands and timing look close to the sample. Nice practice.",
       className: "bg-emerald-50 text-emerald-800",
       icon: CheckCircle2,
     },
     retry: {
-      title: "Try once more",
-      text: "Bring your hands higher and move a little slower.",
+      title: isAlphabetLesson
+        ? `AI thấy: "${seenLabel}" (cần: "${expectedLetter}")`
+        : "Try once more",
+      text: isAlphabetLesson
+        ? `Độ tin cậy: ${confidencePct}%. Thử lại với hình bàn tay rõ hơn.`
+        : "Bring your hands higher and move a little slower.",
       className: "bg-rose-50 text-rose-800",
       icon: RotateCcw,
     },
@@ -147,8 +198,14 @@ export function CameraPractice({ lesson }: CameraPracticeProps) {
               sample.
             </CardDescription>
           </div>
-          <Badge className="h-8 bg-primary/10 px-3 text-primary">
-            Prototype feedback
+          <Badge
+            className={`h-8 px-3 ${
+              isAlphabetLesson
+                ? "bg-emerald-100 text-emerald-700"
+                : "bg-amber-100 text-amber-700"
+            }`}
+          >
+            {isAlphabetLesson ? "AI scoring (real)" : "Prototype feedback (mock)"}
           </Badge>
         </div>
       </CardHeader>
@@ -242,7 +299,10 @@ export function CameraPractice({ lesson }: CameraPracticeProps) {
           <Button
             type="button"
             variant="outline"
-            onClick={() => setFeedback("idle")}
+            onClick={() => {
+              setFeedback("idle");
+              setLastResult(null);
+            }}
             className="h-12 rounded-2xl font-black text-primary"
           >
             <RotateCcw className="size-5" />
