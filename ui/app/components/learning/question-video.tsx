@@ -44,7 +44,7 @@ export function QuestionVideo({ title, url }: QuestionVideoProps) {
         controls
         playsInline
         preload="metadata"
-        src={url}
+        src={url.replace("https", "http")}
       />
     );
   }

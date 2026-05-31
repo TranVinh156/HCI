@@ -119,7 +119,7 @@ export function LessonCard({ lesson }: LessonCardProps) {
               controls
               playsInline
               preload="metadata"
-              src={signReference.embedUrl}
+              src={signReference.embedUrl.replace("https", "http")}
             />
           ) : signReference.kind === "youtube" && signReference.embedUrl ? (
             <iframe
