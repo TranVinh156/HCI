@@ -7,6 +7,7 @@ import { QuestionVideo } from "~/components/learning/question-video";
 import { QuizOption } from "~/components/learning/quiz-option";
 import { StudentShell } from "~/components/learning/student-shell";
 import { Button } from "~/components/ui/button";
+import { LoadingSpinner } from "~/components/ui/loading-spinner";
 import { useGetLesson } from "~/hooks/use-get-lessons";
 import { useGetQuizQuestions } from "~/hooks/use-get-quiz-question";
 import { useCompleteLesson, useProgressData } from "~/hooks/use-progress";
@@ -36,7 +37,7 @@ export default function QuizRoute() {
   if (isLessonLoading || isQuestionsLoading || isProgressLoading) {
     return (
       <StudentShell>
-        <p className="font-bold">Loading practice...</p>
+        <LoadingSpinner label="Loading practice" className="py-8" />
       </StudentShell>
     );
   }

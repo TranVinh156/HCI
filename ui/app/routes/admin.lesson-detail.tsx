@@ -20,6 +20,7 @@ import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
+import { LoadingSpinner } from "~/components/ui/loading-spinner";
 import { useGetLesson } from "~/hooks/use-get-lessons";
 import { useGetQuizQuestions } from "~/hooks/use-get-quiz-question";
 import { useGetTopic } from "~/hooks/use-get-topics";
@@ -234,9 +235,10 @@ export default function AdminLessonDetailRoute() {
   if (isLessonLoading) {
     return (
       <AdminShell title="Lesson detail" subtitle="Exercise builder">
-        <p className="rounded-xl bg-white p-4 font-bold text-slate-600">
-          Loading lesson...
-        </p>
+        <LoadingSpinner
+          label="Loading lesson"
+          className="rounded-xl bg-white p-4"
+        />
       </AdminShell>
     );
   }
@@ -366,7 +368,10 @@ export default function AdminLessonDetailRoute() {
             </Button>
           </div>
           {isQuestionsLoading ? (
-            <p className="font-bold text-slate-600">Loading questions...</p>
+            <LoadingSpinner
+              label="Loading questions"
+              className="py-4"
+            />
           ) : (
             <AdminTable
               title="Questions"
@@ -418,7 +423,10 @@ export default function AdminLessonDetailRoute() {
             </Button>
           </div>
           {isExercisesLoading ? (
-            <p className="font-bold text-slate-600">Loading exercises...</p>
+            <LoadingSpinner
+              label="Loading exercises"
+              className="py-4"
+            />
           ) : (
             <ExerciseList exercises={exercises} />
           )}

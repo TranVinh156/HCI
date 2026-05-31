@@ -1,6 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { lessonsApi } from "~/api/lessons";
 import { profilesApi } from "~/api/profiles";
 import { progressApi } from "~/api/progress";
 import type { Progress } from "~/api/types";
@@ -9,14 +8,11 @@ export function useProgressData() {
   return useQuery({
     queryKey: ["progress-data"],
     queryFn: async () => {
-      const [profiles, lessons] = await Promise.all([
-        profilesApi.list(),
-        lessonsApi.list(),
-      ]);
+      const profiles = await profilesApi.list();
       const profile = profiles[0] ?? null;
       const progress = profile ? await progressApi.get(profile.id) : null;
 
-      return { profile, progress, lessons };
+      return { profile, progress };
     },
     retry: false,
     staleTime: 60 * 1000,

@@ -21,6 +21,7 @@ import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
+import { LoadingSpinner } from "~/components/ui/loading-spinner";
 import { useGetTopicLessonsPage } from "~/hooks/use-get-topics-lessons";
 import { useGetTopics } from "~/hooks/use-get-topics";
 import { cn } from "~/lib/utils";
@@ -259,9 +260,18 @@ export default function AdminLessonsRoute() {
             <div className="flex items-center justify-between border-b border-slate-200 p-4">
               <div>
                 <h2 className="text-lg font-black">Topics</h2>
-                <p className="text-sm font-semibold text-slate-500">
-                  {isTopicsLoading ? "Loading..." : `${topics.length} paths`}
-                </p>
+                {isTopicsLoading ? (
+                  <LoadingSpinner
+                    label="Loading topics"
+                    className="mt-1 justify-start"
+                    spinnerClassName="size-4"
+                    showLabel={false}
+                  />
+                ) : (
+                  <p className="text-sm font-semibold text-slate-500">
+                    {topics.length} paths
+                  </p>
+                )}
               </div>
               <BookOpen className="size-5 text-primary" />
             </div>
@@ -325,9 +335,10 @@ export default function AdminLessonsRoute() {
             ) : null}
 
             {isLessonsLoading ? (
-              <p className="rounded-xl bg-white p-4 font-bold text-slate-600">
-                Loading lessons...
-              </p>
+              <LoadingSpinner
+                label="Loading lessons"
+                className="rounded-xl bg-white p-4"
+              />
             ) : isLessonsError ? (
               <p className="rounded-xl border border-rose-200 bg-rose-50 p-4 font-bold text-rose-700">
                 Unable to load lessons.

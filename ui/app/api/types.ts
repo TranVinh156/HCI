@@ -74,6 +74,7 @@ export type Lesson = {
   sort_order: number;
   exercises?: Exercise[];
   questions?: QuizQuestion[];
+  next_lesson_id?: string | null;
 };
 
 export type PaginatedResponse<T> = {

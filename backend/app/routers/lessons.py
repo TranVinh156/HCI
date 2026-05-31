@@ -2,7 +2,7 @@ import uuid
 from math import ceil
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import func, select
+from sqlalchemy import and_, func, or_, select
 from sqlalchemy.orm import selectinload
 
 from app.database import get_db
@@ -81,7 +81,29 @@ async def get_lesson(lesson_id: uuid.UUID, db: AsyncSession = Depends(get_db), _
     lesson = result.scalar_one_or_none()
     if not lesson:
         raise HTTPException(404, "Lesson not found")
-    return lesson
+
+    next_lesson_id = (
+        await db.execute(
+            select(Lesson.id)
+            .where(
+                Lesson.topic_id == lesson.topic_id,
+                Lesson.id != lesson.id,
+                or_(
+                    Lesson.sort_order > lesson.sort_order,
+                    and_(
+                        Lesson.sort_order == lesson.sort_order,
+                        Lesson.id > lesson.id,
+                    ),
+                ),
+            )
+            .order_by(Lesson.sort_order, Lesson.id)
+            .limit(1)
+        )
+    ).scalar_one_or_none()
+
+    out = LessonDetailOut.model_validate(lesson)
+    out.next_lesson_id = next_lesson_id
+    return out
 
 
 @router.put("/{lesson_id}", response_model=LessonOut)

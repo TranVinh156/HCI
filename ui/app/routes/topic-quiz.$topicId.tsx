@@ -7,6 +7,7 @@ import { QuestionVideo } from "~/components/learning/question-video";
 import { QuizOption } from "~/components/learning/quiz-option";
 import { StudentShell } from "~/components/learning/student-shell";
 import { Button } from "~/components/ui/button";
+import { LoadingSpinner } from "~/components/ui/loading-spinner";
 import { useGetTopicQuestions } from "~/hooks/use-get-topic-questions";
 import { useGetTopic } from "~/hooks/use-get-topics";
 import { useCompleteTopicQuiz, useProgressData } from "~/hooks/use-progress";
@@ -37,7 +38,7 @@ export default function TopicQuizRoute() {
   if (isTopicLoading || isQuestionsLoading || isProgressLoading) {
     return (
       <StudentShell>
-        <p className="font-bold">Loading quiz...</p>
+        <LoadingSpinner label="Loading quiz" className="py-8" />
       </StudentShell>
     );
   }
@@ -201,7 +202,11 @@ export default function TopicQuizRoute() {
           className="h-14 w-full rounded-2xl text-lg font-black"
         >
           {completeTopicQuiz.isPending ? (
-            "Saving..."
+            <LoadingSpinner
+              label="Saving quiz attempt"
+              spinnerClassName="size-5 text-primary-foreground"
+              showLabel={false}
+            />
           ) : checked ? (
             <>
               Continue
