@@ -34,6 +34,7 @@ class StudentProfile(Base):
     user: Mapped["User"] = relationship("User", back_populates="profiles")
     progress: Mapped["StudentProgress | None"] = relationship("StudentProgress", back_populates="profile", uselist=False, cascade="all, delete")
     completed_lessons: Mapped[list["CompletedLesson"]] = relationship("CompletedLesson", back_populates="profile", cascade="all, delete")
+    topic_progress: Mapped[list["TopicProgress"]] = relationship("TopicProgress", back_populates="profile", cascade="all, delete")
     attempts: Mapped[list["LessonAttempt"]] = relationship("LessonAttempt", back_populates="profile", cascade="all, delete")
     topic_quiz_attempts: Mapped[list["TopicQuizAttempt"]] = relationship("TopicQuizAttempt", back_populates="profile", cascade="all, delete")
     earned_badges: Mapped[list["EarnedBadge"]] = relationship("EarnedBadge", back_populates="profile", cascade="all, delete")

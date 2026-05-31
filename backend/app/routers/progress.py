@@ -6,8 +6,8 @@ from sqlalchemy import func, select
 from app.database import get_db
 from app.models.user import User, StudentProfile
 from app.models.content import Lesson, Topic
-from app.models.progress import StudentProgress, CompletedLesson, LessonAttempt, TopicQuizAttempt, EarnedBadge
-from app.schemas.progress import CompleteLessonRequest, CompleteTopicQuizRequest, ProgressOut, BadgeOut, LessonAttemptOut, TopicQuizAttemptOut
+from app.models.progress import StudentProgress, CompletedLesson, TopicProgress, LessonAttempt, TopicQuizAttempt, EarnedBadge
+from app.schemas.progress import CompleteLessonRequest, CompleteTopicQuizRequest, ProgressOut, BadgeOut, LessonAttemptOut, TopicProgressOut, TopicQuizAttemptOut
 from app.services.progress import complete_lesson, get_or_create_progress
 from app.dependencies import get_current_user
 
@@ -43,6 +43,15 @@ async def get_progress(profile_id: uuid.UUID, db: AsyncSession = Depends(get_db)
     earned = (await db.execute(
         select(EarnedBadge).where(EarnedBadge.student_profile_id == profile_id)
     )).scalars().all()
+    topic_counts = (await db.execute(
+        select(Topic.id, func.count(Lesson.id))
+        .outerjoin(Lesson, Lesson.topic_id == Topic.id)
+        .group_by(Topic.id)
+    )).all()
+    topic_progress_rows = (await db.execute(
+        select(TopicProgress).where(TopicProgress.student_profile_id == profile_id)
+    )).scalars().all()
+    topic_progress_map = {row.topic_id: row for row in topic_progress_rows}
 
     from app.models.badge import Badge
     badge_ids = [e.badge_id for e in earned]
@@ -58,6 +67,32 @@ async def get_progress(profile_id: uuid.UUID, db: AsyncSession = Depends(get_db)
         total_lessons=total_lessons,
         completion_percentage=completion_percentage,
         completed_lesson_ids=[c.lesson_id for c in completed],
+        topic_progress=[
+            TopicProgressOut(
+                topic_id=topic_id,
+                last_completed_lesson_id=topic_progress_map[topic_id].last_completed_lesson_id
+                if topic_id in topic_progress_map
+                else None,
+                completed_lesson_count=topic_progress_map[topic_id].completed_lesson_count
+                if topic_id in topic_progress_map
+                else 0,
+                total_lessons=lesson_count,
+                completion_percentage=round(
+                    (
+                        (
+                            topic_progress_map[topic_id].completed_lesson_count
+                            if topic_id in topic_progress_map
+                            else 0
+                        )
+                        / lesson_count
+                    )
+                    * 100
+                )
+                if lesson_count
+                else 0,
+            )
+            for topic_id, lesson_count in topic_counts
+        ],
         earned_badges=[BadgeOut.model_validate(b) for b in badges],
         attempts=[
             LessonAttemptOut(

@@ -92,3 +92,36 @@ async def ensure_topic_quiz_attempts_table(conn: AsyncConnection) -> None:
             """
         )
     )
+
+
+async def ensure_topic_progress_table(conn: AsyncConnection) -> None:
+    await conn.execute(
+        text(
+            """
+            CREATE TABLE IF NOT EXISTS topic_progress (
+                id UUID PRIMARY KEY,
+                student_profile_id UUID NOT NULL
+                    REFERENCES student_profiles(id)
+                    ON DELETE CASCADE,
+                topic_id UUID NOT NULL
+                    REFERENCES topics(id)
+                    ON DELETE CASCADE,
+                last_completed_lesson_id UUID
+                    REFERENCES lessons(id)
+                    ON DELETE SET NULL,
+                completed_lesson_count INTEGER NOT NULL DEFAULT 0,
+                updated_at TIMESTAMP WITHOUT TIME ZONE DEFAULT now(),
+                CONSTRAINT uq_topic_progress_profile_topic
+                    UNIQUE (student_profile_id, topic_id)
+            )
+            """
+        )
+    )
+    await conn.execute(
+        text(
+            """
+            CREATE INDEX IF NOT EXISTS ix_topic_progress_profile_topic
+            ON topic_progress(student_profile_id, topic_id)
+            """
+        )
+    )

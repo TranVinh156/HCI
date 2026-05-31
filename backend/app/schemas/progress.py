@@ -46,6 +46,16 @@ class TopicQuizAttemptOut(BaseModel):
     model_config = {"from_attributes": True}
 
 
+class TopicProgressOut(BaseModel):
+    topic_id: uuid.UUID
+    last_completed_lesson_id: uuid.UUID | None
+    completed_lesson_count: int
+    total_lessons: int
+    completion_percentage: int
+
+    model_config = {"from_attributes": True}
+
+
 class ProgressOut(BaseModel):
     student_profile_id: uuid.UUID
     xp: int
@@ -54,5 +64,6 @@ class ProgressOut(BaseModel):
     total_lessons: int
     completion_percentage: int
     completed_lesson_ids: list[uuid.UUID]
+    topic_progress: list[TopicProgressOut]
     earned_badges: list[BadgeOut]
     attempts: list[LessonAttemptOut]

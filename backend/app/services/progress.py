@@ -2,7 +2,7 @@ from datetime import date
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
 
-from app.models.progress import StudentProgress, CompletedLesson, LessonAttempt, EarnedBadge
+from app.models.progress import StudentProgress, CompletedLesson, TopicProgress, LessonAttempt, EarnedBadge
 from app.models.badge import Badge
 from app.models.content import Lesson
 
@@ -15,6 +15,53 @@ async def get_or_create_progress(profile_id, db: AsyncSession) -> StudentProgres
         db.add(prog)
         await db.flush()
     return prog
+
+
+async def sync_topic_progress(profile_id, topic_id, db: AsyncSession) -> TopicProgress:
+    lessons = (await db.execute(
+        select(Lesson.id)
+        .where(Lesson.topic_id == topic_id)
+        .order_by(Lesson.sort_order, Lesson.id)
+    )).scalars().all()
+
+    completed_ids = set()
+    if lessons:
+        completed_ids = {
+            row[0] for row in (await db.execute(
+                select(CompletedLesson.lesson_id)
+                .where(
+                    CompletedLesson.student_profile_id == profile_id,
+                    CompletedLesson.lesson_id.in_(lessons),
+                )
+            )).all()
+        }
+
+    completed_count = 0
+    last_completed_lesson_id = None
+    for lesson_id in lessons:
+        if lesson_id not in completed_ids:
+            break
+        completed_count += 1
+        last_completed_lesson_id = lesson_id
+
+    result = await db.execute(
+        select(TopicProgress).where(
+            TopicProgress.student_profile_id == profile_id,
+            TopicProgress.topic_id == topic_id,
+        )
+    )
+    topic_progress = result.scalar_one_or_none()
+    if not topic_progress:
+        topic_progress = TopicProgress(
+            student_profile_id=profile_id,
+            topic_id=topic_id,
+        )
+        db.add(topic_progress)
+
+    topic_progress.completed_lesson_count = completed_count
+    topic_progress.last_completed_lesson_id = last_completed_lesson_id
+    await db.flush()
+    return topic_progress
 
 
 async def complete_lesson(profile_id, lesson_id, correct: int, total: int, db: AsyncSession) -> list[Badge]:
@@ -35,6 +82,8 @@ async def complete_lesson(profile_id, lesson_id, correct: int, total: int, db: A
     )).scalar_one_or_none()
     if not already:
         db.add(CompletedLesson(student_profile_id=profile_id, lesson_id=lesson_id))
+    await db.flush()
+    await sync_topic_progress(profile_id, lesson.topic_id, db)
 
     # Update progress: XP + stars
     prog = await get_or_create_progress(profile_id, db)
