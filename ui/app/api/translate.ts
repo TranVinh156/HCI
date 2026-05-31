@@ -7,6 +7,11 @@ export const translateApi = {
       method: "POST",
       body: JSON.stringify({ image, kind }),
     }),
+  signAlphabetGemini: (image: string) =>
+    request<TranslateResult>("/api/translate/sign-alphabet-gemini", {
+      method: "POST",
+      body: JSON.stringify({ image, kind: "alphabet" }),
+    }),
   signKeypoints: (frames: number[][][]) =>
     request<TranslateResult>("/api/translate/sign-keypoints", {
       method: "POST",

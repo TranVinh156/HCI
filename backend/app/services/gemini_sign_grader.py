@@ -103,6 +103,72 @@ async def grade_sign_with_gemini(image: str, expected_label: str) -> tuple[bool,
     raise HTTPException(status_code=429, detail="All Gemini API keys are currently rate-limited")
 
 
+async def classify_alphabet_with_gemini(image: str) -> tuple[str, float]:
+    """
+    Return (label, confidence) for a single ASL alphabet image.
+    """
+    prompt = (
+        "You are an ASL alphabet recognition assistant. "
+        "Identify the single ASL alphabet sign in the image. "
+        "Respond with strict JSON only: "
+        '{"label": string, "confidence": number}. '
+        "label must be one of A-Z, SPACE, DELETE, or NOTHING. "
+        "confidence must be between 0 and 1."
+    )
+
+    for _ in range(max(1, len(_key_pool.keys))):
+        api_key = await _key_pool.reserve_key()
+        url = (
+            "https://generativelanguage.googleapis.com/v1beta/models/"
+            f"{settings.gemini_model}:generateContent?key={api_key}"
+        )
+
+        payload = {
+            "contents": [
+                {
+                    "parts": [
+                        {"text": prompt},
+                        {"inline_data": {"mime_type": "image/jpeg", "data": _extract_base64(image)}},
+                    ]
+                }
+            ],
+            "generationConfig": {"temperature": 0.1, "responseMimeType": "application/json"},
+        }
+
+        try:
+            async with httpx.AsyncClient(timeout=20.0) as client:
+                response = await client.post(url, json=payload)
+        except httpx.HTTPError as exc:
+            raise HTTPException(status_code=502, detail=f"Gemini request failed: {exc}") from exc
+
+        if response.status_code == 429:
+            continue
+        if response.status_code >= 400:
+            raise HTTPException(status_code=502, detail=f"Gemini error: {response.text}")
+
+        raw = _extract_text_response(response.json())
+        try:
+            data = json.loads(raw)
+        except json.JSONDecodeError as exc:
+            raise HTTPException(status_code=502, detail=f"Gemini returned invalid JSON: {raw}") from exc
+
+        label = str(data.get("label", "")).strip().upper()
+        if label == "DEL":
+            label = "DELETE"
+        if len(label) == 1 and "A" <= label <= "Z":
+            normalized_label = label
+        elif label in {"SPACE", "DELETE", "NOTHING"}:
+            normalized_label = label
+        else:
+            raise HTTPException(status_code=502, detail=f"Gemini returned invalid label: {label}")
+
+        confidence = float(data.get("confidence", 0.0))
+        confidence = max(0.0, min(1.0, confidence))
+        return normalized_label, confidence
+
+    raise HTTPException(status_code=429, detail="All Gemini API keys are currently rate-limited")
+
+
 def _extract_base64(image: str) -> str:
     if "," in image and image.startswith("data:"):
         return image.split(",", 1)[1]

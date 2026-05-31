@@ -229,7 +229,7 @@ export function CameraPractice({ lesson }: CameraPracticeProps) {
               autoPlay
               muted
               playsInline
-              className="size-full scale-x-[-1] object-cover"
+              className="size-full object-cover"
             />
             {!isCameraOn ? (
               <div className="absolute inset-0 grid place-items-center p-5 text-center">

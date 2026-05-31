@@ -9,7 +9,10 @@ from app.schemas.translate import (
     TranslateResponse,
 )
 from app.services.alphabet_service import recognize_image
-from app.services.gemini_sign_grader import grade_sign_with_gemini
+from app.services.gemini_sign_grader import (
+    classify_alphabet_with_gemini,
+    grade_sign_with_gemini,
+)
 from app.services.sign_service import NUM_KEYPOINTS, KP_DIMS, recognize_keypoints
 
 router = APIRouter(prefix="/api/translate", tags=["translate"])
@@ -45,6 +48,23 @@ async def sign_keypoints(body: KeypointTranslateRequest, _=Depends(get_current_u
                 detail=f"Each frame must be {NUM_KEYPOINTS} keypoints of {KP_DIMS} dims.",
             )
     return recognize_keypoints(body.frames)
+
+
+@router.post("/sign-alphabet-gemini", response_model=TranslateResponse)
+async def sign_alphabet_gemini(body: ImageTranslateRequest, _=Depends(get_current_user)):
+    """Fallback ASL alphabet recognition using Gemini."""
+    try:
+        label, confidence = await classify_alphabet_with_gemini(body.image)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc))
+
+    return {
+        "kind": "alphabet",
+        "label": label,
+        "confidence": confidence,
+        "top_k": [{"label": label, "confidence": confidence}],
+        "model_loaded": True,
+    }
 
 
 @router.post("/sign-grade", response_model=GeminiSignGradeResponse)

@@ -20,6 +20,12 @@ export function useSignKeypoints() {
   });
 }
 
+export function useGeminiAlphabetSign() {
+  return useMutation({
+    mutationFn: (image: string) => translateApi.signAlphabetGemini(image),
+  });
+}
+
 export function useGeminiSignGrade() {
   return useMutation({
     mutationFn: ({

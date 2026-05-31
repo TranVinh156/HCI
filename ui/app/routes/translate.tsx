@@ -23,7 +23,11 @@ import {
   CardTitle,
 } from "~/components/ui/card";
 import { LoadingSpinner } from "~/components/ui/loading-spinner";
-import { useSignKeypoints, useSignToText } from "~/hooks/use-translate";
+import {
+  useGeminiAlphabetSign,
+  useSignKeypoints,
+  useSignToText,
+} from "~/hooks/use-translate";
 import {
   captureClip,
   ensureLandmarkers,
@@ -59,6 +63,8 @@ const sampleSigns = [
   { sign: "no", text: "No" },
 ];
 
+const ALPHABET_LOCAL_CONFIDENCE_THRESHOLD = 0.8;
+
 function translateTextToHands(input: string) {
   return input
     .trim()
@@ -89,6 +95,7 @@ export default function TranslateRoute() {
   const [isRecording, setIsRecording] = useState(false);
   const [clipProgress, setClipProgress] = useState(0);
   const signToTextMutation = useSignToText();
+  const geminiAlphabetMutation = useGeminiAlphabetSign();
   const signKeypointsMutation = useSignKeypoints();
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -157,10 +164,21 @@ export default function TranslateRoute() {
       });
       setStubWarning(!result.model_loaded);
 
-      if (result.confidence >= 0.5 || !result.model_loaded) {
+      const finalResult =
+        kind === "alphabet" &&
+        (!result.model_loaded ||
+          result.confidence < ALPHABET_LOCAL_CONFIDENCE_THRESHOLD)
+          ? await geminiAlphabetMutation.mutateAsync(dataUrl)
+          : result;
+
+      if (finalResult.confidence >= 0.5 || !finalResult.model_loaded) {
         setPredictions((prev) => [
           ...prev,
-          { label: result.label, confidence: result.confidence, kind },
+          {
+            label: finalResult.label,
+            confidence: finalResult.confidence,
+            kind,
+          },
         ]);
       }
     } catch (error) {
