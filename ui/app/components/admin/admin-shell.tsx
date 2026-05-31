@@ -1,5 +1,4 @@
 import {
-  BarChart3,
   ClipboardCheck,
   GraduationCap,
   LayoutDashboard,
@@ -18,7 +17,6 @@ const navItems = [
   { label: "Overview", to: "/admin", icon: LayoutDashboard, end: true },
   { label: "Lessons", to: "/admin/lessons", icon: GraduationCap },
   { label: "Quizzes", to: "/admin/quizzes", icon: ClipboardCheck },
-  { label: "Reports", to: "/admin/reports", icon: BarChart3 },
 ];
 
 export function AdminShell({ children }: AdminShellProps) {

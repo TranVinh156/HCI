@@ -27,12 +27,6 @@ const adminShortcuts = [
     to: "/admin/quizzes",
     icon: ClipboardCheck,
   },
-  {
-    title: "Reports",
-    description: "Inspect completion, accuracy, and weak lessons.",
-    to: "/admin/reports",
-    icon: BarChart3,
-  }
 ];
 
 export default function AdminRoute() {
