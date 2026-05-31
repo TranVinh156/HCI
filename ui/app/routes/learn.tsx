@@ -1,29 +1,18 @@
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router";
-import { useMemo } from "react";
 import type { Topic } from "~/api/types";
 
-import { LessonVisual } from "~/components/learning/lesson-visual";
 import { StudentShell } from "~/components/learning/student-shell";
 import { Button } from "~/components/ui/button";
 import { BlockyCard, CardContent } from "~/components/ui/card";
 import { LoadingSpinner } from "~/components/ui/loading-spinner";
-import { useGetLessons } from "~/hooks/use-get-lessons";
 import { useGetTopics } from "~/hooks/use-get-topics";
 import { getTopicProgress, useProgressData } from "~/hooks/use-progress";
 
 export default function LearnRoute() {
   const { data, isLoading, isError } = useGetTopics();
-  const { data: lessons = [] } = useGetLessons();
   const { data: progressData, isLoading: isProgressLoading } = useProgressData();
   const topicList: Topic[] = data ?? [];
-  const lessonsByTopic = useMemo(() => {
-    return lessons.reduce<Record<string, typeof lessons>>((groups, lesson) => {
-      groups[lesson.topic_id] = groups[lesson.topic_id] ?? [];
-      groups[lesson.topic_id].push(lesson);
-      return groups;
-    }, {});
-  }, [lessons]);
 
   return (
     <StudentShell>
@@ -48,26 +37,10 @@ export default function LearnRoute() {
             const percentage = totalLessons
               ? Math.round((completedLessons / totalLessons) * 100)
               : 0;
-            const previewLessons = lessonsByTopic[topic.id]?.slice(0, 3) ?? [];
 
             return (
               <BlockyCard key={topic.id} className="h-full">
                 <CardContent className="flex h-full flex-col pb-2">
-                  {previewLessons.length ? (
-                    <div className="mb-4 flex gap-2">
-                      {previewLessons.map((lesson) => (
-                        <div
-                          key={lesson.id}
-                          className="grid size-14 place-items-center overflow-hidden rounded-2xl bg-primary/10"
-                        >
-                          <LessonVisual
-                            visual={lesson.visual}
-                            imageClassName="p-1"
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  ) : null}
                   <div className="mb-5 rounded-[1.5rem]">
                     <h2 className="text-2xl font-black">{topic.title}</h2>
                   </div>

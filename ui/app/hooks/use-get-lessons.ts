@@ -14,12 +14,16 @@ export function useGetLessons(
     })
 }
 
-export function useGetLessonsPage(params?: LessonListParams) {
+export function useGetLessonsPage(
+    params?: LessonListParams,
+    options?: { enabled?: boolean }
+) {
     return useQuery({
         queryKey: ["lessons", "page", params ?? {}],
         queryFn: () => lessonsApi.listPage(params),
         staleTime: 3 * 60 * 1000,
-        retry: false
+        retry: false,
+        enabled: options?.enabled ?? true,
     })
 }
 

@@ -24,6 +24,7 @@ class QuizQuestionOut(BaseModel):
     id: uuid.UUID
     lesson_id: uuid.UUID
     topic_id: uuid.UUID
+    lesson_title: str | None = None
     prompt: str
     type: str
     options: list[str]

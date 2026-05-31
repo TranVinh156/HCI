@@ -3,6 +3,7 @@ import type { Exercise, Lesson, PaginatedResponse, QuizQuestion } from "./types"
 
 export type LessonListParams = {
   topicId?: string;
+  type?: string;
   page?: number;
   pageSize?: number;
 };
@@ -18,6 +19,7 @@ function lessonListPath(input?: string | LessonListParams) {
   const query = new URLSearchParams();
 
   if (params.topicId) query.set("topic_id", params.topicId);
+  if (params.type) query.set("type", params.type);
   if (params.page) query.set("page", String(params.page));
   if (params.pageSize) query.set("page_size", String(params.pageSize));
 
