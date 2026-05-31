@@ -4,6 +4,7 @@ import { Link, useParams, useSearchParams } from "react-router";
 import { RewardSummary } from "~/components/learning/reward-summary";
 import { StudentShell } from "~/components/learning/student-shell";
 import { Button } from "~/components/ui/button";
+import { LoadingSpinner } from "~/components/ui/loading-spinner";
 import { useGetLesson } from "~/hooks/use-get-lessons";
 import { useProgressData } from "~/hooks/use-progress";
 
@@ -23,7 +24,7 @@ export default function ResultRoute() {
   if (isLessonLoading || isProgressLoading) {
     return (
       <StudentShell>
-        <p className="font-bold">Loading result...</p>
+        <LoadingSpinner label="Loading result" className="py-8" />
       </StudentShell>
     );
   }

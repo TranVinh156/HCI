@@ -22,6 +22,7 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
+import { LoadingSpinner } from "~/components/ui/loading-spinner";
 import { useSignToText } from "~/hooks/use-translate";
 import {
   fetchPoseData,
@@ -528,9 +529,12 @@ export default function TranslateRoute() {
               ) : (
                 <>
                   {isNetworkLoading ? (
-                    <p className="text-xs font-semibold text-slate-600">
-                      Fetching Pose and Video assets from Cloud...
-                    </p>
+                    <LoadingSpinner
+                      label="Fetching pose and video assets"
+                      className="justify-start py-1"
+                      spinnerClassName="size-4"
+                      showLabel={false}
+                    />
                   ) : null}
                   {networkError ? (
                     <p className="text-xs font-semibold text-rose-500">

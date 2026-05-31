@@ -6,6 +6,7 @@ import type { Topic } from "~/api/types";
 import { StudentShell } from "~/components/learning/student-shell";
 import { Button } from "~/components/ui/button";
 import { BlockyCard, CardContent } from "~/components/ui/card";
+import { LoadingSpinner } from "~/components/ui/loading-spinner";
 import { useGetTopics } from "~/hooks/use-get-topics";
 
 const tabs = [
@@ -57,9 +58,10 @@ export default function LearnRoute() {
         {activeTab === "handsign" ? (
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {isLoading ? (
-              <div className="col-span-full text-sm font-semibold text-slate-600">
-                Loading topics...
-              </div>
+              <LoadingSpinner
+                label="Loading topics"
+                className="col-span-full py-8"
+              />
             ) : isError ? (
               <div className="col-span-full text-sm font-semibold text-rose-600">
                 Unable to load topics. Please try again.

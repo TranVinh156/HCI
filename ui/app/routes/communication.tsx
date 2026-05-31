@@ -4,6 +4,7 @@ import { Link } from "react-router";
 import { StudentShell } from "~/components/learning/student-shell";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
+import { LoadingSpinner } from "~/components/ui/loading-spinner";
 import {
   Card,
   CardContent,
@@ -23,7 +24,10 @@ export default function CommunicationRoute() {
     <StudentShell>
       <div className="grid gap-4 md:grid-cols-3">
         {isLoading ? (
-          <p className="font-bold">Loading communication lessons...</p>
+          <LoadingSpinner
+            label="Loading communication lessons"
+            className="py-8 md:col-span-3"
+          />
         ) : isError ? (
           <p className="font-bold">Unable to load communication lessons.</p>
         ) : communicationLessons.map((lesson) => (

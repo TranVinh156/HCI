@@ -4,6 +4,7 @@ import { Link, useParams } from "react-router";
 import { StudentShell } from "~/components/learning/student-shell";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
+import { LoadingSpinner } from "~/components/ui/loading-spinner";
 import {
   Card,
   CardContent,
@@ -58,7 +59,7 @@ export default function TopicQuizHistoryRoute() {
   ) {
     return (
       <StudentShell>
-        <p className="font-bold">Loading quiz history...</p>
+        <LoadingSpinner label="Loading quiz history" className="py-8" />
       </StudentShell>
     );
   }

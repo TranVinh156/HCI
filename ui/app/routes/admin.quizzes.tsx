@@ -5,6 +5,7 @@ import { AdminTable } from "~/components/admin/admin-table";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
+import { LoadingSpinner } from "~/components/ui/loading-spinner";
 import { useQuizBank } from "~/hooks/use-quiz-bank";
 
 export default function AdminQuizzesRoute() {
@@ -53,9 +54,10 @@ export default function AdminQuizzesRoute() {
         </Card>
 
         {isLoading ? (
-          <p className="rounded-xl bg-white p-4 font-bold text-slate-600">
-            Loading question bank...
-          </p>
+          <LoadingSpinner
+            label="Loading question bank"
+            className="rounded-xl bg-white p-4"
+          />
         ) : isError ? (
           <p className="rounded-xl border border-rose-200 bg-rose-50 p-4 font-bold text-rose-700">
             Unable to load question bank.

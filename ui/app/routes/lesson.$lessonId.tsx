@@ -5,6 +5,7 @@ import { CameraPractice } from "~/components/learning/camera-practice";
 import { LessonCard } from "~/components/learning/lesson-card";
 import { StudentShell } from "~/components/learning/student-shell";
 import { Button } from "~/components/ui/button";
+import { LoadingSpinner } from "~/components/ui/loading-spinner";
 import { useGetLesson } from "~/hooks/use-get-lessons";
 import { useGetTopic } from "~/hooks/use-get-topics";
 
@@ -20,7 +21,7 @@ export default function LessonRoute() {
   if (isLessonLoading) {
     return (
       <StudentShell>
-        <p className="font-bold">Loading lesson...</p>
+        <LoadingSpinner label="Loading lesson" className="py-8" />
       </StudentShell>
     );
   }

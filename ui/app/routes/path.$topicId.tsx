@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef } from "react";
 import { PathNode } from "~/components/learning/path-node";
 import { StudentShell } from "~/components/learning/student-shell";
 import { Button } from "~/components/ui/button";
+import { LoadingSpinner } from "~/components/ui/loading-spinner";
 import { getLessonStatus, useProgressData } from "~/hooks/use-progress";
 import { useGetTopic } from "~/hooks/use-get-topics";
 import { useInfiniteTopicLessons } from "~/hooks/use-get-topics-lessons";
@@ -115,7 +116,7 @@ export default function PathRoute() {
   if (isTopicLoading || isLessonsLoading || isProgressLoading) {
     return (
       <StudentShell>
-        <p className="font-bold">Loading learning path...</p>
+        <LoadingSpinner label="Loading learning path" className="py-8" />
       </StudentShell>
     );
   }

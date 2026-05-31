@@ -5,6 +5,7 @@ import { Link, NavLink, useLocation, useNavigate } from "react-router";
 import { getToken } from "~/api/request";
 import type { UserRole } from "~/api/types";
 import { Button } from "~/components/ui/button";
+import { LoadingSpinner } from "~/components/ui/loading-spinner";
 import { useCurrentUser, useLogout } from "~/hooks/use-auth";
 import { cn } from "~/lib/utils";
 
@@ -80,12 +81,7 @@ export function AppSidebarLayout({
   if (isCheckingAuth) {
     return (
       <div className="grid min-h-screen place-items-center bg-slate-50 px-4 text-center text-slate-900">
-        <div>
-          <div className="mx-auto mb-4 size-10 animate-spin rounded-full border-4 border-primary/20 border-t-primary" />
-          <p className="text-sm font-black uppercase tracking-normal text-slate-500">
-            Checking account
-          </p>
-        </div>
+        <LoadingSpinner label="Checking account" />
       </div>
     );
   }

@@ -29,6 +29,7 @@ import {
   CardTitle,
 } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
+import { LoadingSpinner } from "~/components/ui/loading-spinner";
 import { cn } from "~/lib/utils";
 import { useInfiniteLessons } from "~/hooks/use-get-lessons";
 import { useGetQuestions } from "~/hooks/use-get-topic-questions";
@@ -547,7 +548,10 @@ function QuizTopicGrid({
   return (
     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
       {isLoading ? (
-        <p className="font-bold">Loading quizzes...</p>
+        <LoadingSpinner
+          label="Loading quizzes"
+          className="py-8 md:col-span-2 xl:col-span-3"
+        />
       ) : isError ? (
         <p className="font-bold">Unable to load quizzes.</p>
       ) : quizTopics.length ? (
@@ -692,7 +696,7 @@ function FlashcardGrid({
   }, []);
 
   if (isLoading) {
-    return <p className="font-bold">Loading flash cards...</p>;
+    return <LoadingSpinner label="Loading flash cards" className="py-8" />;
   }
 
   if (isError) {

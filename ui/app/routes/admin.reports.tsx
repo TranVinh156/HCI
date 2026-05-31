@@ -4,6 +4,7 @@ import { AdminShell } from "~/components/admin/admin-shell";
 import { AdminTable } from "~/components/admin/admin-table";
 import { StatCard } from "~/components/admin/stat-card";
 import { Badge } from "~/components/ui/badge";
+import { LoadingSpinner } from "~/components/ui/loading-spinner";
 import {
   useLessonReports,
   useOverviewReport,
@@ -53,9 +54,10 @@ export default function AdminReportsRoute() {
         </div>
 
         {isLoading ? (
-          <p className="rounded-xl bg-white p-4 font-bold text-slate-600">
-            Loading reports...
-          </p>
+          <LoadingSpinner
+            label="Loading reports"
+            className="rounded-xl bg-white p-4"
+          />
         ) : isError ? (
           <p className="rounded-xl border border-rose-200 bg-rose-50 p-4 font-bold text-rose-700">
             Unable to load reports.

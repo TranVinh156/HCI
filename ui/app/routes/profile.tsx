@@ -4,6 +4,7 @@ import { OceanProgress } from "~/components/learning/ocean-progress";
 import { StudentShell } from "~/components/learning/student-shell";
 import { Avatar, AvatarFallback } from "~/components/ui/avatar";
 import { Badge } from "~/components/ui/badge";
+import { LoadingSpinner } from "~/components/ui/loading-spinner";
 import { useProfileData } from "~/hooks/use-profile-data";
 
 export default function ProfileRoute() {
@@ -36,9 +37,10 @@ export default function ProfileRoute() {
   return (
     <StudentShell>
       {isLoading ? (
-        <p className="rounded-[1.5rem] bg-white p-5 font-bold text-slate-600 ring-1 ring-slate-200">
-          Loading profile...
-        </p>
+        <LoadingSpinner
+          label="Loading profile"
+          className="rounded-[1.5rem] bg-white p-5 ring-1 ring-slate-200"
+        />
       ) : error ? (
         <p className="rounded-[1.5rem] border border-rose-200 bg-rose-50 p-5 font-bold text-rose-700">
           {error instanceof Error ? error.message : "Unable to load profile"}
