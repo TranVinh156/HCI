@@ -12,12 +12,9 @@ export default function ProfileRoute() {
   const user = data?.user ?? null;
   const profile = data?.profile ?? null;
   const progress = data?.progress ?? null;
-  const lessons = data?.lessons ?? [];
 
   const completedLessonIds = progress?.completed_lesson_ids ?? [];
-  const completion = Math.round(
-    (completedLessonIds.length / Math.max(lessons.length, 1)) * 100
-  );
+  const completion = progress?.completion_percentage ?? 0;
   const earnedBadges = progress?.earned_badges ?? [];
   const attempts = progress?.attempts ?? [];
   const totalCorrect = attempts.reduce(
@@ -30,7 +27,6 @@ export default function ProfileRoute() {
   );
   const accuracy =
     totalQuestions > 0 ? Math.round((totalCorrect / totalQuestions) * 100) : 0;
-  const lessonTitleById = new Map(lessons.map((lesson) => [lesson.id, lesson.title]));
   const displayName = profile?.name ?? user?.username ?? "Learner";
   const avatarLabel = getAvatarLabel(profile?.avatar, displayName);
 
@@ -107,53 +103,6 @@ export default function ProfileRoute() {
                   No badges yet. Complete your first lesson to earn one.
                 </p>
               ) : null}
-            </div>
-          </div>
-          <div className="rounded-[1.5rem] bg-white p-5 ring-1 ring-slate-200">
-            <div className="mb-4 flex items-center gap-2">
-              <Clock className="size-5 text-primary" />
-              <h2 className="text-xl font-black">Learning history</h2>
-            </div>
-            <div className="space-y-3">
-              {attempts.length > 0 ? (
-                attempts
-                  .slice()
-                  .reverse()
-                  .map((attempt) => {
-                    const attemptAccuracy = Math.round(
-                      (attempt.correct / attempt.total) * 100
-                    );
-
-                    return (
-                      <div
-                        key={`${attempt.lesson_id}-${attempt.completed_at}`}
-                        className="flex flex-col gap-2 rounded-2xl p-4 sm:flex-row sm:items-center sm:justify-between"
-                      >
-                        <div>
-                          <p className="font-black text-slate-900">
-                            {lessonTitleById.get(attempt.lesson_id) ?? "Unknown lesson"}
-                          </p>
-                          <p className="text-sm font-semibold text-slate-500">
-                            {attempt.correct}/{attempt.total} correct
-                          </p>
-                        </div>
-                        <Badge
-                          className={
-                            attemptAccuracy >= 80
-                              ? "bg-emerald-100 text-emerald-800"
-                              : "bg-amber-100 text-amber-800"
-                          }
-                        >
-                          {attemptAccuracy}%
-                        </Badge>
-                      </div>
-                    );
-                  })
-              ) : (
-                <p className="font-semibold text-slate-500">
-                  No quiz attempts yet. Finish a practice quiz to see history.
-                </p>
-              )}
             </div>
           </div>
         </section>

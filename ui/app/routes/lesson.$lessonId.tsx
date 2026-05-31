@@ -1,6 +1,6 @@
 import { ArrowLeft, ArrowRight, Check } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router";
+import { Link, useNavigate, useParams } from "react-router";
 
 import { CameraPractice } from "~/components/learning/camera-practice";
 import { LessonCard } from "~/components/learning/lesson-card";
@@ -9,9 +9,15 @@ import { Button } from "~/components/ui/button";
 import { LoadingSpinner } from "~/components/ui/loading-spinner";
 import { useGetLesson } from "~/hooks/use-get-lessons";
 import { useGetTopic } from "~/hooks/use-get-topics";
+import {
+  getLessonStatusFromNeighbors,
+  useCompleteLesson,
+  useProgressData,
+} from "~/hooks/use-progress";
 
 export default function LessonRoute() {
   const params = useParams();
+  const navigate = useNavigate();
   const [step, setStep] = useState<"video" | "practice">("video");
   const {
     data: lesson,
@@ -19,12 +25,14 @@ export default function LessonRoute() {
     isError: isLessonError,
   } = useGetLesson(params.lessonId);
   const { data: topic } = useGetTopic(lesson?.topic_id);
+  const { data: progressData, isLoading: isProgressLoading } = useProgressData();
+  const completeLessonMutation = useCompleteLesson();
 
   useEffect(() => {
     setStep("video");
   }, [lesson?.id]);
 
-  if (isLessonLoading) {
+  if (isLessonLoading || isProgressLoading) {
     return (
       <StudentShell>
         <LoadingSpinner label="Loading lesson" className="py-8" />
@@ -36,6 +44,48 @@ export default function LessonRoute() {
     return (
       <StudentShell>
         <p className="font-bold">Lesson not found.</p>
+      </StudentShell>
+    );
+  }
+
+  const currentLesson = lesson;
+  const lessonStatus = getLessonStatusFromNeighbors(
+    currentLesson,
+    progressData?.progress
+  );
+
+  function completeAndGoNext() {
+    if (progressData?.profile) {
+      completeLessonMutation.mutate({
+        profileId: progressData.profile.id,
+        lessonId: currentLesson.id,
+        correct: 0,
+        total: 0,
+      });
+    }
+
+    navigate(
+      currentLesson.next_lesson_id
+        ? `/lesson/${currentLesson.next_lesson_id}`
+        : `/path/${currentLesson.topic_id}`
+    );
+  }
+
+  if (lessonStatus === "locked") {
+    return (
+      <StudentShell>
+        <div className="mx-auto max-w-xl rounded-[2rem] bg-white p-6 text-center">
+          <h1 className="text-3xl font-black">Lesson is locked</h1>
+          <p className="mt-2 font-semibold text-slate-600">
+            Complete the previous lesson in this topic to unlock it.
+          </p>
+          <Button asChild className="mt-5 h-12 rounded-2xl font-black">
+            <Link to={`/path/${lesson.topic_id}`}>
+              <ArrowLeft className="size-5" />
+              Back to learning path
+            </Link>
+          </Button>
+        </div>
       </StudentShell>
     );
   }
@@ -82,25 +132,15 @@ export default function LessonRoute() {
                 <ArrowLeft className="size-5" />
                 Back
               </Button>
-              {lesson.next_lesson_id ? (
-                <Button
-                  asChild
-                  className="h-14 rounded-2xl text-lg font-black"
-                >
-                  <Link to={`/lesson/${lesson.next_lesson_id}`}>
-                    Done
-                    <Check className="size-5" />
-                  </Link>
-                </Button>
-              ) : (
-                <Button
-                  disabled
-                  className="h-14 rounded-2xl text-lg font-black"
-                >
-                  No next lesson
-                  <ArrowRight className="size-5" />
-                </Button>
-              )}
+              <Button
+                type="button"
+                disabled={completeLessonMutation.isPending}
+                onClick={completeAndGoNext}
+                className="h-14 rounded-2xl text-lg font-black"
+              >
+                Done
+                <Check className="size-5" />
+              </Button>
             </div>
           </>
         )}

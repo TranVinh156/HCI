@@ -60,6 +60,14 @@ export type TopicQuizAttempt = {
   completed_at: string;
 };
 
+export type TopicProgress = {
+  topic_id: string;
+  last_completed_lesson_id: string | null;
+  completed_lesson_count: number;
+  total_lessons: number;
+  completion_percentage: number;
+};
+
 export type Lesson = {
   id: string;
   topic_id: string;
@@ -74,6 +82,7 @@ export type Lesson = {
   sort_order: number;
   exercises?: Exercise[];
   questions?: QuizQuestion[];
+  previous_lesson_id?: string | null;
   next_lesson_id?: string | null;
 };
 
@@ -98,10 +107,14 @@ export type Progress = {
   xp: number;
   stars: number;
   streak: number;
+  total_lessons: number;
+  completion_percentage: number;
   completed_lesson_ids: string[];
+  topic_progress: TopicProgress[];
   earned_badges: Badge[];
   attempts: {
     lesson_id: string;
+    lesson_title: string | null;
     correct: number;
     total: number;
     completed_at: string;

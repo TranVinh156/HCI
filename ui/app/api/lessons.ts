@@ -7,7 +7,7 @@ export type LessonListParams = {
   pageSize?: number;
 };
 
-const DEFAULT_LIST_PAGE_SIZE = 10;
+const DEFAULT_LIST_PAGE_SIZE = 100;
 
 function normalizeListParams(input?: string | LessonListParams): LessonListParams {
   return typeof input === "string" ? { topicId: input } : input ?? {};
@@ -42,18 +42,16 @@ export const lessonsApi = {
 
     if (firstPage.pages <= firstPage.page) return firstPage.items;
 
-    const remainingPages = await Promise.all(
-      Array.from(
-        { length: firstPage.pages - firstPage.page },
-        (_, index) => firstPage.page + index + 1
-      ).map((page) =>
-        lessonsApi.listPage({
+    const remainingPages: PaginatedResponse<Lesson>[] = [];
+    for (let page = firstPage.page + 1; page <= firstPage.pages; page += 1) {
+      remainingPages.push(
+        await lessonsApi.listPage({
           ...normalized,
           page,
           pageSize,
         })
-      )
-    );
+      );
+    }
 
     return [
       ...firstPage.items,

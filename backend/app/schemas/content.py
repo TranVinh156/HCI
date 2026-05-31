@@ -101,6 +101,7 @@ class LessonDetailOut(LessonOut):
         default_factory=list,
         validation_alias="quiz_questions",
     )
+    previous_lesson_id: uuid.UUID | None = None
     next_lesson_id: uuid.UUID | None = None
 
 

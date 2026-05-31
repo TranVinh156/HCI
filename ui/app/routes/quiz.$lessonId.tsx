@@ -1,6 +1,6 @@
 import { ArrowRight, CheckCircle2 } from "lucide-react";
 import { useState } from "react";
-import { useNavigate, useParams } from "react-router";
+import { Link, useNavigate, useParams } from "react-router";
 
 import { OceanProgress } from "~/components/learning/ocean-progress";
 import { QuestionVideo } from "~/components/learning/question-video";
@@ -10,7 +10,11 @@ import { Button } from "~/components/ui/button";
 import { LoadingSpinner } from "~/components/ui/loading-spinner";
 import { useGetLesson } from "~/hooks/use-get-lessons";
 import { useGetQuizQuestions } from "~/hooks/use-get-quiz-question";
-import { useCompleteLesson, useProgressData } from "~/hooks/use-progress";
+import {
+  getLessonStatusFromNeighbors,
+  useCompleteLesson,
+  useProgressData,
+} from "~/hooks/use-progress";
 import { playFeedbackSound } from "~/lib/sound-effects";
 
 export default function QuizRoute() {
@@ -35,7 +39,11 @@ export default function QuizRoute() {
   const [checked, setChecked] = useState(false);
   const [correct, setCorrect] = useState(0);
 
-  if (isLessonLoading || isQuestionsLoading || isProgressLoading) {
+  if (
+    isLessonLoading ||
+    isQuestionsLoading ||
+    isProgressLoading
+  ) {
     return (
       <StudentShell>
         <LoadingSpinner label="Loading practice" className="py-8" />
@@ -68,6 +76,10 @@ export default function QuizRoute() {
   }
 
   const currentLessonId = lessonId;
+  const lessonStatus = getLessonStatusFromNeighbors(
+    lesson,
+    progressData?.progress
+  );
   const question = questions[questionIndex];
   const isCorrect = selected === question.answer;
   const progressValue = Math.round((questionIndex / questions.length) * 100);
@@ -101,6 +113,22 @@ export default function QuizRoute() {
     setChecked(false);
   }
 
+  if (lessonStatus === "locked") {
+    return (
+      <StudentShell>
+        <div className="mx-auto max-w-xl rounded-[2rem] bg-white p-6 text-center">
+          <h1 className="text-3xl font-black">Practice is locked</h1>
+          <p className="mt-2 font-semibold text-slate-600">
+            Complete the previous lesson in this topic to unlock it.
+          </p>
+          <Button asChild className="mt-5 h-12 rounded-2xl font-black">
+            <Link to={`/path/${lesson.topic_id}`}>Back to learning path</Link>
+          </Button>
+        </div>
+      </StudentShell>
+    );
+  }
+
   return (
     <StudentShell>
       <div className="mx-auto max-w-3xl space-y-5">
@@ -108,7 +136,7 @@ export default function QuizRoute() {
         <section className="rounded-[2rem] bg-white p-5">
           <QuestionVideo
             title={`Answer video for ${question.answer}`}
-            url={question.video_url.replace("https", "http")}
+            url={question.video_url?.replace("https", "http") ?? ""}
           />
           <div className="mb-5 rounded-[1.5rem] p-5 text-center">
             <p className="text-sm font-black uppercase text-primary">
