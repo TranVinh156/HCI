@@ -105,53 +105,6 @@ export default function ProfileRoute() {
               ) : null}
             </div>
           </div>
-          <div className="rounded-[1.5rem] bg-white p-5 ring-1 ring-slate-200">
-            <div className="mb-4 flex items-center gap-2">
-              <Clock className="size-5 text-primary" />
-              <h2 className="text-xl font-black">Learning history</h2>
-            </div>
-            <div className="space-y-3">
-              {attempts.length > 0 ? (
-                attempts
-                  .slice()
-                  .reverse()
-                  .map((attempt) => {
-                    const attemptAccuracy = Math.round(
-                      (attempt.correct / attempt.total) * 100
-                    );
-
-                    return (
-                      <div
-                        key={`${attempt.lesson_id}-${attempt.completed_at}`}
-                        className="flex flex-col gap-2 rounded-2xl p-4 sm:flex-row sm:items-center sm:justify-between"
-                      >
-                        <div>
-                          <p className="font-black text-slate-900">
-                            {attempt.lesson_title ?? "Unknown lesson"}
-                          </p>
-                          <p className="text-sm font-semibold text-slate-500">
-                            {attempt.correct}/{attempt.total} correct
-                          </p>
-                        </div>
-                        <Badge
-                          className={
-                            attemptAccuracy >= 80
-                              ? "bg-emerald-100 text-emerald-800"
-                              : "bg-amber-100 text-amber-800"
-                          }
-                        >
-                          {attemptAccuracy}%
-                        </Badge>
-                      </div>
-                    );
-                  })
-              ) : (
-                <p className="font-semibold text-slate-500">
-                  No quiz attempts yet. Finish a practice quiz to see history.
-                </p>
-              )}
-            </div>
-          </div>
         </section>
       </div>
       )}
