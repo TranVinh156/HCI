@@ -31,7 +31,7 @@ import {
 } from "~/components/ui/card";
 import { LoadingSpinner } from "~/components/ui/loading-spinner";
 import { cn } from "~/lib/utils";
-import { useInfiniteLessons } from "~/hooks/use-get-lessons";
+import { useGetLessons } from "~/hooks/use-get-lessons";
 import { useGetQuestions } from "~/hooks/use-get-topic-questions";
 import { useGetTopics } from "~/hooks/use-get-topics";
 
@@ -84,13 +84,10 @@ export default function PracticeRoute() {
     isError: isQuestionsError,
   } = useGetQuestions(activeTrainingTab === "quizzes");
   const {
-    data: publicLessonPages,
+    data: publicFlashcardLessons = [],
     isLoading: isPublicFlashcardsLoading,
     isError: isPublicFlashcardsError,
-    hasNextPage: hasNextPublicFlashcardPage,
-    fetchNextPage: fetchNextPublicFlashcardPage,
-    isFetchingNextPage: isFetchingNextPublicFlashcardPage,
-  } = useInfiniteLessons(
+  } = useGetLessons(
     {
       topicId: selectedFlashcardTopicId ?? undefined,
       pageSize: PUBLIC_FLASHCARD_PAGE_SIZE,
@@ -98,22 +95,9 @@ export default function PracticeRoute() {
     { enabled: publicFlashcardsEnabled }
   );
   const quizTopics = getTopicQuizzes(topics, questions);
-  const publicFlashcardLessons = useMemo(() => {
-    const lessons: Lesson[] = [];
-
-    for (const page of publicLessonPages?.pages ?? []) {
-      lessons.push(...page.items);
-    }
-
-    return lessons;
-  }, [publicLessonPages]);
   const publicFlashcardDecks = useMemo(
     () => getPublicFlashcardDecks(topics, publicFlashcardLessons),
     [topics, publicFlashcardLessons]
-  );
-  const loadMorePublicFlashcards = useCallback(
-    () => fetchNextPublicFlashcardPage(),
-    [fetchNextPublicFlashcardPage]
   );
 
   return (
@@ -151,9 +135,6 @@ export default function PracticeRoute() {
                 decks={publicFlashcardDecks}
                 isLoading={isLoading || isPublicFlashcardsLoading}
                 isError={isError || isPublicFlashcardsError}
-                hasMore={Boolean(hasNextPublicFlashcardPage)}
-                isLoadingMore={isFetchingNextPublicFlashcardPage}
-                onLoadMore={loadMorePublicFlashcards}
                 onBack={() => setSelectedFlashcardTopicId(null)}
               />
             ) : (
@@ -250,9 +231,6 @@ type FlashcardPracticeScreenProps = {
   decks: FlashcardDeck[];
   isLoading: boolean;
   isError: boolean;
-  hasMore: boolean;
-  isLoadingMore: boolean;
-  onLoadMore: () => Promise<unknown> | void;
   onBack: () => void;
 };
 
@@ -263,9 +241,6 @@ function FlashcardPracticeScreen({
   decks,
   isLoading,
   isError,
-  hasMore,
-  isLoadingMore,
-  onLoadMore,
   onBack,
 }: FlashcardPracticeScreenProps) {
   const cards = useMemo(
@@ -399,8 +374,7 @@ function FlashcardPracticeScreen({
       ) : isError ? (
         <p className="font-bold">Unable to load flash cards.</p>
       ) : cards.length ? (
-        <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_18rem]">
-          <div className="min-h-[22rem]">
+        <div className="min-h-[22rem]">
             {currentCard ? (
               <div className="relative mx-auto max-w-xl overflow-hidden px-3 py-4">
                 <div
@@ -463,56 +437,6 @@ function FlashcardPracticeScreen({
                 </Button>
               </div>
             )}
-          </div>
-
-          <Card className="rounded-[1.75rem] border-slate-200 bg-white">
-            <CardHeader>
-              <CardTitle className="text-lg font-black">Words</CardTitle>
-              <CardDescription className="font-semibold">
-                Topic flashcards
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="max-h-[30rem] space-y-2 overflow-auto pr-1">
-                {cards.map((card, index) => {
-                  const status = cardStatus[card.id];
-                  const active = index === currentIndex;
-
-                  return (
-                    <button
-                      key={card.id}
-                      type="button"
-                      onClick={() => setCurrentIndex(index)}
-                      className={cn(
-                        "flex w-full items-center justify-between gap-2 rounded-2xl border px-3 py-2 text-left text-sm font-black transition",
-                        active
-                          ? "border-primary bg-primary/10 text-primary"
-                          : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
-                      )}
-                    >
-                      <span className="min-w-0 truncate">{card.front}</span>
-                      {status === "learned" ? (
-                        <CheckCircle2 className="size-4 shrink-0 text-emerald-600" />
-                      ) : status === "review" ? (
-                        <XCircle className="size-4 shrink-0 text-rose-600" />
-                      ) : null}
-                    </button>
-                  );
-                })}
-              </div>
-              {hasMore ? (
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={onLoadMore}
-                  disabled={isLoadingMore}
-                  className="mt-4 h-11 w-full rounded-2xl font-black"
-                >
-                  {isLoadingMore ? "Loading..." : "Load more"}
-                </Button>
-              ) : null}
-            </CardContent>
-          </Card>
         </div>
       ) : (
         <p className="font-bold">No flash cards in this topic yet.</p>
