@@ -24,6 +24,12 @@ import {
 } from "~/components/ui/card";
 import { LoadingSpinner } from "~/components/ui/loading-spinner";
 import { useSignToText } from "~/hooks/use-translate";
+import { useSignKeypoints, useSignToText } from "~/hooks/use-translate";
+import {
+  captureClip,
+  ensureLandmarkers,
+  NUM_FRAMES,
+} from "~/services/keypoint-extractor";
 import {
   fetchPoseData,
   getSpokenToSignedPoseUrl,
@@ -81,7 +87,10 @@ export default function TranslateRoute() {
   const [isCapturing, setIsCapturing] = useState(false);
   const [autoCapture, setAutoCapture] = useState(false);
   const [stubWarning, setStubWarning] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [clipProgress, setClipProgress] = useState(0);
   const signToTextMutation = useSignToText();
+  const signKeypointsMutation = useSignKeypoints();
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
@@ -162,6 +171,36 @@ export default function TranslateRoute() {
       );
     } finally {
       setIsCapturing(false);
+    }
+  }
+
+  async function captureWordClip() {
+    if (!videoRef.current || isRecording) return;
+    setIsRecording(true);
+    setClipProgress(0);
+    try {
+      await ensureLandmarkers();
+      const frames = await captureClip(videoRef.current, {
+        intervalMs: 66,
+        onProgress: setClipProgress,
+      });
+      const result = await signKeypointsMutation.mutateAsync(frames);
+      setStubWarning(!result.model_loaded);
+
+      if (result.confidence >= 0.3 || !result.model_loaded) {
+        setPredictions((prev) => [
+          ...prev,
+          { label: result.label, confidence: result.confidence, kind: "word" },
+        ]);
+      }
+    } catch (error) {
+      console.error(error);
+      setCameraError(
+        error instanceof Error ? error.message : "Recognition failed"
+      );
+    } finally {
+      setIsRecording(false);
+      setClipProgress(0);
     }
   }
 
@@ -280,11 +319,10 @@ export default function TranslateRoute() {
   }, [cameraStream, isHandsignToText]);
 
   useEffect(() => {
-    if (!autoCapture || !cameraStream) return;
-    const intervalMs = kind === "alphabet" ? 1500 : 2500;
+    if (!autoCapture || !cameraStream || kind !== "alphabet") return;
     const timer = setInterval(() => {
       captureFrame();
-    }, intervalMs);
+    }, 1500);
     return () => clearInterval(timer);
   }, [autoCapture, cameraStream, kind]);
 
@@ -334,9 +372,7 @@ export default function TranslateRoute() {
                 clearPredictions();
               }}
               variant={kind === "word" ? "default" : "outline"}
-              disabled
-              title="Coming soon — only alphabet recognition is available"
-              className="h-9 rounded-xl font-black opacity-50 cursor-not-allowed"
+              className="h-9 rounded-xl font-black"
             >
               Vocabulary
             </Button>
@@ -416,25 +452,31 @@ export default function TranslateRoute() {
                     <div className="flex flex-wrap gap-2">
                       <Button
                         type="button"
-                        onClick={captureFrame}
-                        disabled={isCapturing}
+                        onClick={kind === "word" ? captureWordClip : captureFrame}
+                        disabled={isCapturing || isRecording}
                         className="h-11 rounded-2xl font-black"
                       >
-                        {isCapturing ? (
+                        {isCapturing || isRecording ? (
                           <Loader2 className="size-4 animate-spin" />
                         ) : (
                           <ScanLine className="size-4" />
                         )}
-                        Capture sign
+                        {isRecording
+                          ? `Recording ${clipProgress}/${NUM_FRAMES}`
+                          : kind === "word"
+                          ? "Record sign (~2s)"
+                          : "Capture sign"}
                       </Button>
-                      <Button
-                        type="button"
-                        onClick={() => setAutoCapture((v) => !v)}
-                        variant={autoCapture ? "default" : "outline"}
-                        className="h-11 rounded-2xl font-black"
-                      >
-                        {autoCapture ? "Stop auto" : "Auto capture"}
-                      </Button>
+                      {kind === "alphabet" ? (
+                        <Button
+                          type="button"
+                          onClick={() => setAutoCapture((v) => !v)}
+                          variant={autoCapture ? "default" : "outline"}
+                          className="h-11 rounded-2xl font-black"
+                        >
+                          {autoCapture ? "Stop auto" : "Auto capture"}
+                        </Button>
+                      ) : null}
                       <Button
                         type="button"
                         onClick={clearPredictions}

@@ -38,13 +38,16 @@ class PositionalEncoding(nn.Module):
 class SignTransformer(nn.Module):
     """
     Encoder-only Transformer với CLS token cho nhận dạng từ đơn lẻ.
-    Match với kaggle_train_wlasl.py :: SignTransformer.
+    Match với checkpoint ml/models/wlasl_transformer.pt (see backend/_ckpt_info.json):
+    4 encoder layers, input LayerNorm trên 225 dims, head intermediate 128.
     """
     def __init__(self, num_classes: int,
                  num_kp: int = _NUM_KP_WLASL, kp_dims: int = _KP_DIMS,
-                 d_model: int = 256, nhead: int = 8, num_layers: int = 6,
-                 dim_ff: int = 512, dropout: float = 0.2):
+                 d_model: int = 256, nhead: int = 8, num_layers: int = 4,
+                 dim_ff: int = 512, dropout: float = 0.2,
+                 head_hidden: int = 128):
         super().__init__()
+        self.input_norm = nn.LayerNorm(num_kp * kp_dims)
         self.embed     = nn.Linear(num_kp * kp_dims, d_model)
         self.cls_token = nn.Parameter(torch.zeros(1, 1, d_model))
         self.pos_enc   = PositionalEncoding(d_model, max_len=_NUM_FRAMES_WORD + 1,
@@ -56,14 +59,15 @@ class SignTransformer(nn.Module):
         self.encoder = nn.TransformerEncoder(enc_layer, num_layers=num_layers)
         self.norm = nn.LayerNorm(d_model)
         self.head = nn.Sequential(
-            nn.Linear(d_model, d_model), nn.GELU(), nn.Dropout(dropout),
-            nn.Linear(d_model, num_classes),
+            nn.Linear(d_model, head_hidden), nn.GELU(), nn.Dropout(dropout),
+            nn.Linear(head_hidden, num_classes),
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         # x: (B, T, num_kp, kp_dims)
         B = x.size(0)
-        x = self.embed(x.flatten(2))
+        x = self.input_norm(x.flatten(2))
+        x = self.embed(x)
         cls = self.cls_token.expand(B, -1, -1)
         x = self.pos_enc(torch.cat([cls, x], dim=1))
         return self.head(self.norm(self.encoder(x)[:, 0]))
