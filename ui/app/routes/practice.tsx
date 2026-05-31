@@ -1,18 +1,19 @@
-import type { FormEvent, KeyboardEvent } from "react";
+import type { KeyboardEvent, PointerEvent } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { LucideIcon } from "lucide-react";
 import {
   ArrowRight,
+  ArrowLeft,
   BookOpen,
+  CheckCircle2,
   ClipboardCheck,
   Copy,
-  Library,
+  ExternalLink,
   Pencil,
-  Plus,
   RotateCcw,
   Trash2,
-  User,
-  X,
+  Video,
+  XCircle,
 } from "lucide-react";
 import { Link } from "react-router";
 import type { Lesson, QuizQuestion, Topic } from "~/api/types";
@@ -28,10 +29,9 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
-import { Input } from "~/components/ui/input";
 import { LoadingSpinner } from "~/components/ui/loading-spinner";
 import { cn } from "~/lib/utils";
-import { useInfiniteLessons } from "~/hooks/use-get-lessons";
+import { useGetLessons } from "~/hooks/use-get-lessons";
 import { useGetQuestions } from "~/hooks/use-get-topic-questions";
 import { useGetTopics } from "~/hooks/use-get-topics";
 
@@ -40,13 +40,7 @@ const trainingTabs = [
   { id: "flashcards", label: "Flash cards", icon: BookOpen },
 ] as const;
 
-const flashcardModes = [
-  { id: "public", label: "Public", icon: Library },
-  { id: "custom", label: "Tự tạo", icon: User },
-] as const;
-
 type TrainingTab = (typeof trainingTabs)[number]["id"];
-type FlashcardMode = (typeof flashcardModes)[number]["id"];
 
 type FlashcardSource = "public" | "custom";
 
@@ -55,6 +49,9 @@ type Flashcard = {
   source: FlashcardSource;
   front: string;
   back: string;
+  videoUrl?: string | null;
+  videoEmbedUrl?: string | null;
+  videoKind?: "video" | "youtube" | "link" | null;
   hint?: string;
   tag: string;
 };
@@ -68,33 +65,18 @@ type FlashcardDeck = {
   cards: Flashcard[];
 };
 
-type FlashcardDraft = {
-  front: string;
-  back: string;
-  tag: string;
-};
-
-const customFlashcardsStorageKey = "hihihaha.custom-flashcards";
 const PUBLIC_FLASHCARD_PAGE_SIZE = 12;
-
-const starterCustomFlashcards: Flashcard[] = [
-  {
-    id: "custom-starter-hello",
-    source: "custom",
-    front: "Hello",
-    back: "Palm out, move your hand away from your forehead.",
-    hint: "Greeting",
-    tag: "My deck",
-  },
-];
+const FLASHCARD_TAP_MAX_DRAG = 8;
+const FLASHCARD_SWIPE_THRESHOLD = 110;
 
 export default function PracticeRoute() {
   const [activeTrainingTab, setActiveTrainingTab] =
     useState<TrainingTab>("quizzes");
-  const [activeFlashcardMode, setActiveFlashcardMode] =
-    useState<FlashcardMode>("public");
+  const [selectedFlashcardTopicId, setSelectedFlashcardTopicId] =
+    useState<string | null>(null);
   const publicFlashcardsEnabled =
-    activeTrainingTab === "flashcards" && activeFlashcardMode === "public";
+    activeTrainingTab === "flashcards" &&
+    Boolean(selectedFlashcardTopicId);
   const { data: topics = [], isLoading, isError } = useGetTopics();
   const {
     data: questions = [],
@@ -102,169 +84,21 @@ export default function PracticeRoute() {
     isError: isQuestionsError,
   } = useGetQuestions(activeTrainingTab === "quizzes");
   const {
-    data: publicLessonPages,
+    data: publicFlashcardLessons = [],
     isLoading: isPublicFlashcardsLoading,
     isError: isPublicFlashcardsError,
-    hasNextPage: hasNextPublicFlashcardPage,
-    fetchNextPage: fetchNextPublicFlashcardPage,
-    isFetchingNextPage: isFetchingNextPublicFlashcardPage,
-  } = useInfiniteLessons(
-    { pageSize: PUBLIC_FLASHCARD_PAGE_SIZE },
+  } = useGetLessons(
+    {
+      topicId: selectedFlashcardTopicId ?? undefined,
+      pageSize: PUBLIC_FLASHCARD_PAGE_SIZE,
+    },
     { enabled: publicFlashcardsEnabled }
   );
   const quizTopics = getTopicQuizzes(topics, questions);
-  const publicFlashcardLessons = useMemo(() => {
-    const lessons: Lesson[] = [];
-
-    for (const page of publicLessonPages?.pages ?? []) {
-      lessons.push(...page.items);
-    }
-
-    return lessons;
-  }, [publicLessonPages]);
   const publicFlashcardDecks = useMemo(
     () => getPublicFlashcardDecks(topics, publicFlashcardLessons),
     [topics, publicFlashcardLessons]
   );
-  const [customFlashcards, setCustomFlashcards] = useState<Flashcard[]>(
-    starterCustomFlashcards
-  );
-  const customFlashcardDecks = useMemo(
-    () => getCustomFlashcardDecks(customFlashcards),
-    [customFlashcards]
-  );
-  const [customCardsLoaded, setCustomCardsLoaded] = useState(false);
-  const [draft, setDraft] = useState<FlashcardDraft>({
-    front: "",
-    back: "",
-    tag: "My deck",
-  });
-  const [editingCardId, setEditingCardId] = useState<string | null>(null);
-  const loadMorePublicFlashcards = useCallback(
-    () => fetchNextPublicFlashcardPage(),
-    [fetchNextPublicFlashcardPage]
-  );
-
-  useEffect(() => {
-    try {
-      const storedCards = window.localStorage.getItem(
-        customFlashcardsStorageKey
-      );
-
-      if (storedCards) {
-        const parsedCards = JSON.parse(storedCards) as Flashcard[];
-
-        if (Array.isArray(parsedCards)) {
-          setCustomFlashcards(
-            parsedCards
-              .filter((card) => Boolean(card.front?.trim() && card.back?.trim()))
-              .map((card) => ({
-                ...card,
-                source: "custom",
-                tag: card.tag?.trim() || "My deck",
-              }))
-          );
-        }
-      }
-    } catch {
-      setCustomFlashcards(starterCustomFlashcards);
-    } finally {
-      setCustomCardsLoaded(true);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!customCardsLoaded) {
-      return;
-    }
-
-    window.localStorage.setItem(
-      customFlashcardsStorageKey,
-      JSON.stringify(customFlashcards)
-    );
-  }, [customCardsLoaded, customFlashcards]);
-
-  function submitCustomFlashcard(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-
-    const front = draft.front.trim();
-    const back = draft.back.trim();
-    const tag = draft.tag.trim() || "My deck";
-
-    if (!front || !back) {
-      return;
-    }
-
-    if (editingCardId) {
-      setCustomFlashcards((currentCards) =>
-        currentCards.map((card) =>
-          card.id === editingCardId
-            ? {
-              ...card,
-              front,
-              back,
-              tag,
-            }
-            : card
-        )
-      );
-      setDraft({ front: "", back: "", tag });
-      setEditingCardId(null);
-      setActiveFlashcardMode("custom");
-      return;
-    }
-
-    setCustomFlashcards((currentCards) => [
-      {
-        id: createCustomFlashcardId(),
-        source: "custom",
-        front,
-        back,
-        tag,
-      },
-      ...currentCards,
-    ]);
-    setDraft({ front: "", back: "", tag });
-    setActiveFlashcardMode("custom");
-  }
-
-  function editCustomFlashcard(card: Flashcard) {
-    setDraft({
-      front: card.front,
-      back: card.back,
-      tag: card.tag,
-    });
-    setEditingCardId(card.id);
-    setActiveFlashcardMode("custom");
-  }
-
-  function cloneCustomFlashcard(card: Flashcard) {
-    setCustomFlashcards((currentCards) => [
-      {
-        ...card,
-        id: createCustomFlashcardId(),
-        source: "custom",
-      },
-      ...currentCards,
-    ]);
-    setActiveFlashcardMode("custom");
-  }
-
-  function deleteCustomFlashcard(cardId: string) {
-    setCustomFlashcards((currentCards) =>
-      currentCards.filter((card) => card.id !== cardId)
-    );
-
-    if (editingCardId === cardId) {
-      setEditingCardId(null);
-      setDraft({ front: "", back: "", tag: "My deck" });
-    }
-  }
-
-  function cancelCustomFlashcardEdit() {
-    setEditingCardId(null);
-    setDraft({ front: "", back: "", tag: "My deck" });
-  }
 
   return (
     <StudentShell>
@@ -295,167 +129,25 @@ export default function PracticeRoute() {
             aria-labelledby="training-tab-flashcards"
             className="space-y-5"
           >
-            {/* <div className="flex flex-col gap-4 rounded-[1.75rem] border-2 border-[#036678] bg-white p-4 shadow-[2px_4px_0_#036678] sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <h1 className="text-2xl font-black leading-tight">
-                  Flash cards
-                </h1>
-                <p className="text-sm font-semibold text-slate-600">
-                  {activeFlashcardMode === "public"
-                    ? `${publicFlashcardDecks.length} public decks, ${publicFlashcardLessons.length} lessons loaded`
-                    : `${customFlashcardDecks.length} tự tạo decks, ${customFlashcards.length} cards`}
-                </p>
-              </div>
-              <SegmentedTabs
-                tabs={flashcardModes}
-                activeTab={activeFlashcardMode}
-                onTabChange={setActiveFlashcardMode}
-                ariaLabel="Flash card decks"
-                className="sm:w-fit"
-                buttonClassName="sm:w-32"
-                tabIdPrefix="flashcard"
-                controlledPanelId="flashcard-panel"
+            {selectedFlashcardTopicId ? (
+              <FlashcardPracticeScreen
+                topic={topics.find((topic) => topic.id === selectedFlashcardTopicId)}
+                decks={publicFlashcardDecks}
+                isLoading={isLoading || isPublicFlashcardsLoading}
+                isError={isError || isPublicFlashcardsError}
+                onBack={() => setSelectedFlashcardTopicId(null)}
               />
-            </div> */}
-
-            <QuizTopicGrid
-              quizTopics={quizTopics}
-              isLoading={isLoading || isQuestionsLoading}
-              isError={isError || isQuestionsError}
-            />
-
-            <div
-              id="flashcard-panel"
-              role="tabpanel"
-              aria-labelledby={`flashcard-tab-${activeFlashcardMode}`}
-              className="space-y-5"
-            >
-              {activeFlashcardMode === "custom" ? (
-                <form
-                  onSubmit={submitCustomFlashcard}
-                  className="grid gap-3 rounded-[1.75rem] border-2 border-[#036678] bg-white p-4 shadow-[2px_4px_0_#036678] md:grid-cols-[1fr_1fr_12rem_auto]"
-                >
-                  {editingCardId ? (
-                    <div className="flex items-center justify-between gap-3 md:col-span-full">
-                      <p className="text-sm font-black text-slate-700">
-                        Editing flash card
-                      </p>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        onClick={cancelCustomFlashcardEdit}
-                        className="h-9 rounded-2xl px-3 font-black"
-                      >
-                        <X className="size-4" />
-                        Cancel
-                      </Button>
-                    </div>
-                  ) : null}
-                  <label className="grid gap-1 text-sm font-black text-slate-700">
-                    Front
-                    <Input
-                      value={draft.front}
-                      onChange={(event) =>
-                        setDraft((currentDraft) => ({
-                          ...currentDraft,
-                          front: event.target.value,
-                        }))
-                      }
-                      className="h-11 rounded-2xl bg-white font-semibold"
-                      placeholder="Phrase or question"
-                    />
-                  </label>
-                  <label className="grid gap-1 text-sm font-black text-slate-700">
-                    Back
-                    <Input
-                      value={draft.back}
-                      onChange={(event) =>
-                        setDraft((currentDraft) => ({
-                          ...currentDraft,
-                          back: event.target.value,
-                        }))
-                      }
-                      className="h-11 rounded-2xl bg-white font-semibold"
-                      placeholder="Answer or sign note"
-                    />
-                  </label>
-                  <label className="grid gap-1 text-sm font-black text-slate-700">
-                    Deck
-                    <Input
-                      value={draft.tag}
-                      onChange={(event) =>
-                        setDraft((currentDraft) => ({
-                          ...currentDraft,
-                          tag: event.target.value,
-                        }))
-                      }
-                      className="h-11 rounded-2xl bg-white font-semibold"
-                      placeholder="My deck"
-                    />
-                  </label>
-                  <Button
-                    type="submit"
-                    className="mt-auto h-11 rounded-2xl font-black"
-                  >
-                    {editingCardId ? (
-                      <Pencil className="size-5" />
-                    ) : (
-                      <Plus className="size-5" />
-                    )}
-                    {editingCardId ? "Save" : "Add"}
-                  </Button>
-                </form>
-              ) : null}
-
-              <FlashcardGrid
-                decks={
-                  activeFlashcardMode === "public"
-                    ? publicFlashcardDecks
-                    : customFlashcardDecks
-                }
-                isLoading={
-                  activeFlashcardMode === "public" &&
-                  (isLoading || isPublicFlashcardsLoading)
-                }
-                isError={
-                  activeFlashcardMode === "public" &&
-                  (isError || isPublicFlashcardsError)
-                }
-                emptyMessage={
-                  activeFlashcardMode === "public"
-                    ? "No public flash cards yet."
-                    : "No tự tạo flash cards yet."
-                }
-                onDelete={
-                  activeFlashcardMode === "custom"
-                    ? deleteCustomFlashcard
-                    : undefined
-                }
-                onEdit={
-                  activeFlashcardMode === "custom"
-                    ? editCustomFlashcard
-                    : undefined
-                }
-                onClone={
-                  activeFlashcardMode === "custom"
-                    ? cloneCustomFlashcard
-                    : undefined
-                }
-                hasMore={
-                  activeFlashcardMode === "public" &&
-                  Boolean(hasNextPublicFlashcardPage)
-                }
-                isLoadingMore={
-                  activeFlashcardMode === "public" &&
-                  isFetchingNextPublicFlashcardPage
-                }
-                onLoadMore={
-                  activeFlashcardMode === "public"
-                    ? loadMorePublicFlashcards
-                    : undefined
-                }
+            ) : (
+              <TopicFlashcardGrid
+                topics={topics}
+                selectedTopicId={selectedFlashcardTopicId}
+                isLoading={isLoading}
+                isError={isError}
+                onPractice={(topicId) => {
+                  setSelectedFlashcardTopicId(topicId);
+                }}
               />
-            </div>
+            )}
           </section>
         )}
       </div>
@@ -534,6 +226,299 @@ function SegmentedTabs<T extends string>({
   );
 }
 
+type FlashcardPracticeScreenProps = {
+  topic?: Topic;
+  decks: FlashcardDeck[];
+  isLoading: boolean;
+  isError: boolean;
+  onBack: () => void;
+};
+
+type FlashcardLearningStatus = "learned" | "review";
+
+function FlashcardPracticeScreen({
+  topic,
+  decks,
+  isLoading,
+  isError,
+  onBack,
+}: FlashcardPracticeScreenProps) {
+  const cards = useMemo(
+    () => decks.flatMap((deck) => deck.cards),
+    [decks]
+  );
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [cardStatus, setCardStatus] = useState<
+    Record<string, FlashcardLearningStatus>
+  >({});
+  const [isCardFlipped, setIsCardFlipped] = useState(false);
+  const [dragStartX, setDragStartX] = useState<number | null>(null);
+  const [dragOffsetX, setDragOffsetX] = useState(0);
+
+  useEffect(() => {
+    setCurrentIndex(0);
+    setCardStatus({});
+    setIsCardFlipped(false);
+    setDragStartX(null);
+    setDragOffsetX(0);
+  }, [topic?.id]);
+
+  useEffect(() => {
+    setIsCardFlipped(false);
+    setDragStartX(null);
+    setDragOffsetX(0);
+  }, [currentIndex]);
+
+  const currentCard = cards[currentIndex] ?? null;
+  const learnedCount = Object.values(cardStatus).filter(
+    (status) => status === "learned"
+  ).length;
+  const reviewCount = Object.values(cardStatus).filter(
+    (status) => status === "review"
+  ).length;
+
+  const markCard = useCallback(
+    (status: FlashcardLearningStatus) => {
+      if (!currentCard) return;
+
+      setCardStatus((currentStatus) => ({
+        ...currentStatus,
+        [currentCard.id]: status,
+      }));
+      setCurrentIndex((index) => Math.min(index + 1, cards.length));
+      setIsCardFlipped(false);
+      setDragStartX(null);
+      setDragOffsetX(0);
+    },
+    [cards.length, currentCard]
+  );
+
+  function handlePointerDown(event: PointerEvent<HTMLDivElement>) {
+    if (!currentCard) return;
+
+    const target = event.target as HTMLElement;
+    if (target.closest("video, iframe, a, button")) return;
+
+    setDragStartX(event.clientX);
+    setDragOffsetX(0);
+    event.currentTarget.setPointerCapture(event.pointerId);
+  }
+
+  function handlePointerMove(event: PointerEvent<HTMLDivElement>) {
+    if (dragStartX === null) return;
+
+    setDragOffsetX(event.clientX - dragStartX);
+  }
+
+  function handlePointerEnd(event: PointerEvent<HTMLDivElement>) {
+    if (dragStartX === null) return;
+
+    if (dragOffsetX >= FLASHCARD_SWIPE_THRESHOLD) {
+      markCard("learned");
+    } else if (dragOffsetX <= -FLASHCARD_SWIPE_THRESHOLD) {
+      markCard("review");
+    } else {
+      const target = event.target as HTMLElement;
+
+      if (
+        Math.abs(dragOffsetX) <= FLASHCARD_TAP_MAX_DRAG &&
+        !target.closest("video, iframe, a, button")
+      ) {
+        setIsCardFlipped((currentValue) => !currentValue);
+      }
+      setDragStartX(null);
+      setDragOffsetX(0);
+    }
+  }
+
+  function handlePointerCancel() {
+    setDragStartX(null);
+    setDragOffsetX(0);
+  }
+
+  return (
+    <div className="space-y-5">
+      <div className="flex flex-col gap-3 rounded-[1.75rem] border-2 border-[#036678] bg-white p-4 shadow-[2px_4px_0_#036678] sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0">
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={onBack}
+            className="mb-2 h-9 rounded-2xl px-3 font-black"
+          >
+            <ArrowLeft className="size-4" />
+            Back
+          </Button>
+          <h1 className="truncate text-2xl font-black leading-tight">
+            {topic?.title ?? "Flashcards"}
+          </h1>
+          <p className="text-sm font-semibold text-slate-600">
+            Swipe left for not learned, swipe right for learned.
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Badge className="bg-emerald-100 text-emerald-700">
+            {learnedCount} learned
+          </Badge>
+          <Badge className="bg-rose-100 text-rose-700">
+            {reviewCount} review
+          </Badge>
+          <Badge variant="outline">
+            {Math.min(currentIndex + 1, cards.length || 1)} / {cards.length}
+          </Badge>
+        </div>
+      </div>
+
+      {isLoading ? (
+        <LoadingSpinner label="Loading flash cards" className="py-8" />
+      ) : isError ? (
+        <p className="font-bold">Unable to load flash cards.</p>
+      ) : cards.length ? (
+        <div className="min-h-[22rem]">
+            {currentCard ? (
+              <div className="relative mx-auto max-w-xl overflow-hidden px-3 py-4">
+                <div
+                  onPointerDown={handlePointerDown}
+                  onPointerMove={handlePointerMove}
+                  onPointerUp={handlePointerEnd}
+                  onPointerCancel={handlePointerCancel}
+                  className="relative touch-pan-y select-none"
+                  style={{
+                    transform: `translateX(${dragOffsetX}px) rotate(${dragOffsetX / 18}deg)`,
+                    transition:
+                      dragStartX === null ? "transform 180ms ease-out" : "none",
+                  }}
+                >
+                  <FlipFlashcard
+                    card={currentCard}
+                    isFlipped={isCardFlipped}
+                    onFlip={() =>
+                      setIsCardFlipped((currentValue) => !currentValue)
+                    }
+                  />
+                </div>
+                <div className="mt-4 grid grid-cols-2 gap-3">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => markCard("review")}
+                    className="h-12 rounded-2xl border-rose-200 font-black text-rose-700 hover:bg-rose-50"
+                  >
+                    <XCircle className="size-5" />
+                    Chưa thuộc
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={() => markCard("learned")}
+                    className="h-12 rounded-2xl bg-emerald-600 font-black text-white hover:bg-emerald-700"
+                  >
+                    <CheckCircle2 className="size-5" />
+                    Đã thuộc
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="rounded-[1.75rem] border-2 border-[#036678] bg-white p-8 text-center shadow-[2px_4px_0_#036678]">
+                <CheckCircle2 className="mx-auto size-12 text-emerald-600" />
+                <h2 className="mt-3 text-2xl font-black">Finished</h2>
+                <p className="mt-1 font-semibold text-slate-600">
+                  You reviewed all flashcards in this topic.
+                </p>
+                <Button
+                  type="button"
+                  onClick={() => {
+                    setCurrentIndex(0);
+                    setCardStatus({});
+                  }}
+                  className="mt-5 h-12 rounded-2xl font-black"
+                >
+                  Practice again
+                  <RotateCcw className="size-5" />
+                </Button>
+              </div>
+            )}
+        </div>
+      ) : (
+        <p className="font-bold">No flash cards in this topic yet.</p>
+      )}
+    </div>
+  );
+}
+
+type TopicFlashcardGridProps = {
+  topics: Topic[];
+  selectedTopicId: string | null;
+  isLoading: boolean;
+  isError: boolean;
+  onPractice: (topicId: string) => void;
+};
+
+function TopicFlashcardGrid({
+  topics,
+  selectedTopicId,
+  isLoading,
+  isError,
+  onPractice,
+}: TopicFlashcardGridProps) {
+  return (
+    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      {isLoading ? (
+        <LoadingSpinner
+          label="Loading topics"
+          className="py-8 md:col-span-2 xl:col-span-3"
+        />
+      ) : isError ? (
+        <p className="font-bold">Unable to load topics.</p>
+      ) : topics.length ? (
+        topics.map((topic) => {
+          const selected = selectedTopicId === topic.id;
+
+          return (
+            <Card
+              key={topic.id}
+              className={cn(
+                "rounded-[2rem] border-slate-200 bg-white transition hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-lg",
+                selected && "border-primary/50 shadow-lg"
+              )}
+            >
+              <CardHeader>
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <div className="grid size-14 place-items-center rounded-2xl bg-primary/10 text-primary">
+                    <BookOpen className="size-7" />
+                  </div>
+                  <Badge className="bg-primary/10 text-primary">
+                    {topic.lesson_count} lessons
+                  </Badge>
+                </div>
+                <CardTitle className="text-xl font-black">
+                  {topic.title}
+                </CardTitle>
+                <CardDescription className="font-semibold">
+                  {topic.description ??
+                    "Practice flashcards from lessons in this topic."}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button
+                  type="button"
+                  onClick={() => onPractice(topic.id)}
+                  disabled={topic.lesson_count === 0}
+                  className="h-12 w-full rounded-2xl font-black"
+                >
+                  Practice Flashcard
+                  <ArrowRight className="size-5" />
+                </Button>
+              </CardContent>
+            </Card>
+          );
+        })
+      ) : (
+        <p className="font-bold">No topics yet.</p>
+      )}
+    </div>
+  );
+}
+
 type QuizTopicGridProps = {
   quizTopics: { topic: Topic; questionCount: number }[];
   isLoading: boolean;
@@ -599,225 +584,10 @@ function QuizTopicGrid({
   );
 }
 
-type FlashcardGridProps = {
-  decks: FlashcardDeck[];
-  isLoading: boolean;
-  isError: boolean;
-  emptyMessage: string;
-  onDelete?: (cardId: string) => void;
-  onEdit?: (card: Flashcard) => void;
-  onClone?: (card: Flashcard) => void;
-  hasMore?: boolean;
-  isLoadingMore?: boolean;
-  onLoadMore?: () => Promise<unknown> | void;
-};
-
-function FlashcardGrid({
-  decks,
-  isLoading,
-  isError,
-  emptyMessage,
-  onDelete,
-  onEdit,
-  onClone,
-  hasMore,
-  isLoadingMore,
-  onLoadMore,
-}: FlashcardGridProps) {
-  const observerRef = useRef<IntersectionObserver | null>(null);
-  const loadMoreNodeRef = useRef<HTMLDivElement | null>(null);
-  const loadingMoreRef = useRef(false);
-  const canLoadMore = Boolean(hasMore && onLoadMore && !isLoadingMore);
-  const cardCount = getDeckCardCount(decks);
-
-  const loadMore = useCallback(() => {
-    if (!hasMore || !onLoadMore || loadingMoreRef.current) return;
-
-    loadingMoreRef.current = true;
-    void Promise.resolve(onLoadMore()).finally(() => {
-      loadingMoreRef.current = false;
-    });
-  }, [hasMore, onLoadMore]);
-
-  useEffect(() => {
-    if (!isLoadingMore) {
-      loadingMoreRef.current = false;
-    }
-  }, [isLoadingMore]);
-
-  const loadMoreRef = useCallback(
-    (node: HTMLDivElement | null) => {
-      loadMoreNodeRef.current = node;
-      observerRef.current?.disconnect();
-
-      if (!node || !hasMore) return;
-
-      observerRef.current = new IntersectionObserver(
-        ([entry]) => {
-          if (entry.isIntersecting) {
-            loadMore();
-          }
-        },
-        { rootMargin: "320px 0px" }
-      );
-
-      observerRef.current.observe(node);
-    },
-    [hasMore, loadMore]
-  );
-
-  useEffect(() => {
-    if (!canLoadMore) return;
-
-    function loadIfNearBottom() {
-      const node = loadMoreNodeRef.current;
-      if (!node) return;
-
-      const { top } = node.getBoundingClientRect();
-      if (top <= window.innerHeight + 320) {
-        loadMore();
-      }
-    }
-
-    window.addEventListener("scroll", loadIfNearBottom, { passive: true });
-    window.addEventListener("resize", loadIfNearBottom);
-    loadIfNearBottom();
-
-    return () => {
-      window.removeEventListener("scroll", loadIfNearBottom);
-      window.removeEventListener("resize", loadIfNearBottom);
-    };
-  }, [canLoadMore, cardCount, loadMore]);
-
-  useEffect(() => {
-    return () => {
-      observerRef.current?.disconnect();
-    };
-  }, []);
-
-  if (isLoading) {
-    return <LoadingSpinner label="Loading flash cards" className="py-8" />;
-  }
-
-  if (isError) {
-    return <p className="font-bold">Unable to load flash cards.</p>;
-  }
-
-  if (!decks.length && !hasMore) {
-    return <p className="font-bold">{emptyMessage}</p>;
-  }
-
-  return (
-    <>
-      <div className="space-y-8">
-        {decks.map((deck) => (
-          <FlashcardDeckSection
-            key={deck.id}
-            deck={deck}
-            onDelete={onDelete}
-            onEdit={onEdit}
-            onClone={onClone}
-          />
-        ))}
-      </div>
-      {hasMore ? (
-        <div ref={loadMoreRef} className="flex justify-center py-5">
-          <div
-            role="status"
-            aria-live="polite"
-            aria-label={
-              isLoadingMore
-                ? "Loading more flash cards"
-                : "More flash cards available"
-            }
-            className="inline-flex h-11 items-center gap-1.5 "
-          >
-            {[0, 1, 2].map((dot) => (
-              <span
-                key={dot}
-                className="size-2.5 animate-bounce rounded-full bg-primary [animation-duration:0.8s]"
-                style={{ animationDelay: `${dot * 120}ms` }}
-              />
-            ))}
-            <span className="sr-only">
-              {isLoadingMore
-                ? "Loading more flash cards..."
-                : "More flash cards available"}
-            </span>
-          </div>
-        </div>
-      ) : null}
-    </>
-  );
-}
-
-type FlashcardDeckSectionProps = {
-  deck: FlashcardDeck;
-  onDelete?: (cardId: string) => void;
-  onEdit?: (card: Flashcard) => void;
-  onClone?: (card: Flashcard) => void;
-};
-
-function FlashcardDeckSection({
-  deck,
-  onDelete,
-  onEdit,
-  onClone,
-}: FlashcardDeckSectionProps) {
-  const titleId = `flashcard-deck-${deck.id}`;
-  const DeckIcon = deck.source === "public" ? Library : User;
-
-  return (
-    <section aria-labelledby={titleId} className="space-y-3">
-      <div className="flex flex-col gap-3 border-b-2 border-[#036678]/20 pb-3 sm:flex-row sm:items-end sm:justify-between">
-        <div className="flex min-w-0 items-start gap-3">
-          <div className="grid size-11 shrink-0 place-items-center rounded-2xl bg-primary/10 text-primary">
-            <DeckIcon className="size-5" />
-          </div>
-          <div className="min-w-0">
-            <h2
-              id={titleId}
-              className="truncate text-xl font-black leading-tight text-slate-950"
-            >
-              {deck.title}
-            </h2>
-            {deck.description ? (
-              <p className="mt-1 max-w-2xl text-sm font-semibold text-slate-600">
-                {deck.description}
-              </p>
-            ) : null}
-          </div>
-        </div>
-        <div className="flex shrink-0 flex-wrap gap-2">
-          <Badge className="bg-primary/10 text-primary">
-            {deck.cards.length} cards
-          </Badge>
-          {deck.lessonCount ? (
-            <Badge variant="outline">{deck.lessonCount} lessons</Badge>
-          ) : null}
-        </div>
-      </div>
-      {deck.cards.length ? (
-        <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-          {deck.cards.map((card) => (
-            <FlipFlashcard
-              key={card.id}
-              card={card}
-              onDelete={onDelete}
-              onEdit={onEdit}
-              onClone={onClone}
-            />
-          ))}
-        </div>
-      ) : (
-        <p className="font-bold text-slate-600">No cards in this deck.</p>
-      )}
-    </section>
-  );
-}
-
 type FlipFlashcardProps = {
   card: Flashcard;
+  isFlipped: boolean;
+  onFlip: () => void;
   onDelete?: (cardId: string) => void;
   onEdit?: (card: Flashcard) => void;
   onClone?: (card: Flashcard) => void;
@@ -825,21 +595,30 @@ type FlipFlashcardProps = {
 
 function FlipFlashcard({
   card,
+  isFlipped,
+  onFlip,
   onDelete,
   onEdit,
   onClone,
 }: FlipFlashcardProps) {
-  const [isFlipped, setIsFlipped] = useState(false);
   const hasActions = Boolean(onEdit || onClone || onDelete);
 
+  function handleFlipKeyDown(event: KeyboardEvent<HTMLDivElement>) {
+    if (event.key !== "Enter" && event.key !== " ") return;
+
+    event.preventDefault();
+    onFlip();
+  }
+
   return (
-    <BlockyCard className="group/flashcard relative h-72 overflow-visible bg-transparent p-0 shadow-none hover:translate-x-0 hover:translate-y-0 hover:shadow-none">
+    <BlockyCard className="group/flashcard relative h-80 overflow-visible bg-transparent p-0 shadow-none hover:translate-x-0 hover:translate-y-0 hover:shadow-none">
       <div className="absolute inset-0 translate-x-2 translate-y-2 rounded-[1.75rem] border-2 border-[#036678] bg-[#036678]" />
-      <button
-        type="button"
-        onClick={() => setIsFlipped((currentValue) => !currentValue)}
+      <div
+        role="button"
+        tabIndex={0}
+        onKeyDown={handleFlipKeyDown}
         aria-pressed={isFlipped}
-        aria-label={`${card.front}: ${isFlipped ? card.back : "front"}`}
+        aria-label={`${card.front}: ${isFlipped ? "video answer" : "front"}`}
         title="Flip"
         className="relative h-full w-full rounded-[1.75rem] text-left outline-none [perspective:1200px] focus-visible:ring-4 focus-visible:ring-primary/30"
       >
@@ -853,7 +632,7 @@ function FlipFlashcard({
             style={{ backfaceVisibility: "hidden" }}
           >
             <FlashcardFaceHeader
-              label="Question"
+              label="Word"
               source={card.source}
             />
             <p className="max-h-36 overflow-auto break-words text-center text-xl font-black leading-snug text-slate-900 sm:text-2xl">
@@ -871,24 +650,15 @@ function FlipFlashcard({
             }}
           >
             <FlashcardFaceHeader
-              label="Answer"
+              label="Video"
               source={card.source}
               inverted
             />
-            <div className="space-y-3 overflow-auto text-center">
-              <p className="break-words text-xl font-black leading-snug sm:text-2xl">
-                {card.back}
-              </p>
-              {card.hint ? (
-                <p className="break-words text-sm font-semibold text-cyan-100">
-                  {card.hint}
-                </p>
-              ) : null}
-            </div>
+            <FlashcardVideoBack card={card} isActive={isFlipped} />
             <FlashcardFaceFooter isFlipped={isFlipped} inverted />
           </div>
         </div>
-      </button>
+      </div>
 
       {hasActions ? (
         <div className="absolute right-2 top-2 z-20 flex gap-1 rounded-full border-2 border-[#036678] bg-[#036678] p-1 opacity-100 transition-all duration-200 sm:-right-3 sm:top-3 sm:pointer-events-none sm:translate-x-2 sm:opacity-0 sm:group-hover/flashcard:pointer-events-auto sm:group-hover/flashcard:translate-x-0 sm:group-hover/flashcard:opacity-100 sm:group-focus-within/flashcard:pointer-events-auto sm:group-focus-within/flashcard:translate-x-0 sm:group-focus-within/flashcard:opacity-100">
@@ -935,6 +705,99 @@ function FlipFlashcard({
       ) : null}
     </BlockyCard>
   );
+}
+
+function FlashcardVideoBack({
+  card,
+  isActive,
+}: {
+  card: Flashcard;
+  isActive: boolean;
+}) {
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const videoUrl = card.videoEmbedUrl ?? card.videoUrl;
+  const normalizedVideoUrl = videoUrl?.replace(/^https:\/\//, "http://");
+  const youtubeSrc =
+    card.videoKind === "youtube" && card.videoEmbedUrl
+      ? getAutoplayYoutubeEmbedUrl(card.videoEmbedUrl, isActive)
+      : card.videoEmbedUrl;
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video || card.videoKind !== "video") return;
+
+    if (!isActive) {
+      video.pause();
+      return;
+    }
+
+    video.currentTime = 0;
+    void video.play().catch(() => {
+      // Browser autoplay policies can still block playback in some cases.
+    });
+  }, [card.id, card.videoKind, isActive]);
+
+  return (
+    <div className="min-h-0 space-y-3 overflow-auto text-center">
+      {card.videoKind === "video" && normalizedVideoUrl ? (
+        <video
+          ref={videoRef}
+          className="aspect-video w-full rounded-[1.25rem] bg-slate-950 object-contain"
+          autoPlay={isActive}
+          controls
+          muted
+          playsInline
+          preload="metadata"
+          src={normalizedVideoUrl}
+        />
+      ) : card.videoKind === "youtube" && youtubeSrc ? (
+        <iframe
+          className="aspect-video w-full rounded-[1.25rem] bg-slate-950"
+          src={youtubeSrc}
+          title={`Reference sign video for ${card.front}`}
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowFullScreen
+        />
+      ) : card.videoKind === "link" && card.videoUrl ? (
+        <Button
+          asChild
+          variant="outline"
+          className="mx-auto h-11 rounded-2xl border-white/30 bg-white/10 px-4 font-black text-white hover:bg-white/20"
+        >
+          <a href={card.videoUrl} target="_blank" rel="noreferrer">
+            Open video
+            <ExternalLink className="size-4" />
+          </a>
+        </Button>
+      ) : (
+        <div className="mx-auto grid size-16 place-items-center rounded-full bg-white/10 text-cyan-100">
+          <Video className="size-8" />
+        </div>
+      )}
+      <p className="break-words text-sm font-semibold text-cyan-100">
+        {card.back}
+      </p>
+      {card.hint ? (
+        <p className="break-words text-xs font-semibold text-cyan-100/80">
+          {card.hint}
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
+function getAutoplayYoutubeEmbedUrl(url: string, shouldAutoplay: boolean) {
+  if (!shouldAutoplay) return url;
+
+  try {
+    const parsed = new URL(url);
+    parsed.searchParams.set("autoplay", "1");
+    parsed.searchParams.set("mute", "1");
+    parsed.searchParams.set("playsinline", "1");
+    return parsed.toString();
+  } catch {
+    return url;
+  }
 }
 
 type FlashcardFaceHeaderProps = {
@@ -1036,73 +899,114 @@ function getPublicFlashcardDecks(
 
     deck.lessonCount = (deck.lessonCount ?? 0) + 1;
 
-    for (const question of lesson.questions ?? []) {
-      deck.cards.push({
-        id: `public-${question.id}`,
-        source: "public",
-        front: question.prompt,
-        back: question.answer || lesson.phrase || lesson.title,
-        hint: question.hint ?? getAnswerOptionsHint(question),
-        tag: deckTitle,
-      });
-    }
+    const phrase = lesson.phrase || lesson.title;
+    const signReference = parseFlashcardSignReference(lesson.sign_hint);
+    const questionVideoUrl = lesson.questions?.find(
+      (question) => question.answer === phrase && question.video_url
+    )?.video_url;
+    const questionVideoReference = parseFlashcardVideoUrl(questionVideoUrl);
+    const videoReference = questionVideoReference.videoUrl
+      ? questionVideoReference
+      : signReference;
+
+    deck.cards.push({
+      id: `public-lesson-${lesson.id}`,
+      source: "public",
+      front: phrase,
+      back:
+        videoReference.hint ||
+        lesson.description ||
+        `Watch the sign for ${phrase}.`,
+      videoUrl: videoReference.videoUrl,
+      videoEmbedUrl: videoReference.videoEmbedUrl,
+      videoKind: videoReference.videoKind,
+      tag: deckTitle,
+    });
   }
 
   return decks.filter((deck) => deck.cards.length > 0);
 }
 
-function getCustomFlashcardDecks(cards: Flashcard[]): FlashcardDeck[] {
-  const deckByTag = new Map<string, FlashcardDeck>();
-  const decks: FlashcardDeck[] = [];
+type FlashcardVideoReference = {
+  hint: string;
+  videoUrl: string | null;
+  videoEmbedUrl: string | null;
+  videoKind: Flashcard["videoKind"];
+};
 
-  for (const card of cards) {
-    const title = card.tag.trim() || "My deck";
-    const key = title.toLowerCase();
-    let deck = deckByTag.get(key);
+function parseFlashcardSignReference(
+  signHint: string | null
+): FlashcardVideoReference {
+  const hint = signHint ?? "";
+  const urlMatch = hint.match(/https?:\/\/\S+/);
+  const videoUrl = urlMatch?.[0] ?? null;
+  const cleanedHint = hint
+    .replace(/\s*Reference video:\s*https?:\/\/\S+/i, "")
+    .replace(/\s+/g, " ")
+    .trim();
+  const reference = parseFlashcardVideoUrl(videoUrl);
 
-    if (!deck) {
-      deck = {
-        id: `custom-${slugifyDeckId(title) || decks.length + 1}`,
-        source: "custom",
-        title,
-        cards: [],
-      };
-      deckByTag.set(key, deck);
-      decks.push(deck);
+  return {
+    ...reference,
+    hint: cleanedHint,
+  };
+}
+
+function parseFlashcardVideoUrl(
+  videoUrl: string | null | undefined
+): FlashcardVideoReference {
+  if (!videoUrl) {
+    return {
+      hint: "",
+      videoUrl: null,
+      videoEmbedUrl: null,
+      videoKind: null,
+    };
+  }
+
+  const youtubeEmbedUrl = getYoutubeEmbedUrl(videoUrl);
+  if (youtubeEmbedUrl) {
+    return {
+      hint: "",
+      videoUrl,
+      videoEmbedUrl: youtubeEmbedUrl,
+      videoKind: "youtube",
+    };
+  }
+
+  if (videoUrl.toLowerCase().split("?")[0].match(/\.(mp4|mov|webm)$/)) {
+    return {
+      hint: "",
+      videoUrl,
+      videoEmbedUrl: videoUrl,
+      videoKind: "video",
+    };
+  }
+
+  return {
+    hint: "",
+    videoUrl,
+    videoEmbedUrl: videoUrl,
+    videoKind: "link",
+  };
+}
+
+function getYoutubeEmbedUrl(url: string): string | null {
+  try {
+    const parsed = new URL(url);
+    if (parsed.hostname.includes("youtube.com")) {
+      const videoId = parsed.searchParams.get("v");
+      return videoId ? `https://www.youtube.com/embed/${videoId}` : null;
     }
-
-    deck.cards.push({ ...card, tag: title });
+    if (parsed.hostname === "youtu.be") {
+      const videoId = parsed.pathname.replace("/", "");
+      return videoId ? `https://www.youtube.com/embed/${videoId}` : null;
+    }
+  } catch {
+    return null;
   }
 
-  return decks;
-}
-
-function getDeckCardCount(decks: FlashcardDeck[]) {
-  return decks.reduce((count, deck) => count + deck.cards.length, 0);
-}
-
-function getAnswerOptionsHint(question: QuizQuestion) {
-  const distractors = question.options.filter(
-    (option) => option !== question.answer
-  );
-
-  if (!distractors.length) {
-    return undefined;
-  }
-
-  return `Also seen with: ${distractors.slice(0, 2).join(", ")}`;
-}
-
-function createCustomFlashcardId() {
-  return `custom-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-}
-
-function slugifyDeckId(value: string) {
-  return value
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "");
+  return null;
 }
 
 function handleTabListKeyDown<T extends string>(
