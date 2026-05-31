@@ -1,12 +1,16 @@
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { lessonsApi, type LessonListParams } from "~/api/lessons";
 
-export function useGetLessons(params?: LessonListParams) {
+export function useGetLessons(
+    params?: LessonListParams,
+    options?: { enabled?: boolean }
+) {
     return useQuery({
         queryKey: ["lessons", "list", params ?? {}],
         queryFn: () => lessonsApi.list(params),
         staleTime: 3 * 60 * 1000,
-        retry: false
+        retry: false,
+        enabled: options?.enabled ?? true,
     })
 }
 
