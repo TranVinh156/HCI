@@ -5,7 +5,11 @@ import { PathNode } from "~/components/learning/path-node";
 import { StudentShell } from "~/components/learning/student-shell";
 import { Button } from "~/components/ui/button";
 import { LoadingSpinner } from "~/components/ui/loading-spinner";
-import { getLessonStatus, useProgressData } from "~/hooks/use-progress";
+import {
+  getLessonStatus,
+  getTopicProgress,
+  useProgressData,
+} from "~/hooks/use-progress";
 import { useGetTopic } from "~/hooks/use-get-topics";
 import { useInfiniteTopicLessons } from "~/hooks/use-get-topics-lessons";
 import { ArrowRight } from "lucide-react";
@@ -38,6 +42,9 @@ export default function PathRoute() {
   );
   const orderedLessonIds = lessons.map((lesson) => lesson.id);
   const progress = progressData?.progress;
+  const topicProgress = topicId
+    ? getTopicProgress(progress, topicId)
+    : null;
   const canLoadMore = Boolean(hasNextPage && !isFetchingNextPage);
 
   const loadNextPage = useCallback(() => {
@@ -183,7 +190,12 @@ export default function PathRoute() {
             title={lesson.title}
             index={index}
             isLast={index === lessons.length - 1 && !hasNextPage}
-            status={getLessonStatus(lesson.id, orderedLessonIds, progress)}
+            status={getLessonStatus(
+              lesson.id,
+              orderedLessonIds,
+              progress,
+              topicProgress
+            )}
           />
         ))}
         {hasNextPage ? (

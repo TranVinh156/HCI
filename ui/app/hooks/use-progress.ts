@@ -2,7 +2,51 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { profilesApi } from "~/api/profiles";
 import { progressApi } from "~/api/progress";
-import type { Progress } from "~/api/types";
+import type { Lesson, Progress, TopicProgress } from "~/api/types";
+
+function markLessonCompleted(
+  progress: Progress | null | undefined,
+  lessonId: string
+) {
+  if (!progress || progress.completed_lesson_ids.includes(lessonId)) {
+    return progress;
+  }
+
+  return {
+    ...progress,
+    completed_lesson_ids: [...progress.completed_lesson_ids, lessonId],
+  };
+}
+
+function markLessonCompletedInCache(
+  queryClient: ReturnType<typeof useQueryClient>,
+  lessonId: string
+) {
+  queryClient.setQueryData<{
+    profile: unknown;
+    progress: Progress | null;
+  } | null>(["progress-data"], (current) => {
+    if (!current) return current;
+
+    return {
+      ...current,
+      progress: markLessonCompleted(current.progress, lessonId) ?? null,
+    };
+  });
+
+  queryClient.setQueryData<{
+    user: unknown;
+    profile: unknown;
+    progress: Progress | null;
+  } | null>(["profile-data"], (current) => {
+    if (!current) return current;
+
+    return {
+      ...current,
+      progress: markLessonCompleted(current.progress, lessonId) ?? null,
+    };
+  });
+}
 
 export function useProgressData() {
   return useQuery({
@@ -34,7 +78,22 @@ export function useCompleteLesson() {
       correct: number;
       total: number;
     }) => progressApi.complete(profileId, lessonId, correct, total),
-    onSuccess: () => {
+    onMutate: (variables) => {
+      markLessonCompletedInCache(queryClient, variables.lessonId);
+    },
+    onSuccess: (_badges, variables) => {
+      markLessonCompletedInCache(queryClient, variables.lessonId);
+
+      void queryClient.invalidateQueries({
+        queryKey: ["progress-data"],
+        refetchType: "active",
+      });
+      void queryClient.invalidateQueries({
+        queryKey: ["profile-data"],
+        refetchType: "active",
+      });
+    },
+    onError: () => {
       void queryClient.invalidateQueries({ queryKey: ["progress-data"] });
       void queryClient.invalidateQueries({ queryKey: ["profile-data"] });
     },
@@ -83,12 +142,40 @@ export function useCompleteTopicQuiz() {
 export function getLessonStatus(
   lessonId: string,
   orderedLessonIds: string[],
-  progress: Progress | null | undefined
+  progress: Progress | null | undefined,
+  topicProgress?: TopicProgress | null
 ) {
+  const index = orderedLessonIds.indexOf(lessonId);
+  if (index < 0) return "locked";
+
+  if (topicProgress) {
+    if (index < topicProgress.completed_lesson_count) return "completed";
+    if (index === topicProgress.completed_lesson_count) return "current";
+    return "locked";
+  }
+
   const completedLessonIds = progress?.completed_lesson_ids ?? [];
   if (completedLessonIds.includes(lessonId)) return "completed";
-  const index = orderedLessonIds.indexOf(lessonId);
   if (index === 0) return "current";
   const previousId = orderedLessonIds[index - 1];
   return completedLessonIds.includes(previousId) ? "current" : "locked";
+}
+
+export function getTopicProgress(
+  progress: Progress | null | undefined,
+  topicId: string
+) {
+  return progress?.topic_progress.find((item) => item.topic_id === topicId) ?? null;
+}
+
+export function getLessonStatusFromNeighbors(
+  lesson: Lesson,
+  progress: Progress | null | undefined
+) {
+  const completedLessonIds = progress?.completed_lesson_ids ?? [];
+  if (completedLessonIds.includes(lesson.id)) return "completed";
+  if (!lesson.previous_lesson_id) return "current";
+  return completedLessonIds.includes(lesson.previous_lesson_id)
+    ? "current"
+    : "locked";
 }
