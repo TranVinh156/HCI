@@ -163,7 +163,7 @@ export default function TopicQuizRoute() {
         <section className="rounded-[2rem] bg-white p-5">
           <QuestionVideo
             title={`Answer video for ${question.answer}`}
-            url={question.video_url}
+            url={question.video_url.replace("https", "http")}
           />
           <div className="mb-5 rounded-[1.5rem] p-1 text-center">
             <p className="text-sm font-black uppercase text-primary">

@@ -23,7 +23,6 @@ import {
   CardTitle,
 } from "~/components/ui/card";
 import { LoadingSpinner } from "~/components/ui/loading-spinner";
-import { useSignToText } from "~/hooks/use-translate";
 import { useSignKeypoints, useSignToText } from "~/hooks/use-translate";
 import {
   captureClip,
@@ -464,8 +463,8 @@ export default function TranslateRoute() {
                         {isRecording
                           ? `Recording ${clipProgress}/${NUM_FRAMES}`
                           : kind === "word"
-                          ? "Record sign (~2s)"
-                          : "Capture sign"}
+                            ? "Record sign (~2s)"
+                            : "Capture sign"}
                       </Button>
                       {kind === "alphabet" ? (
                         <Button
