@@ -25,97 +25,20 @@ function LoadingSpinner({
         className
       )}
     >
-      <svg
+      <img
         aria-hidden="true"
-        viewBox="0 0 96 96"
+        src="/mascot.svg"
+        alt=""
         className={cn(
-          "size-48 animate-[mascot-run_0.72s_ease-in-out_infinite] text-primary drop-shadow-sm",
+          "size-48 animate-[mascot-run_0.72s_ease-in-out_infinite] object-contain drop-shadow-sm",
           spinnerClassName
         )}
-      >
-        <ellipse
-          cx="48"
-          cy="83"
-          rx="25"
-          ry="5"
-          className="animate-[mascot-shadow_0.72s_ease-in-out_infinite] fill-slate-900/10"
-        />
-        <path
-          d="M40 76c-5.3 2.8-7.8 6.4-7.2 10.3 6.9.8 12.2-1.4 15-6.5L40 76Z"
-          className="animate-[mascot-left-foot_0.72s_ease-in-out_infinite] fill-amber-400 stroke-slate-900/15 stroke-[1.5]"
-          strokeLinejoin="round"
-        />
-        <path
-          d="M56 76c5.3 2.8 7.8 6.4 7.2 10.3-6.9.8-12.2-1.4-15-6.5L56 76Z"
-          className="animate-[mascot-right-foot_0.72s_ease-in-out_infinite] fill-amber-400 stroke-slate-900/15 stroke-[1.5]"
-          strokeLinejoin="round"
-        />
-        <path
-          d="M48 14c19.2 0 32 13.1 32 33.3 0 22.5-13.6 35.9-32 35.9S16 69.8 16 47.3C16 27.1 28.8 14 48 14Z"
-          className="fill-current"
-        />
-        <path
-          d="M27.5 48.8c-7.7-2-13.3 1.6-15.5 8.5 7.6 1.9 13-.5 16.6-6.8l-1.1-1.7Z"
-          className="fill-current opacity-80"
-        />
-        <path
-          d="M68.5 48.8c7.7-2 13.3 1.6 15.5 8.5-7.6 1.9-13-.5-16.6-6.8l1.1-1.7Z"
-          className="fill-current opacity-80"
-        />
-        <path
-          d="M29 55.5c0 13 8.1 21.2 19 21.2s19-8.2 19-21.2c0-10.1-7.4-17.5-19-17.5S29 45.4 29 55.5Z"
-          className="fill-white/90"
-        />
-        <circle cx="36" cy="40" r="9.5" className="fill-white" />
-        <circle cx="60" cy="40" r="9.5" className="fill-white" />
-        <circle
-          cx="36"
-          cy="41"
-          r="4.2"
-          className="origin-center animate-pulse fill-slate-950"
-        />
-        <circle
-          cx="60"
-          cy="41"
-          r="4.2"
-          className="origin-center animate-pulse fill-slate-950"
-        />
-        <path
-          d="M43 50h10l-5 5.8L43 50Z"
-          className="fill-amber-400 stroke-slate-900/10 stroke-[1.5]"
-          strokeLinejoin="round"
-        />
-        <path
-          d="M39 65c4.9 3.8 12.9 3.8 17.8 0"
-          className="fill-none stroke-slate-900/45 stroke-[4]"
-          strokeLinecap="round"
-        />
-        <path
-          d="M33.5 22.5c-5.6 2.7-9.8 7.5-12.1 13.7M62.5 22.5c5.6 2.7 9.8 7.5 12.1 13.7"
-          className="fill-none stroke-white/45 stroke-[5]"
-          strokeLinecap="round"
-        />
-      </svg>
+      />
       <style>
         {`
           @keyframes mascot-run {
             0%, 100% { transform: translateY(0) scaleY(1); }
             50% { transform: translateY(-8px) scaleY(1.02); }
-          }
-
-          @keyframes mascot-shadow {
-            0%, 100% { transform: scaleX(1.05); opacity: 0.12; transform-origin: 48px 83px; }
-            50% { transform: scaleX(0.78); opacity: 0.07; transform-origin: 48px 83px; }
-          }
-
-          @keyframes mascot-left-foot {
-            0%, 100% { transform: translateY(3px) rotate(10deg); transform-origin: 44px 77px; }
-            50% { transform: translateY(-5px) rotate(-8deg); transform-origin: 44px 77px; }
-          }
-
-          @keyframes mascot-right-foot {
-            0%, 100% { transform: translateY(-5px) rotate(-8deg); transform-origin: 52px 77px; }
-            50% { transform: translateY(3px) rotate(10deg); transform-origin: 52px 77px; }
           }
         `}
       </style>
