@@ -19,3 +19,15 @@ export function useSignKeypoints() {
     mutationFn: (frames: number[][][]) => translateApi.signKeypoints(frames),
   });
 }
+
+export function useGeminiSignGrade() {
+  return useMutation({
+    mutationFn: ({
+      image,
+      expectedLabel,
+    }: {
+      image: string;
+      expectedLabel: string;
+    }) => translateApi.signGrade(image, expectedLabel),
+  });
+}

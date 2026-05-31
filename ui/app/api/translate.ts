@@ -1,5 +1,5 @@
 import { request } from "./request";
-import type { TranslateResult } from "./types";
+import type { GeminiSignGradeResult, TranslateResult } from "./types";
 
 export const translateApi = {
   signToText: (image: string, kind: "alphabet" | "word" = "alphabet") =>
@@ -11,5 +11,10 @@ export const translateApi = {
     request<TranslateResult>("/api/translate/sign-keypoints", {
       method: "POST",
       body: JSON.stringify({ frames }),
+    }),
+  signGrade: (image: string, expectedLabel: string) =>
+    request<GeminiSignGradeResult>("/api/translate/sign-grade", {
+      method: "POST",
+      body: JSON.stringify({ image, expected_label: expectedLabel }),
     }),
 };

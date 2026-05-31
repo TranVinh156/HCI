@@ -11,6 +11,10 @@ class ImageTranslateRequest(BaseModel):
     image: str = Field(..., description="Base64 data URL or raw base64 image")
     kind: str = Field(default="alphabet", description="alphabet | word")
 
+class GeminiSignGradeRequest(BaseModel):
+    image: str = Field(..., description="Base64 data URL or raw base64 image")
+    expected_label: str = Field(..., min_length=1, description="Expected sign label (e.g. A, Thank you)")
+
 
 class PredictionItem(BaseModel):
     label: str
@@ -23,3 +27,10 @@ class TranslateResponse(BaseModel):
     confidence: float
     top_k: list[PredictionItem]
     model_loaded: bool
+
+
+class GeminiSignGradeResponse(BaseModel):
+    expected_label: str
+    is_correct: bool
+    confidence: float
+    reasoning: str

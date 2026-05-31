@@ -19,7 +19,7 @@ import {
 } from "~/components/ui/card";
 import { Skeleton } from "~/components/ui/skeleton";
 import type { Lesson, TranslateResult } from "~/api/types";
-import { useSignToText } from "~/hooks/use-translate";
+import { useGeminiSignGrade, useSignToText } from "~/hooks/use-translate";
 
 type CameraPracticeProps = {
   lesson: Lesson;
@@ -33,17 +33,16 @@ const checklist = [
   "Move slowly like the sample",
 ];
 
-const NON_HAND_LABELS = new Set(["nothing", "del", "space"]);
-
 export function CameraPractice({ lesson }: CameraPracticeProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const [isCameraOn, setIsCameraOn] = useState(false);
   const [error, setError] = useState("");
   const [feedback, setFeedback] = useState<FeedbackState>("idle");
-  const [attempts, setAttempts] = useState(0);
   const [lastResult, setLastResult] = useState<TranslateResult | null>(null);
+  const [geminiReasoning, setGeminiReasoning] = useState("");
   const signToTextMutation = useSignToText();
+  const geminiSignGradeMutation = useGeminiSignGrade();
 
   const expectedLetter =
     lesson.phrase && lesson.phrase.length === 1 && /^[A-Z]$/i.test(lesson.phrase)
@@ -99,6 +98,7 @@ export function CameraPractice({ lesson }: CameraPracticeProps) {
 
     setError("");
     setFeedback("checking");
+    setGeminiReasoning("");
 
     const video = videoRef.current;
     const canvas = document.createElement("canvas");
@@ -114,21 +114,30 @@ export function CameraPractice({ lesson }: CameraPracticeProps) {
     const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
 
     try {
-      const result = await signToTextMutation.mutateAsync({
-        image: dataUrl,
-        kind: "alphabet",
-      });
-      setLastResult(result);
-      const nextAttempts = attempts + 1;
-      setAttempts(nextAttempts);
-
-      let correct: boolean;
       if (isAlphabetLesson) {
-        correct = result.label.toUpperCase() === expectedLetter;
-      } else {
-        const handDetected = !NON_HAND_LABELS.has(result.label.toLowerCase());
-        correct = handDetected && (nextAttempts >= 2 || Math.random() < 0.5);
+        const result = await signToTextMutation.mutateAsync({
+          image: dataUrl,
+          kind: "alphabet",
+        });
+        setLastResult(result);
+        const correct = result.label.toUpperCase() === expectedLetter;
+        setFeedback(correct ? "correct" : "retry");
+        return;
       }
+
+      const graded = await geminiSignGradeMutation.mutateAsync({
+        image: dataUrl,
+        expectedLabel: lesson.phrase ?? lesson.title,
+      });
+      setGeminiReasoning(graded.reasoning);
+      const correct = graded.is_correct && graded.confidence >= 0.45;
+      setLastResult({
+        kind: "gemini-grade",
+        label: graded.is_correct ? "correct" : "incorrect",
+        confidence: graded.confidence,
+        top_k: [],
+        model_loaded: true,
+      });
       setFeedback(correct ? "correct" : "retry");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Scoring failed");
@@ -155,10 +164,10 @@ export function CameraPractice({ lesson }: CameraPracticeProps) {
     correct: {
       title: isAlphabetLesson
         ? `Đúng rồi! AI nhận diện: ${seenLabel}`
-        : "Looks good",
+        : "Correct sign",
       text: isAlphabetLesson
         ? `Độ tin cậy: ${confidencePct}%`
-        : "Your hands and timing look close to the sample. Nice practice.",
+        : geminiReasoning || "Gemini confirmed your sign matches the lesson target.",
       className: "bg-emerald-50 text-emerald-800",
       icon: CheckCircle2,
     },
@@ -168,7 +177,7 @@ export function CameraPractice({ lesson }: CameraPracticeProps) {
         : "Try once more",
       text: isAlphabetLesson
         ? `Độ tin cậy: ${confidencePct}%. Thử lại với hình bàn tay rõ hơn.`
-        : "Bring your hands higher and move a little slower.",
+        : geminiReasoning || "Gemini did not see a close enough match. Try again with clearer hand shape.",
       className: "bg-rose-50 text-rose-800",
       icon: RotateCcw,
     },
@@ -205,7 +214,7 @@ export function CameraPractice({ lesson }: CameraPracticeProps) {
                 : "bg-amber-100 text-amber-700"
             }`}
           >
-            {isAlphabetLesson ? "AI scoring (real)" : "Prototype feedback (mock)"}
+            {isAlphabetLesson ? "AI scoring (real)" : "Gemini scoring (real)"}
           </Badge>
         </div>
       </CardHeader>
@@ -302,6 +311,7 @@ export function CameraPractice({ lesson }: CameraPracticeProps) {
             onClick={() => {
               setFeedback("idle");
               setLastResult(null);
+              setGeminiReasoning("");
             }}
             className="h-12 rounded-2xl font-black text-primary"
           >

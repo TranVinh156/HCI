@@ -2,11 +2,14 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from app.dependencies import get_current_user
 from app.schemas.translate import (
+    GeminiSignGradeRequest,
+    GeminiSignGradeResponse,
     ImageTranslateRequest,
     KeypointTranslateRequest,
     TranslateResponse,
 )
 from app.services.alphabet_service import recognize_image
+from app.services.gemini_sign_grader import grade_sign_with_gemini
 from app.services.sign_service import NUM_KEYPOINTS, KP_DIMS, recognize_keypoints
 
 router = APIRouter(prefix="/api/translate", tags=["translate"])
@@ -42,3 +45,20 @@ async def sign_keypoints(body: KeypointTranslateRequest, _=Depends(get_current_u
                 detail=f"Each frame must be {NUM_KEYPOINTS} keypoints of {KP_DIMS} dims.",
             )
     return recognize_keypoints(body.frames)
+
+
+@router.post("/sign-grade", response_model=GeminiSignGradeResponse)
+async def sign_grade(body: GeminiSignGradeRequest, _=Depends(get_current_user)):
+    """
+    Grade a submitted sign image against an expected label using Gemini.
+    """
+    is_correct, confidence, reasoning = await grade_sign_with_gemini(
+        image=body.image,
+        expected_label=body.expected_label.strip(),
+    )
+    return {
+        "expected_label": body.expected_label.strip(),
+        "is_correct": is_correct,
+        "confidence": confidence,
+        "reasoning": reasoning,
+    }

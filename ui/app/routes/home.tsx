@@ -10,6 +10,7 @@ import {
   Trophy,
 } from "lucide-react";
 import { Link } from "react-router";
+import { Card, CardContent } from "~/components/ui/card";
 
 const featurePanels = [
   {
@@ -114,7 +115,7 @@ function HeroSection() {
           </div>
 
           <div className="relative mx-auto w-full max-w-[34rem]">
-          <div className="rounded-[3rem] bg-white p-5 shadow-[0_24px_60px_rgba(18,48,64,0.12)]">
+            <div className="rounded-[3rem] bg-white p-5 shadow-[0_24px_60px_rgba(18,48,64,0.12)]">
               <MascotHero />
               <div className="mt-5 grid grid-cols-3 gap-3">
                 {[
@@ -159,20 +160,22 @@ function FeatureSection() {
           {featurePanels.map((feature) => {
             const Icon = feature.icon;
             return (
-              <article
+              <Card
                 key={feature.title}
-                className={`min-h-72 rounded-[2.5rem] ${feature.color} p-6 shadow-[0_18px_45px_rgba(18,48,64,0.08)] transition-transform hover:-translate-y-1`}
+                className={`min-h-72 rounded-[2.5rem] ${feature.color} border-0 py-0 shadow-[0_18px_45px_rgba(18,48,64,0.08)] transition-transform hover:-translate-y-1`}
               >
-                <div className="grid size-16 place-items-center rounded-2xl bg-white text-primary shadow-[0_12px_28px_rgba(18,48,64,0.08)]">
-                  <Icon className="size-8 stroke-[3]" />
-                </div>
-                <h3 className="mt-8 text-3xl font-black leading-tight">
-                  {feature.title}
-                </h3>
-                <p className="mt-4 text-base font-black leading-relaxed text-slate-700">
-                  {feature.copy}
-                </p>
-              </article>
+                <CardContent className="p-6">
+                  <div className="grid size-16 place-items-center rounded-2xl bg-white text-primary shadow-[0_12px_28px_rgba(18,48,64,0.08)]">
+                    <Icon className="size-8 stroke-[3]" />
+                  </div>
+                  <h3 className="mt-8 text-3xl font-black leading-tight">
+                    {feature.title}
+                  </h3>
+                  <p className="mt-4 text-base font-black leading-relaxed text-slate-700">
+                    {feature.copy}
+                  </p>
+                </CardContent>
+              </Card>
             );
           })}
         </div>
@@ -215,21 +218,28 @@ function PracticeSection() {
           </div>
         </div>
 
-        <div className="rounded-[3rem] bg-white p-5 shadow-[0_22px_56px_rgba(18,48,64,0.10)]">
-          <div className="grid gap-4 sm:grid-cols-2">
-            {lessonSteps.map((step, index) => (
-              <div key={step} className="rounded-[2rem] bg-[#f6fcff] p-5">
-                <div className="mb-8 flex items-center justify-between">
-                  <span className="grid size-10 place-items-center rounded-2xl bg-primary text-sm font-black text-white">
-                    {index + 1}
-                  </span>
-                  <CheckCircle2 className="size-7 text-emerald-500" />
-                </div>
-                <p className="text-2xl font-black leading-tight">{step}</p>
-              </div>
-            ))}
-          </div>
-        </div>
+        <Card className="rounded-[3rem] border-0 py-0 shadow-[0_22px_56px_rgba(18,48,64,0.10)]">
+          <CardContent className="p-5">
+            <div className="grid gap-4 sm:grid-cols-2">
+              {lessonSteps.map((step, index) => (
+                <Card
+                  key={step}
+                  className="rounded-[2rem] border-0 bg-[#f6fcff] py-0 shadow-none"
+                >
+                  <CardContent className="p-5">
+                    <div className="mb-8 flex items-center justify-between">
+                      <span className="grid size-10 place-items-center rounded-2xl bg-primary text-sm font-black text-white">
+                        {index + 1}
+                      </span>
+                      <CheckCircle2 className="size-7 text-emerald-500" />
+                    </div>
+                    <p className="text-2xl font-black leading-tight">{step}</p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </section>
   );
@@ -238,24 +248,26 @@ function PracticeSection() {
 function FinalCta() {
   return (
     <section className="bg-[#123040] px-4 py-14 text-white">
-      <div className="mx-auto grid max-w-7xl gap-6 rounded-[3rem] bg-white p-6 text-slate-950 shadow-[0_24px_70px_rgba(0,0,0,0.20)] lg:grid-cols-[1fr_auto] lg:items-center">
-        <div>
-          <h2 className="text-4xl font-black leading-none sm:text-5xl">
-            Start with one sign today.
-          </h2>
-          <p className="mt-3 max-w-2xl text-lg font-black text-slate-700">
-            Jump into the lesson path, practice with cards, then test what your
-            hands remember.
-          </p>
-        </div>
-        <Link
-          to="/learn"
-          className="inline-flex h-14 items-center justify-center gap-2 rounded-full bg-primary px-7 text-base font-black uppercase text-white shadow-[0_16px_36px_rgba(0,194,228,0.26)]"
-        >
-          Begin learning
-          <ArrowRight className="size-5" />
-        </Link>
-      </div>
+      <Card className="mx-auto max-w-7xl rounded-[3rem] border-0 py-0 text-slate-950 shadow-[0_24px_70px_rgba(0,0,0,0.20)]">
+        <CardContent className="grid gap-6 p-6 lg:grid-cols-[1fr_auto] lg:items-center">
+          <div>
+            <h2 className="text-4xl font-black leading-none sm:text-5xl">
+              Start with one sign today.
+            </h2>
+            <p className="mt-3 max-w-2xl text-lg font-black text-slate-700">
+              Jump into the lesson path, practice with cards, then test what your
+              hands remember.
+            </p>
+          </div>
+          <Link
+            to="/learn"
+            className="inline-flex h-14 items-center justify-center gap-2 rounded-full bg-primary px-7 text-base font-black uppercase text-white shadow-[0_16px_36px_rgba(0,194,228,0.26)]"
+          >
+            Begin learning
+            <ArrowRight className="size-5" />
+          </Link>
+        </CardContent>
+      </Card>
     </section>
   );
 }

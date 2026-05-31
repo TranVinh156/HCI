@@ -151,3 +151,10 @@ export type TranslateResult = {
   top_k: { label: string; confidence: number }[];
   model_loaded: boolean;
 };
+
+export type GeminiSignGradeResult = {
+  expected_label: string;
+  is_correct: boolean;
+  confidence: number;
+  reasoning: string;
+};

@@ -15,6 +15,9 @@ class Settings(BaseSettings):
     admin_email: str = "admin@signocean.local"
     admin_username: str = "admin"
     admin_password: str = "admin123"
+    google_api_keys: str = ""
+    gemini_model: str = "gemini-2.0-flash"
+    gemini_rpm_limit: int = 15
 
     model_config = {"env_file": BACKEND_DIR / ".env"}
 
