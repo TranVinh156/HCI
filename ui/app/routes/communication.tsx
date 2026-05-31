@@ -1,6 +1,7 @@
 import { ArrowRight, MessageCircle } from "lucide-react";
 import { Link } from "react-router";
 
+import { LessonVisual } from "~/components/learning/lesson-visual";
 import { StudentShell } from "~/components/learning/student-shell";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
@@ -36,8 +37,8 @@ export default function CommunicationRoute() {
             className="rounded-[2rem] border-slate-200 bg-white"
           >
             <CardHeader>
-              <div className="mb-3 grid size-16 place-items-center rounded-2xl text-4xl">
-                {lesson.visual}
+              <div className="mb-3 grid size-16 place-items-center overflow-hidden rounded-2xl text-4xl">
+                <LessonVisual visual={lesson.visual} />
               </div>
               <CardTitle className="text-2xl font-black">
                 {lesson.title}

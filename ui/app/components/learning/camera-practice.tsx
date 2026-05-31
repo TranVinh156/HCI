@@ -34,6 +34,22 @@ const checklist = [
   "Move slowly like the sample",
 ];
 
+function captureCameraFrame(video: HTMLVideoElement): string | null {
+  const canvas = document.createElement("canvas");
+  canvas.width = video.videoWidth || 640;
+  canvas.height = video.videoHeight || 480;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return null;
+
+  ctx.save();
+  ctx.translate(canvas.width, 0);
+  ctx.scale(-1, 1);
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+  ctx.restore();
+
+  return canvas.toDataURL("image/jpeg", 0.85);
+}
+
 export function CameraPractice({ lesson }: CameraPracticeProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -102,17 +118,12 @@ export function CameraPractice({ lesson }: CameraPracticeProps) {
     setGeminiReasoning("");
 
     const video = videoRef.current;
-    const canvas = document.createElement("canvas");
-    canvas.width = video.videoWidth || 640;
-    canvas.height = video.videoHeight || 480;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) {
+    const dataUrl = captureCameraFrame(video);
+    if (!dataUrl) {
       setError("Browser does not support canvas capture.");
       setFeedback("idle");
       return;
     }
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-    const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
 
     try {
       if (isAlphabetLesson) {
@@ -153,8 +164,8 @@ export function CameraPractice({ lesson }: CameraPracticeProps) {
 
   const feedbackCopy = {
     idle: {
-      title: "Mirror practice",
-      text: `Try "${lesson.phrase ?? lesson.title}" while looking at yourself in the mirror view.`,
+      title: "Camera practice",
+      text: `Try "${lesson.phrase ?? lesson.title}" while keeping your hands inside the frame.`,
       className: "text-primary",
       icon: Sparkles,
     },
@@ -206,8 +217,7 @@ export function CameraPractice({ lesson }: CameraPracticeProps) {
               Practice with camera
             </CardTitle>
             <CardDescription className="mt-1 text-base font-semibold">
-              Mirror your camera so the child can compare their sign with the
-              sample.
+              Use the live camera preview to compare the sign with the sample.
             </CardDescription>
           </div>
           <Badge
@@ -229,15 +239,15 @@ export function CameraPractice({ lesson }: CameraPracticeProps) {
               autoPlay
               muted
               playsInline
-              className="size-full object-cover"
+              className="size-full -scale-x-100 object-cover"
             />
             {!isCameraOn ? (
               <div className="absolute inset-0 grid place-items-center p-5 text-center">
                 <div>
                   <Skeleton className="mx-auto mb-4 size-20 rounded-full bg-slate-700" />
-                  <p className="text-lg font-black text-white">Camera mirror</p>
+                  <p className="text-lg font-black text-white">Camera preview</p>
                   <p className="mt-1 text-sm font-semibold text-slate-300">
-                    Turn on the camera to see a reflected preview.
+                    Turn on the camera to see the live preview.
                   </p>
                 </div>
               </div>

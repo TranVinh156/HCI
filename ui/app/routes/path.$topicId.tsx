@@ -184,11 +184,12 @@ export default function PathRoute() {
       </div>
       <div className="relative mx-auto max-w-2xl rounded-[2rem] p-5 sm:p-6">
         {lessons.map((lesson, index) => (
-          <PathNode
-            key={lesson.id}
-            lessonId={lesson.id}
-            title={lesson.title}
-            index={index}
+            <PathNode
+              key={lesson.id}
+              lessonId={lesson.id}
+              title={lesson.title}
+              visual={lesson.visual}
+              index={index}
             isLast={index === lessons.length - 1 && !hasNextPage}
             status={getLessonStatus(
               lesson.id,

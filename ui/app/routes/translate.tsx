@@ -65,6 +65,24 @@ const sampleSigns = [
 
 const ALPHABET_LOCAL_CONFIDENCE_THRESHOLD = 0.8;
 
+function drawCameraFrame(
+  video: HTMLVideoElement,
+  canvas: HTMLCanvasElement
+): string | null {
+  canvas.width = video.videoWidth || 640;
+  canvas.height = video.videoHeight || 480;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return null;
+
+  ctx.save();
+  ctx.translate(canvas.width, 0);
+  ctx.scale(-1, 1);
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+  ctx.restore();
+
+  return canvas.toDataURL("image/jpeg", 0.85);
+}
+
 function translateTextToHands(input: string) {
   return input
     .trim()
@@ -151,12 +169,8 @@ export default function TranslateRoute() {
     try {
       const video = videoRef.current;
       const canvas = canvasRef.current;
-      canvas.width = video.videoWidth || 640;
-      canvas.height = video.videoHeight || 480;
-      const ctx = canvas.getContext("2d");
-      if (!ctx) return;
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-      const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
+      const dataUrl = drawCameraFrame(video, canvas);
+      if (!dataUrl) return;
 
       const result = await signToTextMutation.mutateAsync({
         image: dataUrl,
@@ -200,6 +214,7 @@ export default function TranslateRoute() {
       const frames = await captureClip(videoRef.current, {
         intervalMs: 66,
         onProgress: setClipProgress,
+        flipHorizontal: true,
       });
       const result = await signKeypointsMutation.mutateAsync(frames);
       setStubWarning(!result.model_loaded);
@@ -452,7 +467,7 @@ export default function TranslateRoute() {
                         autoPlay
                         playsInline
                         muted
-                        className="h-full w-full object-cover"
+                        className="h-full w-full -scale-x-100 object-cover"
                       />
                     ) : (
                       <div className="text-center">

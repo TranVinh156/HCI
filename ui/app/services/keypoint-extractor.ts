@@ -37,6 +37,20 @@ function emptyFrame(): number[][] {
   return Array.from({ length: NUM_KEYPOINTS }, () => [0, 0, 0]);
 }
 
+function flipFrameHorizontal(frame: number[][]): number[][] {
+  const flipped = frame.map(([x, y, c]) => [c > 0 ? 1 - x : x, y, c]);
+
+  for (let i = 0; i < 21; i++) {
+    const leftIndex = LH_OFFSET + i;
+    const rightIndex = RH_OFFSET + i;
+    const left = flipped[leftIndex];
+    flipped[leftIndex] = flipped[rightIndex];
+    flipped[rightIndex] = left;
+  }
+
+  return flipped;
+}
+
 export async function ensureLandmarkers(): Promise<void> {
   if (typeof window === "undefined") {
     throw new Error("Keypoint extraction is only available in the browser.");
@@ -71,7 +85,8 @@ export async function ensureLandmarkers(): Promise<void> {
 /** Extract a single (75, 3) frame from the current video frame at timestamp tsMs. */
 export function extractFrame(
   video: HTMLVideoElement,
-  tsMs: number
+  tsMs: number,
+  opts: { flipHorizontal?: boolean } = {}
 ): number[][] {
   if (!poseLandmarker || !handLandmarker) {
     throw new Error("Landmarkers not initialized. Call ensureLandmarkers().");
@@ -96,7 +111,7 @@ export function extractFrame(
     }
   });
 
-  return kp;
+  return opts.flipHorizontal ? flipFrameHorizontal(kp) : kp;
 }
 
 /**
@@ -105,7 +120,11 @@ export function extractFrame(
  */
 export async function captureClip(
   video: HTMLVideoElement,
-  opts: { intervalMs?: number; onProgress?: (n: number) => void } = {}
+  opts: {
+    intervalMs?: number;
+    onProgress?: (n: number) => void;
+    flipHorizontal?: boolean;
+  } = {}
 ): Promise<Keypoints> {
   await ensureLandmarkers();
   const intervalMs = opts.intervalMs ?? 66; // ~32 frames over ~2.1s
@@ -116,7 +135,9 @@ export async function captureClip(
     const timer = setInterval(() => {
       ts += intervalMs;
       try {
-        frames.push(extractFrame(video, ts));
+        frames.push(extractFrame(video, ts, {
+          flipHorizontal: opts.flipHorizontal,
+        }));
       } catch {
         frames.push(emptyFrame());
       }

@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300" viewBox="0 0 300 300" role="img" aria-label="River">
+  <rect width="300" height="300" rx="64" fill="#F0EAFF"/>
+  <circle cx="250" cy="49" r="42" fill="#8B5CF6" opacity="0.16"/>
+  <circle cx="44" cy="247" r="54" fill="#FBBF24" opacity="0.24"/>
+  
+  <path d="M109 201 C112 154, 127 121, 150 93 C173 121, 188 154, 191 201" fill="#8B5CF6" opacity="0.2"/>
+  <path d="M150 93 V215" stroke="#123040" stroke-width="10" stroke-linecap="round"/>
+  <path d="M150 126 C123 109, 99 113, 84 136 C112 145, 135 140, 150 126Z" fill="#8B5CF6" stroke="#123040" stroke-width="7"/>
+  <path d="M151 151 C180 130, 207 133, 222 158 C192 167, 168 163, 151 151Z" fill="#FBBF24" stroke="#123040" stroke-width="7"/>
+  <path d="M105 217 H199" stroke="#123040" stroke-width="10" stroke-linecap="round"/>
+
+  <rect x="46" y="42" width="104" height="34" rx="17" fill="white" opacity="0.9"/>
+  <text x="98" y="64" text-anchor="middle" font-family="Nunito, Arial, sans-serif" font-size="11" font-weight="900" fill="#8B5CF6">VOCABULARY</text>
+  <text x="150" y="244" text-anchor="middle" font-family="Nunito, Arial, sans-serif" font-size="21" font-weight="1000" fill="#123040">River</text>
+  <text x="150" y="269" text-anchor="middle" font-family="Nunito, Arial, sans-serif" font-size="12" font-weight="800" fill="#123040" opacity="0.58">River</text>
+</svg>

@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300" viewBox="0 0 300 300" role="img" aria-label="Different">
+  <rect width="300" height="300" rx="64" fill="#FFF4D6"/>
+  <circle cx="250" cy="49" r="42" fill="#F59E0B" opacity="0.16"/>
+  <circle cx="44" cy="247" r="54" fill="#00C2E4" opacity="0.24"/>
+  
+  <rect x="78" y="68" width="124" height="124" rx="34" fill="white" opacity="0.92"/>
+  <path d="M110 160 C100 132, 103 105, 124 91 C146 76, 180 84, 187 112 C193 136, 180 164, 156 173 C138 180, 119 176, 110 160Z" fill="#F59E0B" opacity="0.18"/>
+  <path d="M120 158 C112 139, 116 115, 131 104 M142 170 L142 104 M162 166 L166 111 M181 154 C186 138, 185 121, 178 111" stroke="#123040" stroke-width="9" stroke-linecap="round"/>
+  <circle cx="190" cy="78" r="16" fill="#00C2E4"/>
+
+  <rect x="46" y="42" width="104" height="34" rx="17" fill="white" opacity="0.9"/>
+  <text x="98" y="64" text-anchor="middle" font-family="Nunito, Arial, sans-serif" font-size="11" font-weight="900" fill="#F59E0B">VOCABULARY</text>
+  <text x="150" y="244" text-anchor="middle" font-family="Nunito, Arial, sans-serif" font-size="21" font-weight="1000" fill="#123040">Different</text>
+  <text x="150" y="269" text-anchor="middle" font-family="Nunito, Arial, sans-serif" font-size="12" font-weight="800" fill="#123040" opacity="0.58">Different</text>
+</svg>
