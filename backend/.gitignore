@@ -30,4 +30,3 @@ dist/
 *.db
 
 ml/datasets/
-ml/models/*.h5
