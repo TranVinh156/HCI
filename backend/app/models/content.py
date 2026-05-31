@@ -31,7 +31,7 @@ class Lesson(Base):
     title: Mapped[str] = mapped_column(String(200), nullable=False)
     phrase: Mapped[str | None] = mapped_column(String(200), nullable=True)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
-    visual: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    visual: Mapped[str | None] = mapped_column(Text, nullable=True)
     sign_hint: Mapped[str | None] = mapped_column(Text, nullable=True)
     difficulty: Mapped[str] = mapped_column(String(10), default="Easy")  # 'Easy' | 'Medium'
     xp: Mapped[int] = mapped_column(Integer, default=10)
