@@ -1,4 +1,4 @@
-import type { KeyboardEvent, MouseEvent, PointerEvent } from "react";
+import type { KeyboardEvent, PointerEvent } from "react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { LucideIcon } from "lucide-react";
 import {
@@ -66,6 +66,8 @@ type FlashcardDeck = {
 };
 
 const PUBLIC_FLASHCARD_PAGE_SIZE = 12;
+const FLASHCARD_TAP_MAX_DRAG = 8;
+const FLASHCARD_SWIPE_THRESHOLD = 110;
 
 export default function PracticeRoute() {
   const [activeTrainingTab, setActiveTrainingTab] =
@@ -274,15 +276,23 @@ function FlashcardPracticeScreen({
   const [cardStatus, setCardStatus] = useState<
     Record<string, FlashcardLearningStatus>
   >({});
+  const [isCardFlipped, setIsCardFlipped] = useState(false);
   const [dragStartX, setDragStartX] = useState<number | null>(null);
   const [dragOffsetX, setDragOffsetX] = useState(0);
 
   useEffect(() => {
     setCurrentIndex(0);
     setCardStatus({});
+    setIsCardFlipped(false);
     setDragStartX(null);
     setDragOffsetX(0);
   }, [topic?.id]);
+
+  useEffect(() => {
+    setIsCardFlipped(false);
+    setDragStartX(null);
+    setDragOffsetX(0);
+  }, [currentIndex]);
 
   const currentCard = cards[currentIndex] ?? null;
   const learnedCount = Object.values(cardStatus).filter(
@@ -301,6 +311,7 @@ function FlashcardPracticeScreen({
         [currentCard.id]: status,
       }));
       setCurrentIndex((index) => Math.min(index + 1, cards.length));
+      setIsCardFlipped(false);
       setDragStartX(null);
       setDragOffsetX(0);
     },
@@ -324,17 +335,30 @@ function FlashcardPracticeScreen({
     setDragOffsetX(event.clientX - dragStartX);
   }
 
-  function handlePointerEnd() {
+  function handlePointerEnd(event: PointerEvent<HTMLDivElement>) {
     if (dragStartX === null) return;
 
-    if (dragOffsetX >= 110) {
+    if (dragOffsetX >= FLASHCARD_SWIPE_THRESHOLD) {
       markCard("learned");
-    } else if (dragOffsetX <= -110) {
+    } else if (dragOffsetX <= -FLASHCARD_SWIPE_THRESHOLD) {
       markCard("review");
     } else {
+      const target = event.target as HTMLElement;
+
+      if (
+        Math.abs(dragOffsetX) <= FLASHCARD_TAP_MAX_DRAG &&
+        !target.closest("video, iframe, a, button")
+      ) {
+        setIsCardFlipped((currentValue) => !currentValue);
+      }
       setDragStartX(null);
       setDragOffsetX(0);
     }
+  }
+
+  function handlePointerCancel() {
+    setDragStartX(null);
+    setDragOffsetX(0);
   }
 
   return (
@@ -389,7 +413,7 @@ function FlashcardPracticeScreen({
                   onPointerDown={handlePointerDown}
                   onPointerMove={handlePointerMove}
                   onPointerUp={handlePointerEnd}
-                  onPointerCancel={handlePointerEnd}
+                  onPointerCancel={handlePointerCancel}
                   className="relative touch-pan-y select-none"
                   style={{
                     transform: `translateX(${dragOffsetX}px) rotate(${dragOffsetX / 18}deg)`,
@@ -397,7 +421,13 @@ function FlashcardPracticeScreen({
                       dragStartX === null ? "transform 180ms ease-out" : "none",
                   }}
                 >
-                  <FlipFlashcard card={currentCard} />
+                  <FlipFlashcard
+                    card={currentCard}
+                    isFlipped={isCardFlipped}
+                    onFlip={() =>
+                      setIsCardFlipped((currentValue) => !currentValue)
+                    }
+                  />
                 </div>
                 <div className="mt-4 grid grid-cols-2 gap-3">
                   <Button
@@ -638,6 +668,8 @@ function QuizTopicGrid({
 
 type FlipFlashcardProps = {
   card: Flashcard;
+  isFlipped: boolean;
+  onFlip: () => void;
   onDelete?: (cardId: string) => void;
   onEdit?: (card: Flashcard) => void;
   onClone?: (card: Flashcard) => void;
@@ -645,26 +677,19 @@ type FlipFlashcardProps = {
 
 function FlipFlashcard({
   card,
+  isFlipped,
+  onFlip,
   onDelete,
   onEdit,
   onClone,
 }: FlipFlashcardProps) {
-  const [isFlipped, setIsFlipped] = useState(false);
   const hasActions = Boolean(onEdit || onClone || onDelete);
-
-  function handleFlipClick(event: MouseEvent<HTMLDivElement>) {
-    const target = event.target as HTMLElement;
-
-    if (target.closest("video, iframe, a, button")) return;
-
-    setIsFlipped((currentValue) => !currentValue);
-  }
 
   function handleFlipKeyDown(event: KeyboardEvent<HTMLDivElement>) {
     if (event.key !== "Enter" && event.key !== " ") return;
 
     event.preventDefault();
-    setIsFlipped((currentValue) => !currentValue);
+    onFlip();
   }
 
   return (
@@ -673,7 +698,6 @@ function FlipFlashcard({
       <div
         role="button"
         tabIndex={0}
-        onClick={handleFlipClick}
         onKeyDown={handleFlipKeyDown}
         aria-pressed={isFlipped}
         aria-label={`${card.front}: ${isFlipped ? "video answer" : "front"}`}
