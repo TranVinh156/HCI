@@ -23,13 +23,15 @@ import {
   CardTitle,
 } from "~/components/ui/card";
 import { LoadingSpinner } from "~/components/ui/loading-spinner";
-import { useSignToText } from "~/hooks/use-translate";
+// import { useSignToText } from "~/hooks/use-translate";
 import { useSignKeypoints, useSignToText } from "~/hooks/use-translate";
 import {
   captureClip,
   ensureLandmarkers,
   NUM_FRAMES,
 } from "~/services/keypoint-extractor";
+import { detectAndCropHand, hasHandInFrame } from "~/services/hand-cropper";
+import { formatLabel } from "~/services/label-formatter";
 import {
   fetchPoseData,
   getSpokenToSignedPoseUrl,
@@ -49,6 +51,7 @@ type Prediction = {
   label: string;
   confidence: number;
   kind: SignKind;
+  topK?: { label: string; confidence: number }[];
 };
 
 const sampleSigns = [
@@ -92,7 +95,6 @@ export default function TranslateRoute() {
   const signToTextMutation = useSignToText();
   const signKeypointsMutation = useSignKeypoints();
   const videoRef = useRef<HTMLVideoElement | null>(null);
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   const isHandsignToText = mode === "handsign-to-text";
   const sourceLabel = isHandsignToText ? "Handsign" : "Text";
@@ -103,9 +105,7 @@ export default function TranslateRoute() {
     if (kind === "alphabet") {
       return predictions.map((p) => p.label).join("");
     }
-    return predictions
-      .map((p) => p.label.replace(/-/g, " "))
-      .join(" ");
+    return predictions.map((p) => formatLabel(p.label, "word")).join(" ");
   }, [predictions, kind]);
 
   const lastPrediction = predictions[predictions.length - 1];
@@ -140,20 +140,20 @@ export default function TranslateRoute() {
   }
 
   async function captureFrame() {
-    if (!videoRef.current || !canvasRef.current || isCapturing) return;
+    if (!videoRef.current || isCapturing) return;
     setIsCapturing(true);
     try {
       const video = videoRef.current;
-      const canvas = canvasRef.current;
-      canvas.width = video.videoWidth || 640;
-      canvas.height = video.videoHeight || 480;
-      const ctx = canvas.getContext("2d");
-      if (!ctx) return;
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-      const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
+
+      const crop = await detectAndCropHand(video);
+      if (!crop) {
+        setCameraError("No hand detected. Please show your hand in frame.");
+        return;
+      }
+      setCameraError(null);
 
       const result = await signToTextMutation.mutateAsync({
-        image: dataUrl,
+        image: crop.dataUrl,
         kind,
       });
       setStubWarning(!result.model_loaded);
@@ -176,11 +176,24 @@ export default function TranslateRoute() {
 
   async function captureWordClip() {
     if (!videoRef.current || isRecording) return;
+    const video = videoRef.current;
+    try {
+      const handVisible = await hasHandInFrame(video);
+      if (!handVisible) {
+        setCameraError(
+          "No hand detected. Please show your hand before recording."
+        );
+        return;
+      }
+    } catch (error) {
+      console.warn("Hand pre-check failed", error);
+    }
+    setCameraError(null);
     setIsRecording(true);
     setClipProgress(0);
     try {
       await ensureLandmarkers();
-      const frames = await captureClip(videoRef.current, {
+      const frames = await captureClip(video, {
         intervalMs: 66,
         onProgress: setClipProgress,
       });
@@ -188,9 +201,17 @@ export default function TranslateRoute() {
       setStubWarning(!result.model_loaded);
 
       if (result.confidence >= 0.3 || !result.model_loaded) {
+        const topK = (result.top_k ?? [])
+          .slice(1)
+          .map((alt) => ({ label: alt.label, confidence: alt.confidence }));
         setPredictions((prev) => [
           ...prev,
-          { label: result.label, confidence: result.confidence, kind: "word" },
+          {
+            label: result.label,
+            confidence: result.confidence,
+            kind: "word",
+            topK,
+          },
         ]);
       }
     } catch (error) {
@@ -281,6 +302,13 @@ export default function TranslateRoute() {
     if (videoRef.current && cameraStream) {
       videoRef.current.srcObject = cameraStream;
     }
+  }, [cameraStream]);
+
+  useEffect(() => {
+    if (!cameraStream) return;
+    ensureLandmarkers().catch((error) => {
+      console.warn("MediaPipe landmarkers failed to preload", error);
+    });
   }, [cameraStream]);
 
   useEffect(() => {
@@ -391,9 +419,11 @@ export default function TranslateRoute() {
                 {sourceLabel}
               </CardTitle>
               <CardDescription className="font-semibold">
-                {isHandsignToText
-                  ? "Bật camera, đưa tay vào khung, bấm Capture để nhận diện."
-                  : "Type a phrase to convert into hand signs."}
+                {!isHandsignToText
+                  ? "Type a phrase to convert into hand signs."
+                  : kind === "word"
+                  ? "Bật camera, đưa tay vào khung, bấm Record và thực hiện cử chỉ trong ~2 giây."
+                  : "Bật camera, đưa tay vào khung, bấm Capture để nhận diện."}
               </CardDescription>
             </CardHeader>
             <CardContent className="flex h-full flex-col gap-4">
@@ -446,7 +476,6 @@ export default function TranslateRoute() {
                       </div>
                     )}
                   </div>
-                  <canvas ref={canvasRef} className="hidden" />
 
                   {cameraStream ? (
                     <div className="flex flex-wrap gap-2">
@@ -489,13 +518,63 @@ export default function TranslateRoute() {
                     </div>
                   ) : null}
 
+                  {isRecording ? (
+                    <div className="h-2 w-full overflow-hidden rounded-full bg-slate-200">
+                      <div
+                        className="h-full bg-primary transition-all"
+                        style={{
+                          width: `${Math.min(
+                            100,
+                            (clipProgress / NUM_FRAMES) * 100
+                          )}%`,
+                        }}
+                      />
+                    </div>
+                  ) : null}
+
                   {lastPrediction ? (
                     <div className="rounded-2xl border-2 border-primary/30 bg-secondary/40 p-3 text-sm font-bold text-slate-800">
-                      Vừa nhận diện:{" "}
-                      <span className="text-primary">
-                        {lastPrediction.label}
-                      </span>{" "}
-                      ({Math.round(lastPrediction.confidence * 100)}%)
+                      <div>
+                        Vừa nhận diện:{" "}
+                        <span className="text-primary">
+                          {formatLabel(lastPrediction.label, lastPrediction.kind)}
+                        </span>{" "}
+                        ({Math.round(lastPrediction.confidence * 100)}%)
+                        {lastPrediction.confidence < 0.5 ? (
+                          <span className="ml-2 rounded bg-amber-100 px-2 py-0.5 text-xs text-amber-700">
+                            low confidence
+                          </span>
+                        ) : null}
+                      </div>
+                      {lastPrediction.topK && lastPrediction.topK.length > 0 ? (
+                        <details className="mt-2 text-xs font-semibold">
+                          <summary className="cursor-pointer text-slate-600">
+                            Other guesses
+                          </summary>
+                          <ul className="mt-1 space-y-0.5 pl-3">
+                            {lastPrediction.topK.map((alt, i) => (
+                              <li key={i}>
+                                {formatLabel(alt.label, lastPrediction.kind)} —{" "}
+                                {Math.round(alt.confidence * 100)}%
+                              </li>
+                            ))}
+                          </ul>
+                        </details>
+                      ) : null}
+                    </div>
+                  ) : null}
+
+                  {kind === "word" && predictions.length > 1 ? (
+                    <div className="flex flex-wrap gap-1.5">
+                      {predictions.map((p, i) => (
+                        <span
+                          key={i}
+                          className="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-xs font-bold text-slate-700"
+                          title={`${Math.round(p.confidence * 100)}%`}
+                        >
+                          {formatLabel(p.label, p.kind)}
+                        </span>
+                      ))}
                     </div>
                   ) : null}
 

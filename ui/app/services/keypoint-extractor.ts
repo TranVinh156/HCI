@@ -20,8 +20,7 @@ const POSE_COUNT = 33;
 const LH_OFFSET = 33;
 const RH_OFFSET = 54;
 
-const WASM_BASE =
-  "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22/wasm";
+const WASM_BASE = "/mediapipe/wasm";
 const POSE_MODEL =
   "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/latest/pose_landmarker_lite.task";
 const HAND_MODEL =
@@ -66,6 +65,15 @@ export async function ensureLandmarkers(): Promise<void> {
     });
   }
   return loadPromise;
+}
+
+/** Return the shared HandLandmarker, loading it on demand. */
+export async function getHandLandmarker(): Promise<HandLandmarkerT> {
+  await ensureLandmarkers();
+  if (!handLandmarker) {
+    throw new Error("HandLandmarker not initialized after ensureLandmarkers().");
+  }
+  return handLandmarker;
 }
 
 /** Extract a single (75, 3) frame from the current video frame at timestamp tsMs. */
