@@ -1,5 +1,5 @@
 import type { KeyboardEvent, PointerEvent } from "react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { LucideIcon } from "lucide-react";
 import {
   ArrowRight,
@@ -403,12 +403,6 @@ function FlashcardPracticeScreen({
           <div className="min-h-[22rem]">
             {currentCard ? (
               <div className="relative mx-auto max-w-xl overflow-hidden px-3 py-4">
-                <div className="pointer-events-none absolute inset-y-8 left-3 flex w-28 items-center justify-center rounded-[1.5rem] border-2 border-rose-200 bg-rose-50 text-rose-700 opacity-80">
-                  <XCircle className="size-8" />
-                </div>
-                <div className="pointer-events-none absolute inset-y-8 right-3 flex w-28 items-center justify-center rounded-[1.5rem] border-2 border-emerald-200 bg-emerald-50 text-emerald-700 opacity-80">
-                  <CheckCircle2 className="size-8" />
-                </div>
                 <div
                   onPointerDown={handlePointerDown}
                   onPointerMove={handlePointerMove}
@@ -736,7 +730,7 @@ function FlipFlashcard({
               source={card.source}
               inverted
             />
-            <FlashcardVideoBack card={card} />
+            <FlashcardVideoBack card={card} isActive={isFlipped} />
             <FlashcardFaceFooter isFlipped={isFlipped} inverted />
           </div>
         </div>
@@ -789,24 +783,53 @@ function FlipFlashcard({
   );
 }
 
-function FlashcardVideoBack({ card }: { card: Flashcard }) {
+function FlashcardVideoBack({
+  card,
+  isActive,
+}: {
+  card: Flashcard;
+  isActive: boolean;
+}) {
+  const videoRef = useRef<HTMLVideoElement | null>(null);
   const videoUrl = card.videoEmbedUrl ?? card.videoUrl;
   const normalizedVideoUrl = videoUrl?.replace(/^https:\/\//, "http://");
+  const youtubeSrc =
+    card.videoKind === "youtube" && card.videoEmbedUrl
+      ? getAutoplayYoutubeEmbedUrl(card.videoEmbedUrl, isActive)
+      : card.videoEmbedUrl;
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video || card.videoKind !== "video") return;
+
+    if (!isActive) {
+      video.pause();
+      return;
+    }
+
+    video.currentTime = 0;
+    void video.play().catch(() => {
+      // Browser autoplay policies can still block playback in some cases.
+    });
+  }, [card.id, card.videoKind, isActive]);
 
   return (
     <div className="min-h-0 space-y-3 overflow-auto text-center">
       {card.videoKind === "video" && normalizedVideoUrl ? (
         <video
+          ref={videoRef}
           className="aspect-video w-full rounded-[1.25rem] bg-slate-950 object-contain"
+          autoPlay={isActive}
           controls
+          muted
           playsInline
           preload="metadata"
           src={normalizedVideoUrl}
         />
-      ) : card.videoKind === "youtube" && card.videoEmbedUrl ? (
+      ) : card.videoKind === "youtube" && youtubeSrc ? (
         <iframe
           className="aspect-video w-full rounded-[1.25rem] bg-slate-950"
-          src={card.videoEmbedUrl}
+          src={youtubeSrc}
           title={`Reference sign video for ${card.front}`}
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
           allowFullScreen
@@ -837,6 +860,20 @@ function FlashcardVideoBack({ card }: { card: Flashcard }) {
       ) : null}
     </div>
   );
+}
+
+function getAutoplayYoutubeEmbedUrl(url: string, shouldAutoplay: boolean) {
+  if (!shouldAutoplay) return url;
+
+  try {
+    const parsed = new URL(url);
+    parsed.searchParams.set("autoplay", "1");
+    parsed.searchParams.set("mute", "1");
+    parsed.searchParams.set("playsinline", "1");
+    return parsed.toString();
+  } catch {
+    return url;
+  }
 }
 
 type FlashcardFaceHeaderProps = {
