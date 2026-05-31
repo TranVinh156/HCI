@@ -29,7 +29,7 @@ function LoadingSpinner({
         aria-hidden="true"
         viewBox="0 0 96 96"
         className={cn(
-          "size-48 animate-bounce text-primary drop-shadow-sm",
+          "size-48 animate-[mascot-run_0.72s_ease-in-out_infinite] text-primary drop-shadow-sm",
           spinnerClassName
         )}
       >
@@ -38,7 +38,17 @@ function LoadingSpinner({
           cy="83"
           rx="25"
           ry="5"
-          className="fill-slate-900/10"
+          className="animate-[mascot-shadow_0.72s_ease-in-out_infinite] fill-slate-900/10"
+        />
+        <path
+          d="M40 76c-5.3 2.8-7.8 6.4-7.2 10.3 6.9.8 12.2-1.4 15-6.5L40 76Z"
+          className="animate-[mascot-left-foot_0.72s_ease-in-out_infinite] fill-amber-400 stroke-slate-900/15 stroke-[1.5]"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M56 76c5.3 2.8 7.8 6.4 7.2 10.3-6.9.8-12.2-1.4-15-6.5L56 76Z"
+          className="animate-[mascot-right-foot_0.72s_ease-in-out_infinite] fill-amber-400 stroke-slate-900/15 stroke-[1.5]"
+          strokeLinejoin="round"
         />
         <path
           d="M48 14c19.2 0 32 13.1 32 33.3 0 22.5-13.6 35.9-32 35.9S16 69.8 16 47.3C16 27.1 28.8 14 48 14Z"
@@ -86,6 +96,29 @@ function LoadingSpinner({
           strokeLinecap="round"
         />
       </svg>
+      <style>
+        {`
+          @keyframes mascot-run {
+            0%, 100% { transform: translateY(0) scaleY(1); }
+            50% { transform: translateY(-8px) scaleY(1.02); }
+          }
+
+          @keyframes mascot-shadow {
+            0%, 100% { transform: scaleX(1.05); opacity: 0.12; transform-origin: 48px 83px; }
+            50% { transform: scaleX(0.78); opacity: 0.07; transform-origin: 48px 83px; }
+          }
+
+          @keyframes mascot-left-foot {
+            0%, 100% { transform: translateY(3px) rotate(10deg); transform-origin: 44px 77px; }
+            50% { transform: translateY(-5px) rotate(-8deg); transform-origin: 44px 77px; }
+          }
+
+          @keyframes mascot-right-foot {
+            0%, 100% { transform: translateY(-5px) rotate(-8deg); transform-origin: 52px 77px; }
+            50% { transform: translateY(3px) rotate(10deg); transform-origin: 52px 77px; }
+          }
+        `}
+      </style>
       {showLabel ? (
         <span className="text-sm font-black uppercase tracking-normal text-slate-500">
           {label}...
