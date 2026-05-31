@@ -11,6 +11,7 @@ import { LoadingSpinner } from "~/components/ui/loading-spinner";
 import { useGetLesson } from "~/hooks/use-get-lessons";
 import { useGetQuizQuestions } from "~/hooks/use-get-quiz-question";
 import { useCompleteLesson, useProgressData } from "~/hooks/use-progress";
+import { playFeedbackSound } from "~/lib/sound-effects";
 
 export default function QuizRoute() {
   const params = useParams();
@@ -74,6 +75,7 @@ export default function QuizRoute() {
   async function next() {
     if (!checked) {
       setChecked(true);
+      playFeedbackSound(isCorrect ? "correct" : "wrong");
       if (isCorrect) setCorrect((value) => value + 1);
       return;
     }

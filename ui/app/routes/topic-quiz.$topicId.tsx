@@ -11,6 +11,7 @@ import { LoadingSpinner } from "~/components/ui/loading-spinner";
 import { useGetTopicQuestions } from "~/hooks/use-get-topic-questions";
 import { useGetTopic } from "~/hooks/use-get-topics";
 import { useCompleteTopicQuiz, useProgressData } from "~/hooks/use-progress";
+import { playFeedbackSound } from "~/lib/sound-effects";
 
 export default function TopicQuizRoute() {
   const params = useParams();
@@ -76,6 +77,7 @@ export default function TopicQuizRoute() {
 
     if (!checked) {
       setChecked(true);
+      playFeedbackSound(isCorrect ? "correct" : "wrong");
       if (isCorrect) setCorrect((value) => value + 1);
       return;
     }

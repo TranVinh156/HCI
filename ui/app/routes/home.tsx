@@ -47,6 +47,7 @@ export default function HomeRoute() {
       <FeatureSection />
       <PracticeSection />
       <FinalCta />
+      <SiteFooter />
     </main>
   );
 }
@@ -269,6 +270,31 @@ function FinalCta() {
         </CardContent>
       </Card>
     </section>
+  );
+}
+
+function SiteFooter() {
+  return (
+    <footer className="bg-[#123040] px-4 pb-8 text-center text-xs font-bold text-white/70">
+      Sound Effect by{" "}
+      <a
+        href="https://pixabay.com/vi/users/universfield-28281460/?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=206492"
+        target="_blank"
+        rel="noreferrer"
+        className="text-white underline underline-offset-4 hover:text-primary"
+      >
+        Universfield
+      </a>{" "}
+      from{" "}
+      <a
+        href="https://pixabay.com/sound-effects//?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=206492"
+        target="_blank"
+        rel="noreferrer"
+        className="text-white underline underline-offset-4 hover:text-primary"
+      >
+        Pixabay
+      </a>
+    </footer>
   );
 }
 

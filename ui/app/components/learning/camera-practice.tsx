@@ -20,6 +20,7 @@ import {
 import { Skeleton } from "~/components/ui/skeleton";
 import type { Lesson, TranslateResult } from "~/api/types";
 import { useGeminiSignGrade, useSignToText } from "~/hooks/use-translate";
+import { playFeedbackSound } from "~/lib/sound-effects";
 
 type CameraPracticeProps = {
   lesson: Lesson;
@@ -122,6 +123,7 @@ export function CameraPractice({ lesson }: CameraPracticeProps) {
         setLastResult(result);
         const correct = result.label.toUpperCase() === expectedLetter;
         setFeedback(correct ? "correct" : "retry");
+        playFeedbackSound(correct ? "correct" : "wrong");
         return;
       }
 
@@ -139,6 +141,7 @@ export function CameraPractice({ lesson }: CameraPracticeProps) {
         model_loaded: true,
       });
       setFeedback(correct ? "correct" : "retry");
+      playFeedbackSound(correct ? "correct" : "wrong");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Scoring failed");
       setFeedback("idle");
