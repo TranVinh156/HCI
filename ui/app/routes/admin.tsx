@@ -14,9 +14,8 @@ import { AdminShell } from "~/components/admin/admin-shell";
 import { Badge } from "~/components/ui/badge";
 import { Card, CardContent } from "~/components/ui/card";
 import { useGetProfiles } from "~/hooks/use-get-profiles";
+import { useGetQuestions } from "~/hooks/use-get-topic-questions";
 import { useGetTopics } from "~/hooks/use-get-topics";
-import { useOverviewReport } from "~/hooks/use-reports";
-import { cn } from "~/lib/utils";
 
 const adminShortcuts = [
   {
@@ -35,23 +34,20 @@ const adminShortcuts = [
     badge: "Assessment",
     className: "md:col-span-1",
   },
-  {
-    title: "Reports",
-    description: "Inspect completion, accuracy, and weak lessons.",
-    to: "/admin/reports",
-    icon: BarChart3,
-    badge: "Analytics",
-    className: "md:col-span-1",
-  }
 ];
 
 export default function AdminRoute() {
   const { data: profiles = [] } = useGetProfiles();
+  const { data: questions = [] } = useGetQuestions();
   const { data: topics = [] } = useGetTopics();
-  const { data: overview } = useOverviewReport();
-  const topicLessonCount = topics.reduce(
-    (total, topic) => total + topic.lesson_count,
-    0
+  const filteredLessons = useMemo(
+    () =>
+      lessons.filter((lesson) =>
+        `${lesson.title} ${lesson.phrase ?? ""}`
+          .toLowerCase()
+          .includes(query.toLowerCase())
+      ),
+    [lessons, query]
   );
   const overviewStats = [
     {
@@ -100,22 +96,33 @@ export default function AdminRoute() {
 
   return (
     <AdminShell title="Learning dashboard" subtitle="Overview">
-      <div className="space-y-6">
-        <Card className="rounded-[1.75rem] border-2 border-[#036678] bg-white py-0 shadow-[2px_4px_0_#036678]">
-          <CardContent className="p-5">
-            <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-              <div>
-                <p className="text-sm font-black uppercase tracking-[0.08em] text-primary">
-                  Overview
-                </p>
-                <h1 className="text-2xl font-black text-slate-950">
-                  Learning dashboard
-                </h1>
-              </div>
-              <Badge className="w-fit bg-primary/10 text-primary">
-                Live stats
-              </Badge>
-            </div>
+      <div className="space-y-5">
+        <div className="grid gap-4 md:grid-cols-4">
+          <StatCard
+            label="Students"
+            value={String(profiles.length)}
+            detail="Active profiles"
+            icon={Users}
+          />
+          <StatCard
+            label="Topics"
+            value={String(topics.length)}
+            detail="Ocean curriculum"
+            icon={BookOpen}
+          />
+          <StatCard
+            label="Lessons"
+            value={String(lessons.length)}
+            detail="Vocabulary and communication"
+            icon={GraduationCap}
+          />
+          <StatCard
+            label="Quiz questions"
+            value={String(questions.length)}
+            detail="Two checks per lesson"
+            icon={ClipboardCheck}
+          />
+        </div>
 
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               {overviewStats.map((stat) => (
@@ -137,24 +144,25 @@ export default function AdminRoute() {
   );
 }
 
-type OverviewStatProps = {
-  label: string;
-  value: string;
-  detail: string;
-  icon: LucideIcon;
-};
-
-function OverviewStat({ label, value, detail, icon: Icon }: OverviewStatProps) {
-  return (
-    <div className="rounded-2xl border border-[#036678]/15 bg-[#f8fdff] p-4">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="text-xs font-black uppercase tracking-[0.06em] text-slate-500">
-            {label}
-          </p>
-          <p className="mt-2 text-3xl font-black leading-none text-slate-950">
-            {value}
-          </p>
+        <div className="grid gap-4 md:grid-cols-3">
+          <StatCard
+            label="Completion"
+            value="0"
+            detail="Total attempts"
+            icon={BarChart3}
+          />
+          <StatCard
+            label="Average accuracy"
+            value="84%"
+            detail="Across all quizzes"
+            icon={ClipboardCheck}
+          />
+          <StatCard
+            label="Mascot prompts"
+            value="12"
+            detail="Reusable coaching lines"
+            icon={Sparkles}
+          />
         </div>
         <div className="grid size-10 place-items-center rounded-2xl bg-primary/10 text-primary">
           <Icon className="size-5" />

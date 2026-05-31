@@ -46,8 +46,8 @@ export default function HomeRoute() {
       <HeroSection />
       <FeatureSection />
       <PracticeSection />
-      <FinalCta />
-      <SiteFooter />
+      {/* <FinalCta /> */}
+      {/* <SiteFooter /> */}
     </main>
   );
 }
@@ -57,7 +57,7 @@ function HeroSection() {
     <section className="relative px-4 pb-14 pt-5">
       <div className="absolute inset-0 [background-image:radial-gradient(#c4e5eb_1px,transparent_1px)] [background-size:24px_24px]" />
       <div className="relative mx-auto max-w-7xl">
-        <header className="flex items-center justify-between gap-4 rounded-full bg-white/90 px-4 py-3 shadow-[0_18px_45px_rgba(18,48,64,0.10)] backdrop-blur">
+        {/* <header className="flex items-center justify-between gap-4 rounded-full bg-white/90 px-4 py-3 shadow-[0_18px_45px_rgba(18,48,64,0.10)] backdrop-blur">
           <Link to="/" className="flex min-w-0 items-center gap-3">
             <div className="grid size-11 shrink-0 place-items-center rounded-2xl bg-primary text-sm font-black text-white shadow-[0_10px_24px_rgba(0,194,228,0.28)]">
               SO
@@ -82,7 +82,7 @@ function HeroSection() {
             Start
             <ArrowRight className="size-5" />
           </Link>
-        </header>
+        </header> */}
 
         <div className="grid min-h-[calc(100dvh-7rem)] items-center gap-10 py-10 lg:grid-cols-[1fr_0.9fr] lg:py-14">
           <div className="max-w-3xl">
@@ -147,7 +147,7 @@ function FeatureSection() {
   return (
     <section className="bg-white px-4 py-16">
       <div className="mx-auto max-w-7xl">
-        <div className="max-w-3xl">
+        <div className="max-w-5xl">
           <h2 className="text-4xl font-black leading-none sm:text-6xl">
             Built for hands, eyes, and memory.
           </h2>
@@ -172,7 +172,7 @@ function FeatureSection() {
                   <h3 className="mt-8 text-3xl font-black leading-tight">
                     {feature.title}
                   </h3>
-                  <p className="mt-4 text-base font-black leading-relaxed text-slate-700">
+                  <p className="mt-4 text-sm font-medium leading-relaxed text-slate-700">
                     {feature.copy}
                   </p>
                 </CardContent>
@@ -197,7 +197,7 @@ function PracticeSection() {
           <h2 className="mt-5 text-4xl font-black leading-none sm:text-6xl">
             Move from "I saw it" to "I can sign it".
           </h2>
-          <p className="mt-4 text-lg font-bold text-slate-700">
+          <p className="mt-4 text-lg font-medium text-slate-700">
             The app connects lessons, camera practice, quizzes, and translation
             into one fast learning path.
           </p>
@@ -234,7 +234,7 @@ function PracticeSection() {
                       </span>
                       <CheckCircle2 className="size-7 text-emerald-500" />
                     </div>
-                    <p className="text-2xl font-black leading-tight">{step}</p>
+                    <p className="text-2xl font-light leading-tight">{step}</p>
                   </CardContent>
                 </Card>
               ))}
