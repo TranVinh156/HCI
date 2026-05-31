@@ -11,11 +11,11 @@ import {
 import { Link } from "react-router";
 
 import { AdminShell } from "~/components/admin/admin-shell";
+import { StatCard } from "~/components/admin/stat-card";
 import { Badge } from "~/components/ui/badge";
 import { Card, CardContent } from "~/components/ui/card";
-import { useGetProfiles } from "~/hooks/use-get-profiles";
-import { useGetQuestions } from "~/hooks/use-get-topic-questions";
-import { useGetTopics } from "~/hooks/use-get-topics";
+import { useOverviewStats } from "~/hooks/use-reports";
+import { cn } from "~/lib/utils";
 
 const adminShortcuts = [
   {
@@ -34,49 +34,15 @@ const adminShortcuts = [
     badge: "Assessment",
     className: "md:col-span-1",
   },
-];
+] as const;
 
 export default function AdminRoute() {
-  const { data: profiles = [] } = useGetProfiles();
-  const { data: questions = [] } = useGetQuestions();
-  const { data: topics = [] } = useGetTopics();
-  const filteredLessons = useMemo(
-    () =>
-      lessons.filter((lesson) =>
-        `${lesson.title} ${lesson.phrase ?? ""}`
-          .toLowerCase()
-          .includes(query.toLowerCase())
-      ),
-    [lessons, query]
-  );
+  const { data: stats } = useOverviewStats();
+
   const overviewStats = [
     {
-      label: "Students",
-      value: String(overview?.total_students ?? profiles.length),
-      detail: "Active profiles",
-      icon: Users,
-    },
-    {
-      label: "Topics",
-      value: String(overview?.total_topics ?? topics.length),
-      detail: "Ocean curriculum",
-      icon: BookOpen,
-    },
-    {
-      label: "Lessons",
-      value: String(overview?.total_lessons ?? topicLessonCount),
-      detail: "Vocabulary and communication",
-      icon: GraduationCap,
-    },
-    {
-      label: "Quiz questions",
-      value: String(overview?.total_questions ?? 0),
-      detail: "Two checks per lesson",
-      icon: ClipboardCheck,
-    },
-    {
       label: "Completion",
-      value: String(overview?.total_attempts ?? 0),
+      value: String(stats?.total_attempts ?? 0),
       detail: "Total attempts",
       icon: BarChart3,
     },
@@ -97,79 +63,67 @@ export default function AdminRoute() {
   return (
     <AdminShell title="Learning dashboard" subtitle="Overview">
       <div className="space-y-5">
+        <Card className="rounded-xl border-slate-200 bg-white py-0">
+          <CardContent className="p-5">
+            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+              <div>
+                <p className="text-sm font-black uppercase text-primary">
+                  Overview
+                </p>
+                <h1 className="mt-1 text-2xl font-black text-slate-950">
+                  Learning dashboard
+                </h1>
+                <p className="mt-1 text-sm font-semibold text-slate-500">
+                  Track learners, content coverage, and practice materials.
+                </p>
+              </div>
+              <Badge className="w-fit bg-primary/10 text-primary">
+                Admin
+              </Badge>
+            </div>
+          </CardContent>
+        </Card>
+
         <div className="grid gap-4 md:grid-cols-4">
           <StatCard
             label="Students"
-            value={String(profiles.length)}
+            value={String(stats?.total_students ?? 0)}
             detail="Active profiles"
             icon={Users}
           />
           <StatCard
             label="Topics"
-            value={String(topics.length)}
+            value={String(stats?.total_topics ?? 0)}
             detail="Ocean curriculum"
             icon={BookOpen}
           />
           <StatCard
             label="Lessons"
-            value={String(lessons.length)}
+            value={String(stats?.total_lessons ?? 0)}
             detail="Vocabulary and communication"
             icon={GraduationCap}
           />
           <StatCard
             label="Quiz questions"
-            value={String(questions.length)}
+            value={String(stats?.total_questions ?? 0)}
             detail="Two checks per lesson"
             icon={ClipboardCheck}
           />
         </div>
 
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              {overviewStats.map((stat) => (
-                <OverviewStat key={stat.label} {...stat} />
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+        <div className="grid gap-4 md:grid-cols-3">
+          {overviewStats.map((stat) => (
+            <StatCard key={stat.label} {...stat} />
+          ))}
+        </div>
 
         <div className="grid auto-rows-[minmax(12rem,auto)] gap-4 md:grid-cols-3">
-          {adminShortcuts.map((item) => {
-            return (
-              <BentoActionCard key={item.to} {...item} />
-            );
-          })}
+          {adminShortcuts.map((item) => (
+            <BentoActionCard key={item.to} {...item} />
+          ))}
         </div>
       </div>
     </AdminShell>
-  );
-}
-
-        <div className="grid gap-4 md:grid-cols-3">
-          <StatCard
-            label="Completion"
-            value="0"
-            detail="Total attempts"
-            icon={BarChart3}
-          />
-          <StatCard
-            label="Average accuracy"
-            value="84%"
-            detail="Across all quizzes"
-            icon={ClipboardCheck}
-          />
-          <StatCard
-            label="Mascot prompts"
-            value="12"
-            detail="Reusable coaching lines"
-            icon={Sparkles}
-          />
-        </div>
-        <div className="grid size-10 place-items-center rounded-2xl bg-primary/10 text-primary">
-          <Icon className="size-5" />
-        </div>
-      </div>
-      <p className="mt-3 text-sm font-bold text-slate-600">{detail}</p>
-    </div>
   );
 }
 

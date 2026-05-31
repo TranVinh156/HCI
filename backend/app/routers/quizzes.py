@@ -18,11 +18,25 @@ async def list_questions(
     db: AsyncSession = Depends(get_db),
     _=Depends(get_current_user),
 ):
-    query = select(QuizQuestion).join(Lesson).order_by(Lesson.sort_order, QuizQuestion.id)
+    query = select(QuizQuestion, Lesson.title).join(Lesson).order_by(Lesson.sort_order, QuizQuestion.id)
     if topic_id:
         query = query.where(QuizQuestion.topic_id == topic_id)
     result = await db.execute(query)
-    return result.scalars().all()
+    return [
+        {
+            "id": question.id,
+            "lesson_id": question.lesson_id,
+            "topic_id": question.topic_id,
+            "lesson_title": lesson_title,
+            "prompt": question.prompt,
+            "type": question.type,
+            "options": question.options,
+            "answer": question.answer,
+            "video_url": question.video_url,
+            "hint": question.hint,
+        }
+        for question, lesson_title in result.all()
+    ]
 
 
 @router.put("/{question_id}", response_model=QuizQuestionOut)

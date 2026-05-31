@@ -13,13 +13,14 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
-import { useGetLessons } from "~/hooks/use-get-lessons";
+import { useGetLessonsPage } from "~/hooks/use-get-lessons";
 
 export default function CommunicationRoute() {
-  const { data: lessons = [], isLoading, isError } = useGetLessons();
-  const communicationLessons = lessons.filter(
-    (lesson) => lesson.type === "communication"
-  );
+  const { data: lessonPage, isLoading, isError } = useGetLessonsPage({
+    type: "communication",
+    pageSize: 100,
+  });
+  const communicationLessons = lessonPage?.items ?? [];
 
   return (
     <StudentShell>

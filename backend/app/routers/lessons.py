@@ -27,6 +27,7 @@ router = APIRouter(prefix="/api/lessons", tags=["lessons"])
 @router.get("", response_model=LessonPageOut)
 async def list_lessons(
     topic_id: uuid.UUID | None = Query(default=None),
+    type: str | None = Query(default=None),
     page: int = Query(default=1, ge=1),
     page_size: int = Query(default=20, ge=1, le=100),
     db: AsyncSession = Depends(get_db),
@@ -46,6 +47,9 @@ async def list_lessons(
     if topic_id:
         count_query = count_query.where(Lesson.topic_id == topic_id)
         q = q.where(Lesson.topic_id == topic_id)
+    if type:
+        count_query = count_query.where(Lesson.type == type)
+        q = q.where(Lesson.type == type)
 
     total = (await db.execute(count_query)).scalar_one()
     result = await db.execute(q)

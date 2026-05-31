@@ -31,7 +31,7 @@ import {
 } from "~/components/ui/card";
 import { LoadingSpinner } from "~/components/ui/loading-spinner";
 import { cn } from "~/lib/utils";
-import { useGetLessons } from "~/hooks/use-get-lessons";
+import { useGetLessonsPage } from "~/hooks/use-get-lessons";
 import { useGetQuestions } from "~/hooks/use-get-topic-questions";
 import { useGetTopics } from "~/hooks/use-get-topics";
 
@@ -84,16 +84,18 @@ export default function PracticeRoute() {
     isError: isQuestionsError,
   } = useGetQuestions(activeTrainingTab === "quizzes");
   const {
-    data: publicFlashcardLessons = [],
+    data: publicFlashcardLessonPage,
     isLoading: isPublicFlashcardsLoading,
     isError: isPublicFlashcardsError,
-  } = useGetLessons(
+  } = useGetLessonsPage(
     {
       topicId: selectedFlashcardTopicId ?? undefined,
+      page: 1,
       pageSize: PUBLIC_FLASHCARD_PAGE_SIZE,
     },
     { enabled: publicFlashcardsEnabled }
   );
+  const publicFlashcardLessons = publicFlashcardLessonPage?.items ?? [];
   const quizTopics = getTopicQuizzes(topics, questions);
   const publicFlashcardDecks = useMemo(
     () => getPublicFlashcardDecks(topics, publicFlashcardLessons),

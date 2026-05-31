@@ -43,6 +43,7 @@ export type QuizQuestion = {
   id: string;
   lesson_id: string;
   topic_id: string;
+  lesson_title?: string | null;
   prompt: string;
   type: string;
   options: string[];
