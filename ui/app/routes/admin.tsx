@@ -11,8 +11,8 @@ import { Card, CardContent } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { useGetLessons } from "~/hooks/use-get-lessons";
 import { useGetProfiles } from "~/hooks/use-get-profiles";
+import { useGetQuestions } from "~/hooks/use-get-topic-questions";
 import { useGetTopics } from "~/hooks/use-get-topics";
-import { useOverviewReport } from "~/hooks/use-reports";
 
 const adminShortcuts = [
   {
@@ -33,8 +33,8 @@ export default function AdminRoute() {
   const [query, setQuery] = useState("");
   const { data: lessons = [], isLoading: isLessonsLoading } = useGetLessons();
   const { data: profiles = [] } = useGetProfiles();
+  const { data: questions = [] } = useGetQuestions();
   const { data: topics = [] } = useGetTopics();
-  const { data: overview } = useOverviewReport();
   const filteredLessons = useMemo(
     () =>
       lessons.filter((lesson) =>
@@ -51,25 +51,25 @@ export default function AdminRoute() {
         <div className="grid gap-4 md:grid-cols-4">
           <StatCard
             label="Students"
-            value={String(overview?.total_students ?? profiles.length)}
+            value={String(profiles.length)}
             detail="Active profiles"
             icon={Users}
           />
           <StatCard
             label="Topics"
-            value={String(overview?.total_topics ?? topics.length)}
+            value={String(topics.length)}
             detail="Ocean curriculum"
             icon={BookOpen}
           />
           <StatCard
             label="Lessons"
-            value={String(overview?.total_lessons ?? lessons.length)}
+            value={String(lessons.length)}
             detail="Vocabulary and communication"
             icon={GraduationCap}
           />
           <StatCard
             label="Quiz questions"
-            value={String(overview?.total_questions ?? 0)}
+            value={String(questions.length)}
             detail="Two checks per lesson"
             icon={ClipboardCheck}
           />
@@ -108,7 +108,7 @@ export default function AdminRoute() {
         <div className="grid gap-4 md:grid-cols-3">
           <StatCard
             label="Completion"
-            value={String(overview?.total_attempts ?? 0)}
+            value="0"
             detail="Total attempts"
             icon={BarChart3}
           />
