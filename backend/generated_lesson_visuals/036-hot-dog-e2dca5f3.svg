@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300" viewBox="0 0 300 300" role="img" aria-label="Hot Dog">
+  <rect width="300" height="300" rx="64" fill="#FFF4D6"/>
+  <circle cx="250" cy="49" r="42" fill="#F59E0B" opacity="0.16"/>
+  <circle cx="44" cy="247" r="54" fill="#00C2E4" opacity="0.24"/>
+  
+  <circle cx="150" cy="145" r="76" fill="white"/>
+  <path d="M91 150 C112 112, 144 99, 184 112 C219 123, 233 158, 214 191 C194 226, 141 229, 109 204 C90 189, 80 170, 91 150Z" fill="#00C2E4" opacity="0.45"/>
+  <path d="M106 179 H196" stroke="#123040" stroke-width="12" stroke-linecap="round"/>
+  <path d="M126 151 C134 130, 164 125, 179 143" stroke="#F59E0B" stroke-width="14" stroke-linecap="round"/>
+  <path d="M150 105 C161 84, 177 81, 191 91" stroke="#123040" stroke-width="8" stroke-linecap="round"/>
+  <circle cx="119" cy="143" r="9" fill="#F59E0B"/>
+  <circle cx="197" cy="154" r="9" fill="#F59E0B"/>
+
+  <rect x="46" y="42" width="104" height="34" rx="17" fill="white" opacity="0.9"/>
+  <text x="98" y="64" text-anchor="middle" font-family="Nunito, Arial, sans-serif" font-size="11" font-weight="900" fill="#F59E0B">VOCABULARY</text>
+  <text x="150" y="244" text-anchor="middle" font-family="Nunito, Arial, sans-serif" font-size="21" font-weight="1000" fill="#123040">Hot Dog</text>
+  <text x="150" y="269" text-anchor="middle" font-family="Nunito, Arial, sans-serif" font-size="12" font-weight="800" fill="#123040" opacity="0.58">Hot Dog</text>
+</svg>

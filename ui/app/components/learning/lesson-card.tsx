@@ -1,6 +1,7 @@
 import { RotateCcw, Video } from "lucide-react";
 import { useRef } from "react";
 
+import { LessonVisual } from "~/components/learning/lesson-visual";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import {
@@ -118,8 +119,12 @@ export function LessonCard({ lesson }: LessonCardProps) {
             allowFullScreen
           />
         ) : (
-          <div className="mx-auto mb-3 grid size-16 place-items-center rounded-full bg-white text-primary">
-            <Video className="size-8" />
+          <div className="mx-auto mb-4 grid size-40 place-items-center overflow-hidden rounded-[2rem] bg-primary/10 text-primary">
+            {lesson.visual ? (
+              <LessonVisual visual={lesson.visual} imageClassName="p-2" />
+            ) : (
+              <Video className="size-10" />
+            )}
           </div>
         )}
 

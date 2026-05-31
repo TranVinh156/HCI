@@ -1,11 +1,13 @@
 import { Check, Lock, Play } from "lucide-react";
 import { Link } from "react-router";
 
+import { LessonVisual } from "~/components/learning/lesson-visual";
 import { cn } from "~/lib/utils";
 
 type PathNodeProps = {
   lessonId: string;
   title: string;
+  visual?: string | null;
   index: number;
   status: "completed" | "current" | "locked";
   isLast?: boolean;
@@ -14,15 +16,17 @@ type PathNodeProps = {
 export function PathNode({
   lessonId,
   title,
+  visual,
   index,
   status,
   isLast,
 }: PathNodeProps) {
   const Icon = status === "completed" ? Check : status === "locked" ? Lock : Play;
+  const showVisual = Boolean(visual);
   const node = (
     <div
       className={cn(
-        "relative z-10 grid size-16 place-items-center rounded-full border-4 text-white transition sm:size-18",
+        "relative z-10 grid size-16 place-items-center overflow-hidden rounded-full border-4 text-white transition sm:size-18",
         status === "completed" &&
           "border-emerald-200 bg-emerald-500",
         status === "current" &&
@@ -31,7 +35,24 @@ export function PathNode({
           "border-slate-200 bg-slate-300 text-slate-500"
       )}
     >
-      <Icon className="size-8" />
+      {showVisual ? (
+        <LessonVisual
+          visual={visual}
+          imageClassName={cn("p-1.5", status === "locked" && "opacity-45")}
+        />
+      ) : (
+        <Icon className="size-8" />
+      )}
+      {showVisual && status === "completed" ? (
+        <span className="absolute bottom-0 right-0 grid size-6 place-items-center rounded-full bg-emerald-500 text-white ring-2 ring-white">
+          <Check className="size-4" />
+        </span>
+      ) : null}
+      {showVisual && status === "locked" ? (
+        <span className="absolute inset-0 grid place-items-center bg-slate-900/20 text-white">
+          <Lock className="size-7 drop-shadow" />
+        </span>
+      ) : null}
     </div>
   );
 
