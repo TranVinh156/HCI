@@ -1,18 +1,22 @@
-import { ArrowRight, BarChart3, BookOpen, ClipboardCheck, GraduationCap, Sparkles, Users } from "lucide-react";
-import { useMemo, useState } from "react";
+import type { LucideIcon } from "lucide-react";
+import {
+  ArrowRight,
+  BarChart3,
+  BookOpen,
+  ClipboardCheck,
+  GraduationCap,
+  Sparkles,
+  Users,
+} from "lucide-react";
 import { Link } from "react-router";
 
 import { AdminShell } from "~/components/admin/admin-shell";
-import { AdminTable } from "~/components/admin/admin-table";
-import { StatCard } from "~/components/admin/stat-card";
 import { Badge } from "~/components/ui/badge";
-import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
-import { Input } from "~/components/ui/input";
-import { useGetLessons } from "~/hooks/use-get-lessons";
 import { useGetProfiles } from "~/hooks/use-get-profiles";
 import { useGetTopics } from "~/hooks/use-get-topics";
 import { useOverviewReport } from "~/hooks/use-reports";
+import { cn } from "~/lib/utils";
 
 const adminShortcuts = [
   {
@@ -20,192 +24,194 @@ const adminShortcuts = [
     description: "Organize topic paths, signs, hints, and rewards.",
     to: "/admin/lessons",
     icon: BookOpen,
+    badge: "Curriculum",
+    className: "md:col-span-2 md:row-span-2",
   },
   {
     title: "Quiz bank",
     description: "Check questions, answers, and practice coverage.",
     to: "/admin/quizzes",
     icon: ClipboardCheck,
+    badge: "Assessment",
+    className: "md:col-span-1",
   },
   {
     title: "Reports",
     description: "Inspect completion, accuracy, and weak lessons.",
     to: "/admin/reports",
     icon: BarChart3,
+    badge: "Analytics",
+    className: "md:col-span-1",
   }
 ];
 
 export default function AdminRoute() {
-  const [query, setQuery] = useState("");
-  const { data: lessons = [], isLoading: isLessonsLoading } = useGetLessons();
   const { data: profiles = [] } = useGetProfiles();
   const { data: topics = [] } = useGetTopics();
   const { data: overview } = useOverviewReport();
-  const filteredLessons = useMemo(
-    () =>
-      lessons.filter((lesson) =>
-        `${lesson.title} ${lesson.phrase ?? ""}`
-          .toLowerCase()
-          .includes(query.toLowerCase())
-      ),
-    [lessons, query]
+  const topicLessonCount = topics.reduce(
+    (total, topic) => total + topic.lesson_count,
+    0
   );
+  const overviewStats = [
+    {
+      label: "Students",
+      value: String(overview?.total_students ?? profiles.length),
+      detail: "Active profiles",
+      icon: Users,
+    },
+    {
+      label: "Topics",
+      value: String(overview?.total_topics ?? topics.length),
+      detail: "Ocean curriculum",
+      icon: BookOpen,
+    },
+    {
+      label: "Lessons",
+      value: String(overview?.total_lessons ?? topicLessonCount),
+      detail: "Vocabulary and communication",
+      icon: GraduationCap,
+    },
+    {
+      label: "Quiz questions",
+      value: String(overview?.total_questions ?? 0),
+      detail: "Two checks per lesson",
+      icon: ClipboardCheck,
+    },
+    {
+      label: "Completion",
+      value: String(overview?.total_attempts ?? 0),
+      detail: "Total attempts",
+      icon: BarChart3,
+    },
+    {
+      label: "Average accuracy",
+      value: "84%",
+      detail: "Across all quizzes",
+      icon: ClipboardCheck,
+    },
+    {
+      label: "Mascot prompts",
+      value: "12",
+      detail: "Reusable coaching lines",
+      icon: Sparkles,
+    },
+  ];
 
   return (
     <AdminShell title="Learning dashboard" subtitle="Overview">
-      <div className="space-y-5">
-        <div className="grid gap-4 md:grid-cols-4">
-          <StatCard
-            label="Students"
-            value={String(overview?.total_students ?? profiles.length)}
-            detail="Active profiles"
-            icon={Users}
-          />
-          <StatCard
-            label="Topics"
-            value={String(overview?.total_topics ?? topics.length)}
-            detail="Ocean curriculum"
-            icon={BookOpen}
-          />
-          <StatCard
-            label="Lessons"
-            value={String(overview?.total_lessons ?? lessons.length)}
-            detail="Vocabulary and communication"
-            icon={GraduationCap}
-          />
-          <StatCard
-            label="Quiz questions"
-            value={String(overview?.total_questions ?? 0)}
-            detail="Two checks per lesson"
-            icon={ClipboardCheck}
-          />
-        </div>
+      <div className="space-y-6">
+        <Card className="rounded-[1.75rem] border-2 border-[#036678] bg-white py-0 shadow-[2px_4px_0_#036678]">
+          <CardContent className="p-5">
+            <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="text-sm font-black uppercase tracking-[0.08em] text-primary">
+                  Overview
+                </p>
+                <h1 className="text-2xl font-black text-slate-950">
+                  Learning dashboard
+                </h1>
+              </div>
+              <Badge className="w-fit bg-primary/10 text-primary">
+                Live stats
+              </Badge>
+            </div>
 
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              {overviewStats.map((stat) => (
+                <OverviewStat key={stat.label} {...stat} />
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        <div className="grid auto-rows-[minmax(12rem,auto)] gap-4 md:grid-cols-3">
           {adminShortcuts.map((item) => {
-            const Icon = item.icon;
             return (
-              <Card key={item.to} className="rounded-xl border-slate-200 py-0">
-                <CardContent className="flex h-full flex-col gap-4 p-5">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="grid size-11 place-items-center rounded-xl text-primary">
-                      <Icon className="size-5" />
-                    </div>
-                    <Badge className="bg-primary/10 text-primary">Route ready</Badge>
-                  </div>
-                  <div className="grow">
-                    <h2 className="text-lg font-black">{item.title}</h2>
-                    <p className="mt-1 text-sm font-semibold text-slate-500">
-                      {item.description}
-                    </p>
-                  </div>
-                  <Button asChild className="h-10 rounded-xl">
-                    <Link to={item.to}>
-                      Open
-                      <ArrowRight className="size-4" />
-                    </Link>
-                  </Button>
-                </CardContent>
-              </Card>
+              <BentoActionCard key={item.to} {...item} />
             );
           })}
         </div>
-
-        <div className="grid gap-4 md:grid-cols-3">
-          <StatCard
-            label="Completion"
-            value={String(overview?.total_attempts ?? 0)}
-            detail="Total attempts"
-            icon={BarChart3}
-          />
-          <StatCard
-            label="Average accuracy"
-            value="84%"
-            detail="Across all quizzes"
-            icon={ClipboardCheck}
-          />
-          <StatCard
-            label="Mascot prompts"
-            value="12"
-            detail="Reusable coaching lines"
-            icon={Sparkles}
-          />
-        </div>
-
-        <section className="rounded-xl border border-slate-200 bg-white p-4">
-          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-            <div>
-              <h2 className="text-lg font-black">Search content</h2>
-              <p className="text-sm font-semibold text-slate-500">
-                Sample area for future filtering, pagination, and uploads.
-              </p>
-            </div>
-            <Input
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search lessons..."
-              className="h-11 md:max-w-xs"
-            />
-          </div>
-        </section>
-
-        <div className="grid gap-5 xl:grid-cols-2">
-          <AdminTable
-            title="Recent students"
-            data={profiles}
-            columns={[
-              { key: "name", header: "Name", render: (item) => item.name },
-              { key: "age", header: "Age", render: (item) => item.age ?? "-" },
-              {
-                key: "guardian",
-                header: "Guardian",
-                render: (item) => item.guardian_name ?? "-",
-              },
-            ]}
-          />
-          <AdminTable
-            title="Topic status"
-            data={topics}
-            columns={[
-              { key: "title", header: "Topic", render: (item) => item.title },
-              {
-                key: "lessons",
-                header: "Lessons",
-                render: (item) => item.lesson_count,
-              },
-              {
-                key: "status",
-                header: "Status",
-                render: () => (
-                  <span className="rounded-full bg-emerald-100 px-2 py-1 text-xs font-black text-emerald-700">
-                    Published
-                  </span>
-                ),
-              },
-            ]}
-          />
-        </div>
-
-        <AdminTable
-          title="Lessons and vocabulary"
-          data={isLessonsLoading ? [] : filteredLessons}
-          columns={[
-            { key: "title", header: "Lesson", render: (item) => item.title },
-            {
-              key: "phrase",
-              header: "Word/Phrase",
-              render: (item) => item.phrase ?? "-",
-            },
-            {
-              key: "type",
-              header: "Type",
-              render: (item) =>
-                item.type === "communication" ? "Communication" : "Vocabulary",
-            },
-            { key: "xp", header: "XP", render: (item) => item.xp },
-          ]}
-        />
       </div>
     </AdminShell>
+  );
+}
+
+type OverviewStatProps = {
+  label: string;
+  value: string;
+  detail: string;
+  icon: LucideIcon;
+};
+
+function OverviewStat({ label, value, detail, icon: Icon }: OverviewStatProps) {
+  return (
+    <div className="rounded-2xl border border-[#036678]/15 bg-[#f8fdff] p-4">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="text-xs font-black uppercase tracking-[0.06em] text-slate-500">
+            {label}
+          </p>
+          <p className="mt-2 text-3xl font-black leading-none text-slate-950">
+            {value}
+          </p>
+        </div>
+        <div className="grid size-10 place-items-center rounded-2xl bg-primary/10 text-primary">
+          <Icon className="size-5" />
+        </div>
+      </div>
+      <p className="mt-3 text-sm font-bold text-slate-600">{detail}</p>
+    </div>
+  );
+}
+
+type BentoActionCardProps = {
+  title: string;
+  description: string;
+  to: string;
+  icon: LucideIcon;
+  badge: string;
+  className?: string;
+};
+
+function BentoActionCard({
+  title,
+  description,
+  to,
+  icon: Icon,
+  badge,
+  className,
+}: BentoActionCardProps) {
+  return (
+    <Link
+      to={to}
+      className={cn(
+        "group relative flex min-h-48 overflow-hidden rounded-[1.75rem] border-2 border-[#036678] bg-white p-5 shadow-[2px_4px_0_#036678] transition-all hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[4px_6px_0_#036678]",
+        className
+      )}
+    >
+      <div className="flex h-full w-full flex-col justify-between gap-5">
+        <div className="flex items-start justify-between gap-3">
+          <div className="grid size-12 place-items-center rounded-2xl bg-primary/10 text-primary">
+            <Icon className="size-6" />
+          </div>
+          <Badge className="bg-primary/10 text-primary">{badge}</Badge>
+        </div>
+
+        <div className="max-w-xl">
+          <h2 className="text-2xl font-black leading-tight text-slate-950">
+            {title}
+          </h2>
+          <p className="mt-2 text-sm font-semibold leading-6 text-slate-600">
+            {description}
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2 text-sm font-black text-primary">
+          Open
+          <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
+        </div>
+      </div>
+    </Link>
   );
 }

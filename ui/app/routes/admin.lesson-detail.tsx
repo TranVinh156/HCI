@@ -16,6 +16,10 @@ import { lessonsApi } from "~/api/lessons";
 import type { Exercise, Lesson } from "~/api/types";
 import { AdminShell } from "~/components/admin/admin-shell";
 import { AdminTable } from "~/components/admin/admin-table";
+import {
+  LessonVisual,
+  LessonVisualUpload,
+} from "~/components/learning/lesson-visual";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
@@ -71,7 +75,7 @@ function createLessonForm(lesson?: Lesson): LessonFormState {
     title: lesson?.title ?? "",
     phrase: lesson?.phrase ?? "",
     description: lesson?.description ?? "",
-    visual: lesson?.visual ?? "⭐",
+    visual: lesson?.visual ?? "",
     signHint: lesson?.sign_hint ?? "",
     type: lesson?.type ?? "vocabulary",
     difficulty: lesson?.difficulty ?? "Easy",
@@ -177,7 +181,7 @@ export default function AdminLessonDetailRoute() {
         phrase,
         description:
           lessonForm.description.trim() || `Practice the sign for ${phrase}.`,
-        visual: lessonForm.visual.trim() || "⭐",
+        visual: lessonForm.visual.trim() || null,
         sign_hint:
           lessonForm.signHint.trim() || "Add a sign hint for learners.",
         type: lessonForm.type,
@@ -295,8 +299,8 @@ export default function AdminLessonDetailRoute() {
 
         <Card className="rounded-xl border border-slate-200 py-0">
           <CardContent className="grid gap-5 p-5 lg:grid-cols-[auto_1fr_auto] lg:items-center">
-            <div className="grid size-24 place-items-center rounded-2xl bg-primary/10 text-5xl">
-              {lesson.visual}
+            <div className="grid size-24 place-items-center overflow-hidden rounded-2xl bg-primary/10 text-5xl">
+              <LessonVisual visual={lesson.visual} />
             </div>
             <div className="min-w-0">
               <p className="text-sm font-black uppercase text-primary">
@@ -483,7 +487,7 @@ function LessonEditForm({
           className="h-11 bg-slate-100"
         />
       </div>
-      <div className="grid gap-3 md:grid-cols-[1fr_7rem_10rem_10rem_7rem]">
+      <div className="grid gap-3 md:grid-cols-[1fr_10rem_10rem_7rem]">
         <Input
           value={form.description}
           onChange={(event) =>
@@ -493,14 +497,6 @@ function LessonEditForm({
             }))
           }
           placeholder="Lesson description"
-          className="h-11 bg-slate-100"
-        />
-        <Input
-          value={form.visual}
-          onChange={(event) =>
-            setForm((current) => ({ ...current, visual: event.target.value }))
-          }
-          placeholder="Visual"
           className="h-11 bg-slate-100"
         />
         <select
@@ -537,6 +533,10 @@ function LessonEditForm({
           className="h-11 bg-slate-100"
         />
       </div>
+      <LessonVisualUpload
+        value={form.visual}
+        onChange={(visual) => setForm((current) => ({ ...current, visual }))}
+      />
       <textarea
         value={form.signHint}
         onChange={(event) =>
