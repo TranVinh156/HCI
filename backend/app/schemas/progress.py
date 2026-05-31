@@ -27,6 +27,7 @@ class BadgeOut(BaseModel):
 
 class LessonAttemptOut(BaseModel):
     lesson_id: uuid.UUID
+    lesson_title: str | None = None
     correct: int
     total: int
     completed_at: datetime
@@ -50,6 +51,8 @@ class ProgressOut(BaseModel):
     xp: int
     stars: int
     streak: int
+    total_lessons: int
+    completion_percentage: int
     completed_lesson_ids: list[uuid.UUID]
     earned_badges: list[BadgeOut]
     attempts: list[LessonAttemptOut]

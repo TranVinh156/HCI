@@ -12,12 +12,9 @@ export default function ProfileRoute() {
   const user = data?.user ?? null;
   const profile = data?.profile ?? null;
   const progress = data?.progress ?? null;
-  const lessons = data?.lessons ?? [];
 
   const completedLessonIds = progress?.completed_lesson_ids ?? [];
-  const completion = Math.round(
-    (completedLessonIds.length / Math.max(lessons.length, 1)) * 100
-  );
+  const completion = progress?.completion_percentage ?? 0;
   const earnedBadges = progress?.earned_badges ?? [];
   const attempts = progress?.attempts ?? [];
   const totalCorrect = attempts.reduce(
@@ -30,7 +27,6 @@ export default function ProfileRoute() {
   );
   const accuracy =
     totalQuestions > 0 ? Math.round((totalCorrect / totalQuestions) * 100) : 0;
-  const lessonTitleById = new Map(lessons.map((lesson) => [lesson.id, lesson.title]));
   const displayName = profile?.name ?? user?.username ?? "Learner";
   const avatarLabel = getAvatarLabel(profile?.avatar, displayName);
 
@@ -131,7 +127,7 @@ export default function ProfileRoute() {
                       >
                         <div>
                           <p className="font-black text-slate-900">
-                            {lessonTitleById.get(attempt.lesson_id) ?? "Unknown lesson"}
+                            {attempt.lesson_title ?? "Unknown lesson"}
                           </p>
                           <p className="text-sm font-semibold text-slate-500">
                             {attempt.correct}/{attempt.total} correct

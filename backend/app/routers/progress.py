@@ -1,13 +1,13 @@
 import uuid
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import func, select
 
 from app.database import get_db
 from app.models.user import User, StudentProfile
-from app.models.content import Topic
+from app.models.content import Lesson, Topic
 from app.models.progress import StudentProgress, CompletedLesson, LessonAttempt, TopicQuizAttempt, EarnedBadge
-from app.schemas.progress import CompleteLessonRequest, CompleteTopicQuizRequest, ProgressOut, BadgeOut, TopicQuizAttemptOut
+from app.schemas.progress import CompleteLessonRequest, CompleteTopicQuizRequest, ProgressOut, BadgeOut, LessonAttemptOut, TopicQuizAttemptOut
 from app.services.progress import complete_lesson, get_or_create_progress
 from app.dependencies import get_current_user
 
@@ -30,7 +30,16 @@ async def get_progress(profile_id: uuid.UUID, db: AsyncSession = Depends(get_db)
     await db.commit()
 
     completed = (await db.execute(select(CompletedLesson).where(CompletedLesson.student_profile_id == profile_id))).scalars().all()
-    attempts = (await db.execute(select(LessonAttempt).where(LessonAttempt.student_profile_id == profile_id))).scalars().all()
+    attempt_rows = (await db.execute(
+        select(LessonAttempt, Lesson.title)
+        .join(Lesson, Lesson.id == LessonAttempt.lesson_id)
+        .where(LessonAttempt.student_profile_id == profile_id)
+        .order_by(LessonAttempt.completed_at)
+    )).all()
+    total_lessons = (await db.execute(select(func.count(Lesson.id)))).scalar_one()
+    completion_percentage = round(
+        (len(completed) / total_lessons) * 100
+    ) if total_lessons else 0
     earned = (await db.execute(
         select(EarnedBadge).where(EarnedBadge.student_profile_id == profile_id)
     )).scalars().all()
@@ -46,9 +55,20 @@ async def get_progress(profile_id: uuid.UUID, db: AsyncSession = Depends(get_db)
         xp=prog.xp,
         stars=prog.stars,
         streak=prog.streak,
+        total_lessons=total_lessons,
+        completion_percentage=completion_percentage,
         completed_lesson_ids=[c.lesson_id for c in completed],
         earned_badges=[BadgeOut.model_validate(b) for b in badges],
-        attempts=attempts,
+        attempts=[
+            LessonAttemptOut(
+                lesson_id=attempt.lesson_id,
+                lesson_title=lesson_title,
+                correct=attempt.correct,
+                total=attempt.total,
+                completed_at=attempt.completed_at,
+            )
+            for attempt, lesson_title in attempt_rows
+        ],
     )
 
 

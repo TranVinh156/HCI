@@ -98,10 +98,13 @@ export type Progress = {
   xp: number;
   stars: number;
   streak: number;
+  total_lessons: number;
+  completion_percentage: number;
   completed_lesson_ids: string[];
   earned_badges: Badge[];
   attempts: {
     lesson_id: string;
+    lesson_title: string | null;
     correct: number;
     total: number;
     completed_at: string;
