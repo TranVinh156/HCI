@@ -12,4 +12,9 @@ export const translateApi = {
       method: "POST",
       body: JSON.stringify({ frames }),
     }),
+  signLandmark: (frames: number[][][]) =>
+    request<TranslateResult>("/api/translate/sign-landmark", {
+      method: "POST",
+      body: JSON.stringify({ frames }),
+    }),
 };

@@ -7,6 +7,7 @@ from app.schemas.translate import (
     TranslateResponse,
 )
 from app.services.alphabet_service import recognize_image
+from app.services.landmark_sign_service import recognize_landmark_keypoints
 from app.services.sign_service import NUM_KEYPOINTS, KP_DIMS, recognize_keypoints
 
 router = APIRouter(prefix="/api/translate", tags=["translate"])
@@ -42,3 +43,20 @@ async def sign_keypoints(body: KeypointTranslateRequest, _=Depends(get_current_u
                 detail=f"Each frame must be {NUM_KEYPOINTS} keypoints of {KP_DIMS} dims.",
             )
     return recognize_keypoints(body.frames)
+
+
+@router.post("/sign-landmark", response_model=TranslateResponse)
+async def sign_landmark(body: KeypointTranslateRequest, _=Depends(get_current_user)):
+    """Predict letter/digit/word using the BiLSTM landmark model (46 classes).
+
+    Accepts frames of shape (T, 75, 3) — same wire format as /sign-keypoints,
+    but the 3rd dim must be z (not visibility). T can be 1 for a static sign
+    (the backend repeats it x20) or any length (uniformly sampled to 20).
+    """
+    for frame in body.frames:
+        if len(frame) != NUM_KEYPOINTS or any(len(pt) != KP_DIMS for pt in frame):
+            raise HTTPException(
+                status_code=422,
+                detail=f"Each frame must be {NUM_KEYPOINTS} keypoints of {KP_DIMS} dims.",
+            )
+    return recognize_landmark_keypoints(body.frames)

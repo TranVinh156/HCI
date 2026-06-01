@@ -19,3 +19,9 @@ export function useSignKeypoints() {
     mutationFn: (frames: number[][][]) => translateApi.signKeypoints(frames),
   });
 }
+
+export function useSignLandmark() {
+  return useMutation({
+    mutationFn: (frames: number[][][]) => translateApi.signLandmark(frames),
+  });
+}

@@ -136,3 +136,82 @@ export async function captureClip(
     }, intervalMs);
   });
 }
+
+/**
+ * Variant of the extractor for the BiLSTM landmark model (46 classes).
+ *
+ * Differences from the WLASL Transformer extractor above:
+ *   - 3rd dim is `z` (depth), not visibility / 1.0 — the new model was trained
+ *     on (x, y, z) for both pose and hands.
+ *   - Clips are 20 frames long, not 32.
+ *   - Default capture interval ~100ms (~2s clip) matches typical WLASL video length.
+ *
+ * Layout on the wire stays (T, 75, 3) = [pose(33), LH(21), RH(21)]; the backend
+ * reorders to [LH, RH, pose] flat to match the training feature layout.
+ */
+export const NUM_FRAMES_LANDMARK = 20;
+
+export function extractLandmarkFrame(
+  video: HTMLVideoElement,
+  tsMs: number
+): number[][] {
+  if (!poseLandmarker || !handLandmarker) {
+    throw new Error("Landmarkers not initialized. Call ensureLandmarkers().");
+  }
+  const kp = emptyFrame();
+
+  const pose = poseLandmarker.detectForVideo(video, tsMs);
+  const poseLms = pose.landmarks?.[0];
+  if (poseLms) {
+    for (let i = 0; i < Math.min(POSE_COUNT, poseLms.length); i++) {
+      const lm = poseLms[i];
+      kp[i] = [lm.x, lm.y, lm.z ?? 0];
+    }
+  }
+
+  const hand = handLandmarker.detectForVideo(video, tsMs);
+  hand.landmarks?.forEach((lms, j) => {
+    const side = hand.handedness?.[j]?.[0]?.categoryName;
+    const offset = side === "Left" ? LH_OFFSET : RH_OFFSET;
+    for (let i = 0; i < Math.min(21, lms.length); i++) {
+      kp[offset + i] = [lms[i].x, lms[i].y, lms[i].z ?? 0];
+    }
+  });
+
+  return kp;
+}
+
+/** Capture a single (75, 3) frame; backend repeats it x20 for static signs. */
+export async function captureStaticLandmark(
+  video: HTMLVideoElement
+): Promise<Keypoints> {
+  await ensureLandmarkers();
+  return [extractLandmarkFrame(video, performance.now())];
+}
+
+/** Record a 20-frame landmark clip for dynamic signs (words). */
+export async function captureLandmarkClip(
+  video: HTMLVideoElement,
+  opts: { intervalMs?: number; onProgress?: (n: number) => void } = {}
+): Promise<Keypoints> {
+  await ensureLandmarkers();
+  const intervalMs = opts.intervalMs ?? 100; // ~20 frames over ~2.0s
+  const frames: number[][][] = [];
+  let ts = performance.now();
+
+  return new Promise<Keypoints>((resolve) => {
+    const timer = setInterval(() => {
+      ts += intervalMs;
+      try {
+        frames.push(extractLandmarkFrame(video, ts));
+      } catch {
+        frames.push(emptyFrame());
+      }
+      opts.onProgress?.(frames.length);
+      if (frames.length >= NUM_FRAMES_LANDMARK) {
+        clearInterval(timer);
+        resolve(frames);
+      }
+    }, intervalMs);
+  });
+}

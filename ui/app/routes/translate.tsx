@@ -24,11 +24,18 @@ import {
 } from "~/components/ui/card";
 import { LoadingSpinner } from "~/components/ui/loading-spinner";
 // import { useSignToText } from "~/hooks/use-translate";
-import { useSignKeypoints, useSignToText } from "~/hooks/use-translate";
+import {
+  useSignKeypoints,
+  useSignLandmark,
+  useSignToText,
+} from "~/hooks/use-translate";
 import {
   captureClip,
+  captureLandmarkClip,
+  captureStaticLandmark,
   ensureLandmarkers,
   NUM_FRAMES,
+  NUM_FRAMES_LANDMARK,
 } from "~/services/keypoint-extractor";
 import { detectAndCropHand, hasHandInFrame } from "~/services/hand-cropper";
 import { formatLabel } from "~/services/label-formatter";
@@ -45,7 +52,8 @@ import {
 import { SkeletonPoseViewer } from "~/components/SkeletonPoseViewer";
 
 type TranslateMode = "handsign-to-text" | "text-to-handsign";
-type SignKind = "alphabet" | "word";
+type SignKind = "alphabet" | "word" | "landmark";
+type LandmarkCaptureMode = "static" | "dynamic";
 
 type Prediction = {
   label: string;
@@ -92,8 +100,11 @@ export default function TranslateRoute() {
   const [stubWarning, setStubWarning] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [clipProgress, setClipProgress] = useState(0);
+  const [landmarkCaptureMode, setLandmarkCaptureMode] =
+    useState<LandmarkCaptureMode>("static");
   const signToTextMutation = useSignToText();
   const signKeypointsMutation = useSignKeypoints();
+  const signLandmarkMutation = useSignLandmark();
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
   const isHandsignToText = mode === "handsign-to-text";
@@ -104,6 +115,19 @@ export default function TranslateRoute() {
     if (predictions.length === 0) return "";
     if (kind === "alphabet") {
       return predictions.map((p) => p.label).join("");
+    }
+    if (kind === "landmark") {
+      // Letters/digits glue together, multi-char glosses get spaces.
+      return predictions
+        .map((p, i) => {
+          const formatted = formatLabel(p.label, "landmark");
+          if (i === 0) return formatted;
+          const prev = predictions[i - 1];
+          const prevIsChar = prev.label.length <= 1;
+          const curIsChar = p.label.length <= 1;
+          return prevIsChar && curIsChar ? formatted : ` ${formatted}`;
+        })
+        .join("");
     }
     return predictions.map((p) => formatLabel(p.label, "word")).join(" ");
   }, [predictions, kind]);
@@ -141,6 +165,8 @@ export default function TranslateRoute() {
 
   async function captureFrame() {
     if (!videoRef.current || isCapturing) return;
+    if (kind !== "alphabet" && kind !== "word") return;
+    const legacyKind = kind;
     setIsCapturing(true);
     try {
       const video = videoRef.current;
@@ -154,14 +180,14 @@ export default function TranslateRoute() {
 
       const result = await signToTextMutation.mutateAsync({
         image: crop.dataUrl,
-        kind,
+        kind: legacyKind,
       });
       setStubWarning(!result.model_loaded);
 
       if (result.confidence >= 0.5 || !result.model_loaded) {
         setPredictions((prev) => [
           ...prev,
-          { label: result.label, confidence: result.confidence, kind },
+          { label: result.label, confidence: result.confidence, kind: legacyKind },
         ]);
       }
     } catch (error) {
@@ -171,6 +197,97 @@ export default function TranslateRoute() {
       );
     } finally {
       setIsCapturing(false);
+    }
+  }
+
+  async function captureLandmarkStatic() {
+    if (!videoRef.current || isCapturing) return;
+    setIsCapturing(true);
+    try {
+      const video = videoRef.current;
+      const handVisible = await hasHandInFrame(video);
+      if (!handVisible) {
+        setCameraError("No hand detected. Please show your hand in frame.");
+        return;
+      }
+      setCameraError(null);
+      await ensureLandmarkers();
+      const frames = await captureStaticLandmark(video);
+      const result = await signLandmarkMutation.mutateAsync(frames);
+      setStubWarning(!result.model_loaded);
+
+      if (result.confidence >= 0.5 || !result.model_loaded) {
+        const topK = (result.top_k ?? [])
+          .slice(1)
+          .map((alt) => ({ label: alt.label, confidence: alt.confidence }));
+        setPredictions((prev) => [
+          ...prev,
+          {
+            label: result.label,
+            confidence: result.confidence,
+            kind: "landmark",
+            topK,
+          },
+        ]);
+      }
+    } catch (error) {
+      console.error(error);
+      setCameraError(
+        error instanceof Error ? error.message : "Recognition failed"
+      );
+    } finally {
+      setIsCapturing(false);
+    }
+  }
+
+  async function captureLandmarkDynamic() {
+    if (!videoRef.current || isRecording) return;
+    const video = videoRef.current;
+    try {
+      const handVisible = await hasHandInFrame(video);
+      if (!handVisible) {
+        setCameraError(
+          "No hand detected. Please show your hand before recording."
+        );
+        return;
+      }
+    } catch (error) {
+      console.warn("Hand pre-check failed", error);
+    }
+    setCameraError(null);
+    setIsRecording(true);
+    setClipProgress(0);
+    try {
+      await ensureLandmarkers();
+      const frames = await captureLandmarkClip(video, {
+        intervalMs: 100,
+        onProgress: setClipProgress,
+      });
+      const result = await signLandmarkMutation.mutateAsync(frames);
+      setStubWarning(!result.model_loaded);
+
+      if (result.confidence >= 0.5 || !result.model_loaded) {
+        const topK = (result.top_k ?? [])
+          .slice(1)
+          .map((alt) => ({ label: alt.label, confidence: alt.confidence }));
+        setPredictions((prev) => [
+          ...prev,
+          {
+            label: result.label,
+            confidence: result.confidence,
+            kind: "landmark",
+            topK,
+          },
+        ]);
+      }
+    } catch (error) {
+      console.error(error);
+      setCameraError(
+        error instanceof Error ? error.message : "Recognition failed"
+      );
+    } finally {
+      setIsRecording(false);
+      setClipProgress(0);
     }
   }
 
@@ -347,12 +464,20 @@ export default function TranslateRoute() {
   }, [cameraStream, isHandsignToText]);
 
   useEffect(() => {
-    if (!autoCapture || !cameraStream || kind !== "alphabet") return;
-    const timer = setInterval(() => {
-      captureFrame();
-    }, 1500);
-    return () => clearInterval(timer);
-  }, [autoCapture, cameraStream, kind]);
+    if (!autoCapture || !cameraStream) return;
+    if (kind === "alphabet") {
+      const timer = setInterval(() => {
+        captureFrame();
+      }, 1500);
+      return () => clearInterval(timer);
+    }
+    if (kind === "landmark" && landmarkCaptureMode === "static") {
+      const timer = setInterval(() => {
+        captureLandmarkStatic();
+      }, 1500);
+      return () => clearInterval(timer);
+    }
+  }, [autoCapture, cameraStream, kind, landmarkCaptureMode]);
 
   return (
     <StudentShell>
@@ -404,6 +529,50 @@ export default function TranslateRoute() {
             >
               Vocabulary
             </Button>
+            <Button
+              type="button"
+              onClick={() => {
+                setKind("landmark");
+                clearPredictions();
+              }}
+              variant={kind === "landmark" ? "default" : "outline"}
+              className="h-9 rounded-xl font-black"
+            >
+              Landmark (A-Z, 0-9, words)
+            </Button>
+            {kind === "landmark" ? (
+              <div className="ml-2 flex items-center gap-1 border-l border-slate-200 pl-2">
+                <span className="text-xs font-black uppercase text-slate-500">
+                  Capture:
+                </span>
+                <Button
+                  type="button"
+                  onClick={() => {
+                    setLandmarkCaptureMode("static");
+                    clearPredictions();
+                  }}
+                  variant={
+                    landmarkCaptureMode === "static" ? "default" : "outline"
+                  }
+                  className="h-8 rounded-lg px-2 text-xs font-black"
+                >
+                  Static
+                </Button>
+                <Button
+                  type="button"
+                  onClick={() => {
+                    setLandmarkCaptureMode("dynamic");
+                    clearPredictions();
+                  }}
+                  variant={
+                    landmarkCaptureMode === "dynamic" ? "default" : "outline"
+                  }
+                  className="h-8 rounded-lg px-2 text-xs font-black"
+                >
+                  Dynamic
+                </Button>
+              </div>
+            ) : null}
           </div>
         ) : null}
 
@@ -423,6 +592,10 @@ export default function TranslateRoute() {
                   ? "Type a phrase to convert into hand signs."
                   : kind === "word"
                   ? "Bật camera, đưa tay vào khung, bấm Record và thực hiện cử chỉ trong ~2 giây."
+                  : kind === "landmark" && landmarkCaptureMode === "dynamic"
+                  ? "Bật camera, đưa tay vào khung, bấm Record và thực hiện cử chỉ trong ~2 giây (mô hình mới — words)."
+                  : kind === "landmark"
+                  ? "Bật camera, đưa tay vào khung, bấm Capture để nhận diện ký tự / số (mô hình mới)."
                   : "Bật camera, đưa tay vào khung, bấm Capture để nhận diện."}
               </CardDescription>
             </CardHeader>
@@ -481,7 +654,15 @@ export default function TranslateRoute() {
                     <div className="flex flex-wrap gap-2">
                       <Button
                         type="button"
-                        onClick={kind === "word" ? captureWordClip : captureFrame}
+                        onClick={() => {
+                          if (kind === "word") return captureWordClip();
+                          if (kind === "landmark") {
+                            return landmarkCaptureMode === "dynamic"
+                              ? captureLandmarkDynamic()
+                              : captureLandmarkStatic();
+                          }
+                          return captureFrame();
+                        }}
                         disabled={isCapturing || isRecording}
                         className="h-11 rounded-2xl font-black"
                       >
@@ -491,12 +672,21 @@ export default function TranslateRoute() {
                           <ScanLine className="size-4" />
                         )}
                         {isRecording
-                          ? `Recording ${clipProgress}/${NUM_FRAMES}`
+                          ? `Recording ${clipProgress}/${
+                              kind === "landmark"
+                                ? NUM_FRAMES_LANDMARK
+                                : NUM_FRAMES
+                            }`
                           : kind === "word"
+                          ? "Record sign (~2s)"
+                          : kind === "landmark" &&
+                            landmarkCaptureMode === "dynamic"
                           ? "Record sign (~2s)"
                           : "Capture sign"}
                       </Button>
-                      {kind === "alphabet" ? (
+                      {kind === "alphabet" ||
+                      (kind === "landmark" &&
+                        landmarkCaptureMode === "static") ? (
                         <Button
                           type="button"
                           onClick={() => setAutoCapture((v) => !v)}
@@ -525,7 +715,11 @@ export default function TranslateRoute() {
                         style={{
                           width: `${Math.min(
                             100,
-                            (clipProgress / NUM_FRAMES) * 100
+                            (clipProgress /
+                              (kind === "landmark"
+                                ? NUM_FRAMES_LANDMARK
+                                : NUM_FRAMES)) *
+                              100
                           )}%`,
                         }}
                       />
@@ -564,7 +758,8 @@ export default function TranslateRoute() {
                     </div>
                   ) : null}
 
-                  {kind === "word" && predictions.length > 1 ? (
+                  {(kind === "word" || kind === "landmark") &&
+                  predictions.length > 1 ? (
                     <div className="flex flex-wrap gap-1.5">
                       {predictions.map((p, i) => (
                         <span
