@@ -22,4 +22,9 @@ export const translateApi = {
       method: "POST",
       body: JSON.stringify({ image, expected_label: expectedLabel }),
     }),
+  signLandmark: (frames: number[][][]) =>
+    request<TranslateResult>("/api/translate/sign-landmark", {
+      method: "POST",
+      body: JSON.stringify({ frames }),
+    }),
 };

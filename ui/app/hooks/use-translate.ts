@@ -37,3 +37,9 @@ export function useGeminiSignGrade() {
     }) => translateApi.signGrade(image, expectedLabel),
   });
 }
+
+export function useSignLandmark() {
+  return useMutation({
+    mutationFn: (frames: number[][][]) => translateApi.signLandmark(frames),
+  });
+}
