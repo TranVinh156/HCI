@@ -70,8 +70,8 @@ const ALPHABET_LOCAL_CONFIDENCE_THRESHOLD = 0.8;
 
 function drawCameraFrame(
   video: HTMLVideoElement,
-  canvas: HTMLCanvasElement
 ): string | null {
+  const canvas = document.createElement("canvas");
   canvas.width = video.videoWidth || 640;
   canvas.height = video.videoHeight || 480;
   const ctx = canvas.getContext("2d");
@@ -200,17 +200,28 @@ export default function TranslateRoute() {
       });
       setStubWarning(!result.model_loaded);
 
-      const finalResult =
+      let finalResult = result;
+      if (
         kind === "alphabet" &&
-          (!result.model_loaded ||
-            result.confidence < ALPHABET_LOCAL_CONFIDENCE_THRESHOLD)
-          ? await geminiAlphabetMutation.mutateAsync(dataUrl)
-          : result;
+        (!result.model_loaded ||
+          result.confidence < ALPHABET_LOCAL_CONFIDENCE_THRESHOLD)
+      ) {
+        const dataUrl = drawCameraFrame(video);
+        if (!dataUrl) {
+          setCameraError("Browser does not support canvas capture.");
+          return;
+        }
+        finalResult = await geminiAlphabetMutation.mutateAsync(dataUrl);
+      }
 
       if (finalResult.confidence >= 0.5 || !finalResult.model_loaded) {
         setPredictions((prev) => [
           ...prev,
-          { label: result.label, confidence: result.confidence, kind: legacyKind },
+          {
+            label: finalResult.label,
+            confidence: finalResult.confidence,
+            kind: legacyKind,
+          },
         ]);
       }
     } catch (error) {
