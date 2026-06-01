@@ -17,9 +17,17 @@ type AdminTableProps<T> = {
   title: string;
   columns: Column<T>[];
   data: T[];
+  emptyMessage?: string;
+  getRowKey?: (item: T, index: number) => React.Key;
 };
 
-export function AdminTable<T>({ title, columns, data }: AdminTableProps<T>) {
+export function AdminTable<T>({
+  title,
+  columns,
+  data,
+  emptyMessage = "No records found.",
+  getRowKey,
+}: AdminTableProps<T>) {
   return (
     <section className="rounded-xl border border-slate-200 bg-white">
       <div className="border-b border-slate-200 p-4">
@@ -36,15 +44,32 @@ export function AdminTable<T>({ title, columns, data }: AdminTableProps<T>) {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {data.map((item, index) => (
-            <TableRow key={index} className="hover:bg-primary/5">
-              {columns.map((column) => (
-                <TableCell key={column.key} className="px-4 py-3 font-semibold">
-                  {column.render(item)}
-                </TableCell>
-              ))}
+          {data.length ? (
+            data.map((item, index) => (
+              <TableRow
+                key={getRowKey?.(item, index) ?? index}
+                className="hover:bg-primary/5"
+              >
+                {columns.map((column) => (
+                  <TableCell
+                    key={column.key}
+                    className="px-4 py-3 font-semibold"
+                  >
+                    {column.render(item)}
+                  </TableCell>
+                ))}
+              </TableRow>
+            ))
+          ) : (
+            <TableRow>
+              <TableCell
+                colSpan={columns.length}
+                className="px-4 py-8 text-center font-bold text-slate-500"
+              >
+                {emptyMessage}
+              </TableCell>
             </TableRow>
-          ))}
+          )}
         </TableBody>
       </Table>
     </section>

@@ -1,4 +1,12 @@
-import { CheckCircle2, ClipboardCheck, HelpCircle, Plus } from "lucide-react";
+import {
+  CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
+  ClipboardCheck,
+  HelpCircle,
+  Plus,
+} from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 
 import { AdminShell } from "~/components/admin/admin-shell";
 import { AdminTable } from "~/components/admin/admin-table";
@@ -8,8 +16,25 @@ import { Card, CardContent } from "~/components/ui/card";
 import { LoadingSpinner } from "~/components/ui/loading-spinner";
 import { useQuizBank } from "~/hooks/use-quiz-bank";
 
+const QUIZ_PAGE_SIZE = 10;
+
 export default function AdminQuizzesRoute() {
   const { data: quizzes = [], isLoading, isError } = useQuizBank();
+  const [currentPage, setCurrentPage] = useState(1);
+  const totalPages = Math.max(1, Math.ceil(quizzes.length / QUIZ_PAGE_SIZE));
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
+
+  const pageStart = (currentPage - 1) * QUIZ_PAGE_SIZE;
+  const pageEnd = Math.min(pageStart + QUIZ_PAGE_SIZE, quizzes.length);
+  const paginatedQuizzes = useMemo(
+    () => quizzes.slice(pageStart, pageEnd),
+    [pageEnd, pageStart, quizzes]
+  );
 
   return (
     <AdminShell title="Quizzes" subtitle="Practice question bank">
@@ -63,31 +88,82 @@ export default function AdminQuizzesRoute() {
             Unable to load question bank.
           </p>
         ) : (
-          <AdminTable
-            title="Question bank"
-            data={quizzes}
-            columns={[
-              {
-                key: "lesson",
-                header: "Lesson",
-                render: (item) => item.lesson_title,
-              },
-              { key: "prompt", header: "Prompt", render: (item) => item.prompt },
-              {
-                key: "type",
-                header: "Type",
-                render: (item) => (
-                  <Badge className="bg-primary/10 text-primary">{item.type}</Badge>
-                ),
-              },
-              { key: "answer", header: "Answer", render: (item) => item.answer },
-              {
-                key: "options",
-                header: "Options",
-                render: (item) => item.options.length,
-              },
-            ]}
-          />
+          <div className="space-y-3">
+            <AdminTable
+              title="Question bank"
+              data={paginatedQuizzes}
+              getRowKey={(item) => item.id}
+              emptyMessage="No quiz questions yet."
+              columns={[
+                {
+                  key: "lesson",
+                  header: "Lesson",
+                  render: (item) => item.lesson_title ?? "Untitled lesson",
+                },
+                {
+                  key: "prompt",
+                  header: "Prompt",
+                  render: (item) => (
+                    <span className="block max-w-md truncate">
+                      {item.prompt}
+                    </span>
+                  ),
+                },
+                {
+                  key: "type",
+                  header: "Type",
+                  render: (item) => (
+                    <Badge className="bg-primary/10 text-primary">
+                      {item.type}
+                    </Badge>
+                  ),
+                },
+                {
+                  key: "answer",
+                  header: "Answer",
+                  render: (item) => item.answer,
+                },
+                {
+                  key: "options",
+                  header: "Options",
+                  render: (item) => item.options.length,
+                },
+              ]}
+            />
+            <div className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-sm font-bold text-slate-500">
+                Showing {quizzes.length ? pageStart + 1 : 0}-{pageEnd} of{" "}
+                {quizzes.length} questions
+              </p>
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="h-10 rounded-xl font-black"
+                  onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+                  disabled={currentPage === 1}
+                >
+                  <ChevronLeft className="size-4" />
+                  Prev
+                </Button>
+                <span className="min-w-24 text-center text-sm font-black text-slate-700">
+                  Page {currentPage} / {totalPages}
+                </span>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="h-10 rounded-xl font-black"
+                  onClick={() =>
+                    setCurrentPage((page) => Math.min(totalPages, page + 1))
+                  }
+                  disabled={currentPage === totalPages}
+                >
+                  Next
+                  <ChevronRight className="size-4" />
+                </Button>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </AdminShell>
