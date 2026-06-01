@@ -128,6 +128,11 @@ export type OverviewStats = {
   total_lessons: number;
   total_questions: number;
   total_attempts: number;
+  lesson_type_distribution: { label: string; value: number }[];
+  question_type_distribution: { label: string; value: number }[];
+  difficulty_distribution: { label: string; value: number }[];
+  content_readiness: { label: string; value: number }[];
+  topic_inventory: { label: string; lessons: number; questions: number }[];
 };
 
 export type StudentStat = {
