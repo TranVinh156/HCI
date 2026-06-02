@@ -23,11 +23,7 @@ import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import {
   BlockyCard,
-  Card,
   CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
 } from "~/components/ui/card";
 import { LoadingSpinner } from "~/components/ui/loading-spinner";
 import { cn } from "~/lib/utils";
@@ -463,59 +459,53 @@ function TopicFlashcardGrid({
   onPractice,
 }: TopicFlashcardGridProps) {
   return (
-    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+    <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
       {isLoading ? (
         <LoadingSpinner
           label="Loading topics"
-          className="py-8 md:col-span-2 xl:col-span-3"
+          className="col-span-full py-8"
         />
       ) : isError ? (
-        <p className="font-bold">Unable to load topics.</p>
+        <p className="col-span-full font-bold">Unable to load topics.</p>
       ) : topics.length ? (
         topics.map((topic) => {
           const selected = selectedTopicId === topic.id;
 
           return (
-            <Card
+            <BlockyCard
               key={topic.id}
               className={cn(
-                "rounded-[2rem] border-slate-200 bg-white transition hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-lg",
+                "h-full",
                 selected && "border-primary/50 shadow-lg"
               )}
             >
-              <CardHeader>
-                <div className="mb-3 flex items-center justify-between gap-3">
-                  <div className="grid size-14 place-items-center rounded-2xl bg-primary/10 text-primary">
-                    <BookOpen className="size-7" />
-                  </div>
-                  <Badge className="bg-primary/10 text-primary">
-                    {topic.lesson_count} lessons
-                  </Badge>
+              <CardContent className="flex h-full flex-col pb-2">
+                <div className="mb-5 rounded-[1.5rem]">
+                  <h2 className="text-2xl font-black">{topic.title}</h2>
                 </div>
-                <CardTitle className="text-xl font-black">
-                  {topic.title}
-                </CardTitle>
-                <CardDescription className="font-semibold">
+                <p className="min-h-12 grow text-sm font-semibold text-slate-600">
                   {topic.description ??
                     "Practice flashcards from lessons in this topic."}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
+                </p>
+                <div className="mt-5 flex items-center justify-between text-xs font-black text-slate-600">
+                  <span>Lessons</span>
+                  <span>{topic.lesson_count}</span>
+                </div>
                 <Button
                   type="button"
                   onClick={() => onPractice(topic.id)}
                   disabled={topic.lesson_count === 0}
-                  className="h-12 w-full rounded-2xl font-black"
+                  className="mt-5 h-12 w-full rounded-2xl font-black"
                 >
                   Practice Flashcard
                   <ArrowRight className="size-5" />
                 </Button>
               </CardContent>
-            </Card>
+            </BlockyCard>
           );
         })
       ) : (
-        <p className="font-bold">No topics yet.</p>
+        <p className="col-span-full font-bold">No topics yet.</p>
       )}
     </div>
   );
@@ -530,57 +520,48 @@ type QuizTopicGridProps = {
 function QuizTopicGrid({
   quizTopics,
   isLoading,
-  isError
+  isError,
 }: QuizTopicGridProps) {
   return (
-    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+    <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
       {isLoading ? (
         <LoadingSpinner
           label="Loading quizzes"
-          className="py-8 md:col-span-2 xl:col-span-3"
+          className="col-span-full py-8"
         />
       ) : isError ? (
-        <p className="font-bold">Unable to load quizzes.</p>
+        <p className="col-span-full font-bold">Unable to load quizzes.</p>
       ) : quizTopics.length ? (
         quizTopics.map(({ topic, questionCount }) => (
-          <Card
-            key={topic.id}
-            className="rounded-[2rem] border-slate-200 bg-white transition hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-lg"
-          >
-            <Link
-              to={`/topic-quiz-history/${topic.id}`}
-              className="block rounded-[2rem] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-            >
-              <CardHeader>
-                <div className="mb-3 flex items-center justify-between gap-3">
-                  <div className="grid size-14 place-items-center rounded-2xl bg-primary/10 text-primary">
-                    <ClipboardCheck className="size-7" />
-                  </div>
-                  <Badge className="bg-primary/10 text-primary">
-                    {questionCount} questions
-                  </Badge>
+          <BlockyCard key={topic.id} className="h-full">
+            <CardContent className="flex h-full flex-col pb-2">
+              <Link
+                to={`/topic-quiz-history/${topic.id}`}
+                className="flex grow flex-col rounded-[1.5rem] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+              >
+                <div className="mb-5 rounded-[1.5rem]">
+                  <h2 className="text-2xl font-black">{topic.title}</h2>
                 </div>
-                <CardTitle className="text-xl font-black">
-                  {topic.title}
-                </CardTitle>
-                <CardDescription className="font-semibold">
+                <p className="min-h-12 grow text-sm font-semibold text-slate-600">
                   {topic.description ??
                     "Practice all quiz questions in this topic."}
-                </CardDescription>
-              </CardHeader>
-            </Link>
-            <CardContent>
-              <Button asChild className="h-12 w-full rounded-2xl font-black">
+                </p>
+              </Link>
+              <div className="mt-5 flex items-center justify-between text-xs font-black text-slate-600">
+                <span>Questions</span>
+                <span>{questionCount}</span>
+              </div>
+              <Button asChild className="mt-5 h-12 w-full rounded-2xl font-black">
                 <Link to={`/topic-quiz/${topic.id}`}>
                   Start quiz
                   <ArrowRight className="size-5" />
                 </Link>
               </Button>
             </CardContent>
-          </Card>
+          </BlockyCard>
         ))
       ) : (
-        <p className="font-bold">No quizzes yet.</p>
+        <p className="col-span-full font-bold">No quizzes yet.</p>
       )}
     </div>
   );
