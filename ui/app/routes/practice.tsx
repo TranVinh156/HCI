@@ -374,13 +374,16 @@ function FlashcardPracticeScreen({
       ) : cards.length ? (
         <div className="min-h-[22rem]">
             {currentCard ? (
-              <div className="relative mx-auto max-w-xl overflow-hidden px-3 py-4">
+              <div className="relative mx-auto max-w-xl overflow-visible px-3 py-4">
+                <div className="pointer-events-none absolute inset-x-8 top-8 h-80 rotate-3 rounded-[1.75rem] border-2 border-[#036678] bg-cyan-100 shadow-[2px_4px_0_#036678]" />
+                <div className="pointer-events-none absolute inset-x-6 top-6 h-80 -rotate-2 rounded-[1.75rem] border-2 border-[#036678] bg-white shadow-[2px_4px_0_#036678]" />
                 <div
+                  key={currentCard.id}
                   onPointerDown={handlePointerDown}
                   onPointerMove={handlePointerMove}
                   onPointerUp={handlePointerEnd}
                   onPointerCancel={handlePointerCancel}
-                  className="relative touch-pan-y select-none"
+                  className="flashcard-drop relative touch-pan-y select-none"
                   style={{
                     transform: `translateX(${dragOffsetX}px) rotate(${dragOffsetX / 18}deg)`,
                     transition:
@@ -626,19 +629,13 @@ function FlipFlashcard({
 
           <div
             aria-hidden={!isFlipped}
-            className="absolute inset-0 flex flex-col justify-between rounded-[1.75rem] border-2 border-[#036678] bg-[#123040] p-5 text-white shadow-[inset_0_-8px_0_rgba(255,255,255,0.18)] [backface-visibility:hidden]"
+            className="absolute inset-0 flex flex-col justify-center gap-4 rounded-[1.75rem] border-2 border-[#036678] bg-[#123040] p-5 text-white shadow-[inset_0_-8px_0_rgba(255,255,255,0.18)] [backface-visibility:hidden]"
             style={{
               backfaceVisibility: "hidden",
               transform: "rotateY(180deg)",
             }}
           >
-            <FlashcardFaceHeader
-              label="Video"
-              source={card.source}
-              inverted
-            />
             <FlashcardVideoBack card={card} isActive={isFlipped} />
-            <FlashcardFaceFooter isFlipped={isFlipped} inverted />
           </div>
         </div>
       </div>
@@ -721,7 +718,10 @@ function FlashcardVideoBack({
   }, [card.id, card.videoKind, isActive]);
 
   return (
-    <div className="min-h-0 space-y-3 overflow-auto text-center">
+    <div className="min-h-0 space-y-4 overflow-auto text-center">
+      <p className="break-words text-2xl font-black leading-tight text-white">
+        {card.front}
+      </p>
       {card.videoKind === "video" && normalizedVideoUrl ? (
         <video
           ref={videoRef}
@@ -757,14 +757,6 @@ function FlashcardVideoBack({
           <Video className="size-8" />
         </div>
       )}
-      <p className="break-words text-sm font-semibold text-cyan-100">
-        {card.back}
-      </p>
-      {card.hint ? (
-        <p className="break-words text-xs font-semibold text-cyan-100/80">
-          {card.hint}
-        </p>
-      ) : null}
     </div>
   );
 }

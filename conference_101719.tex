@@ -1,0 +1,185 @@
+\documentclass[conference]{IEEEtran}
+\IEEEoverridecommandlockouts
+\usepackage[utf8]{inputenc}
+\usepackage[T5]{fontenc}
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{array}
+\usepackage{url}
+
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+
+\begin{document}
+
+\title{Hệ Thống Giúp Trẻ Khiếm Khuyết Học Ngôn Ngữ Ký Hiệu}
+
+\author{\IEEEauthorblockN{Trần Xuân Phong}
+\IEEEauthorblockA{\textit{HCI Course Project}\\
+Mã sinh viên: 23021657\\
+Vietnam}
+\and
+\IEEEauthorblockN{Bùi Minh Quang}
+\IEEEauthorblockA{\textit{HCI Course Project}\\
+Mã sinh viên: 23021669\\
+Vietnam}
+\and
+\IEEEauthorblockN{Phạm Minh Quân}
+\IEEEauthorblockA{\textit{HCI Course Project}\\
+Vietnam}
+\and
+\IEEEauthorblockN{Trần Văn Vinh}
+\IEEEauthorblockA{\textit{HCI Course Project}\\
+Mã sinh viên: 23021749\\
+Vietnam}
+}
+
+\maketitle
+
+\begin{abstract}
+Báo cáo này trình bày khung thiết kế cho một hệ thống hỗ trợ trẻ khiếm khuyết học ngôn ngữ ký hiệu. Nội dung được xây dựng dựa trên bộ slide \textit{GangnamSign.pptx} và \textit{GangnamSign.pdf}. Báo cáo tập trung vào bối cảnh nghiên cứu, hiện trạng vấn đề, các giải pháp đã có, khoảng trống nghiên cứu, cơ sở khoa học, nguyên lý thiết kế tương tác, kiến trúc hệ thống, hướng huấn luyện mô hình và phần demo. Mục tiêu chính của hệ thống là tạo ra một nền tảng học tập trực quan, dễ tiếp cận, có phản hồi tức thời và phù hợp với đặc điểm nhận thức của trẻ em khiếm thính.
+\end{abstract}
+
+\begin{IEEEkeywords}
+ngôn ngữ ký hiệu, trẻ khiếm thính, học tập trực quan, tương tác người máy, phản hồi tức thời, thiết kế lấy người dùng làm trung tâm
+\end{IEEEkeywords}
+
+\section{Giới Thiệu}
+Ngôn ngữ ký hiệu là ngôn ngữ tự nhiên của cộng đồng người khiếm thính. Đối với trẻ em khiếm thính, việc tiếp cận ngôn ngữ ký hiệu từ sớm giúp cải thiện khả năng giao tiếp, phát triển tư duy ngôn ngữ và hỗ trợ hòa nhập xã hội. Theo World Health Organization, hàng trăm triệu người trên thế giới đang sống chung với tình trạng suy giảm thính lực \cite{who}. Trong nhóm này, trẻ em là đối tượng cần được hỗ trợ sớm vì khả năng tiếp cận giáo dục, giao tiếp xã hội và phát triển ngôn ngữ có thể bị ảnh hưởng nếu thiếu công cụ học tập phù hợp.
+
+Báo cáo được tổ chức theo khung nội dung của slide: bối cảnh nghiên cứu và hiện trạng vấn đề; các giải pháp đã có; cơ sở khoa học và nguyên lý thiết kế tương tác; kiến trúc hệ thống; huấn luyện mô hình; và demo hệ thống.
+
+\section{Bối Cảnh Nghiên Cứu và Hiện Trạng Vấn Đề}
+\subsection{Bối cảnh nghiên cứu}
+Một tỷ lệ lớn trẻ em khiếm thính gặp khó khăn trong việc tiếp cận giáo dục, giao tiếp xã hội và phát triển ngôn ngữ từ sớm. Do hạn chế về thính giác, trẻ thường cần các tài nguyên học tập dựa nhiều hơn vào thị giác, hình ảnh, chuyển động và mô phỏng hành động thực tế.
+
+Ngôn ngữ ký hiệu đóng vai trò quan trọng vì giúp trẻ giao tiếp hiệu quả, hình thành nền tảng ngôn ngữ và tham gia vào các hoạt động xã hội. Vì vậy, một hệ thống học tập dành cho nhóm người dùng này cần ưu tiên cách trình bày trực quan, dễ hiểu và có khả năng duy trì sự chú ý của trẻ.
+
+\subsection{Hiện trạng vấn đề}
+Các tài nguyên học tập hiện nay còn thiếu tính hấp dẫn và tương tác. Nhiều tài liệu vẫn ở dạng sách, ảnh tĩnh, video rời rạc hoặc nội dung đơn điệu. Khi trẻ chỉ xem video rồi bắt chước, trẻ thường không biết mình thực hiện đúng hay sai vì không có phản hồi tức thời.
+
+Ngoài ra, trẻ em thường có khả năng tập trung ngắn. Nếu nội dung học tập lặp lại, thiếu tương tác hoặc không có cơ chế khuyến khích, trẻ dễ mất tập trung và khó duy trì việc học thường xuyên.
+
+\section{Các Giải Pháp Đã Có}
+\subsection{Giải pháp truyền thống}
+Các giải pháp truyền thống gồm học trực tiếp với giáo viên, sử dụng sách hoặc từ điển ngôn ngữ ký hiệu, và học từ cộng đồng người khiếm thính. Bảng~\ref{tab:traditional} tóm tắt ưu điểm và nhược điểm của các phương pháp này.
+
+\begin{table}[htbp]
+\caption{So sánh các giải pháp truyền thống}
+\begin{center}
+\footnotesize
+\begin{tabular}{|p{0.20\linewidth}|p{0.31\linewidth}|p{0.31\linewidth}|}
+\hline
+\textbf{Giải pháp} & \textbf{Ưu điểm} & \textbf{Nhược điểm} \\
+\hline
+Học trực tiếp với giáo viên & Tương tác trực tiếp; nhận phản hồi ngay lập tức; có thể điều chỉnh phương pháp dạy phù hợp & Số lượng giáo viên có chuyên môn còn hạn chế; chi phí học tập cao; khó tiếp cận ở khu vực nông thôn hoặc vùng sâu xa; phụ thuộc vào thời gian và vị trí \\
+\hline
+Sách và từ điển ngôn ngữ ký hiệu & Chi phí thấp; dễ tiếp cận & Chỉ cung cấp hình ảnh tĩnh; khó mô tả chuyển động tay; không có phản hồi cho người học; khó tạo hứng thú với trẻ em \\
+\hline
+Học từ cộng đồng người khiếm thính & Môi trường thực hành thực tế; phát triển kỹ năng giao tiếp tự nhiên & Không phải lúc nào cũng có môi trường phù hợp; khó duy trì việc học thường xuyên \\
+\hline
+\end{tabular}
+\label{tab:traditional}
+\end{center}
+\end{table}
+
+\subsection{Giải pháp công nghệ}
+Một số nền tảng công nghệ như Lingvano, The ASL App và các nghiên cứu AI đã hỗ trợ việc học hoặc nhận diện cử chỉ tay. Lingvano có bài học theo cấp độ và thiết kế hiện đại; The ASL App có kho từ vựng phong phú và nội dung dễ tiếp cận; các nghiên cứu AI có thể nhận diện cử chỉ tay và đánh giá động tác.
+
+Tuy nhiên, các nền tảng này vẫn tồn tại hạn chế. Một số ứng dụng chủ yếu dành cho người lớn và chưa tập trung vào trẻ em. Một số hệ thống khó gây hứng thú cho trẻ hoặc thiếu theo dõi tiến trình học tập. Các nghiên cứu AI thường dừng ở mức nghiên cứu, chưa triển khai thành một hệ thống học tập hoàn chỉnh cho trẻ em.
+
+\subsection{Khoảng trống nghiên cứu}
+Khoảng trống chính là thiếu một nền tảng học ngôn ngữ ký hiệu được thiết kế chuyên biệt cho trẻ em khiếm thính. Trẻ em có đặc điểm khác với người lớn: khả năng tập trung ngắn, học tốt hơn qua hình ảnh và trò chơi, cần phản hồi trực quan và đơn giản. Vì vậy, hệ thống cần được thiết kế dựa trên đặc điểm nhận thức và hành vi của trẻ, thay vì chỉ chuyển đổi tài liệu của người lớn sang môi trường số.
+
+\section{Cơ Sở Khoa Học}
+\subsection{Visual Learning Theory}
+Trẻ khiếm thính tiếp nhận thông tin chủ yếu qua thị giác, quan sát chuyển động và minh họa. Khác với trẻ nghe bình thường có thể kết hợp nghe, đọc và quan sát, trẻ khiếm thính cần nhiều nội dung trực quan hơn. Do đó, hệ thống cần có video minh họa, hình ảnh động, mô phỏng cử chỉ thực tế và hạn chế phụ thuộc vào âm thanh.
+
+\subsection{Multimedia Learning Theory}
+Theo nguyên lý học đa phương tiện, người học tiếp thu tốt hơn khi kết hợp hình ảnh và văn bản thay vì chỉ sử dụng văn bản thuần \cite{mayer}. Một bài học về ngôn ngữ ký hiệu nên bao gồm hình ảnh, video ký hiệu và từ vựng ngắn gọn, giúp trẻ liên kết giữa ký hiệu, chuyển động và ý nghĩa.
+
+\subsection{Cognitive Load Theory}
+Cognitive Load Theory cho rằng bộ nhớ làm việc của con người có giới hạn; nếu có quá nhiều thông tin cùng lúc thì người học sẽ bị quá tải và giảm hiệu quả học tập \cite{sweller}. Vì vậy, giao diện không nên hiển thị nhiều video, nhiều nút chức năng hoặc nhiều đoạn văn bản dài trên cùng một màn hình. Mỗi màn hình nên tập trung vào một từ vựng, một ký hiệu và một nhiệm vụ học tập.
+
+\subsection{Feedback Learning}
+Người học tiến bộ nhanh hơn khi nhận được phản hồi ngay sau hành động. Nếu trả lời sai, hệ thống nên hiển thị đáp án đúng và giải thích. Nếu trả lời đúng, hệ thống nên thưởng điểm hoặc hiển thị hiệu ứng xác nhận. Cơ chế này giúp củng cố trí nhớ và hỗ trợ sửa lỗi ngay lập tức.
+
+\section{Nguyên Lý Thiết Kế Tương Tác}
+Các nguyên lý trong phần này được chọn từ đặc điểm người dùng trong slide và các heuristic thiết kế giao diện phổ biến của Nielsen \cite{nielsen}.
+
+\subsection{User-Centered Design}
+Đối tượng người dùng chính là trẻ em khiếm thính khoảng 6--12 tuổi. Nhóm người dùng này thường tiếp nhận thông tin bằng thị giác, có khả năng tập trung ngắn, thích khám phá và dễ mất động lực nếu nội dung học tập đơn điệu. Vì vậy, thiết kế cần ưu tiên video và hình ảnh, bài học ngắn, khả năng tương tác và yếu tố gamification.
+
+\subsection{Visibility of System Status}
+Người dùng cần luôn biết mình đang ở đâu, đang làm gì và tiến độ học tập hiện tại như thế nào. Hệ thống cần hiển thị rõ quá trình học, trạng thái hoàn thành bài học và kết quả của từng hoạt động.
+
+\subsection{Immediate Feedback}
+Mọi hành động cần được phản hồi nhanh chóng. Sau khi học xong bài học, hệ thống cần có phương pháp đánh giá để trẻ biết mức độ hiểu bài. Phản hồi tức thời giúp tăng động lực, giảm nhầm lẫn và tăng khả năng ghi nhớ.
+
+\subsection{Consistency and Standards}
+Các thành phần giao diện cần nhất quán. Các nút chức năng giống nhau nên dùng cùng màu sắc, cùng cách đặt vị trí và cùng cách hiển thị bài học. Sự nhất quán giúp trẻ dễ tiếp cận hệ thống và giảm thời gian làm quen.
+
+\section{Kiến Trúc Hệ Thống}
+\subsection{Tổng quan}
+Theo khung slide, kiến trúc hệ thống được chia thành hai phần chính: frontend và backend. Frontend đảm nhiệm trải nghiệm học tập, hiển thị bài học, quiz, flashcard và giao diện tương tác cho trẻ. Backend đảm nhiệm quản lý dữ liệu, chức năng dịch sign-to-text và các thao tác CRUD phục vụ nội dung học tập.
+
+\subsection{Frontend}
+Phần frontend cần trình bày các màn hình chính của hệ thống:
+\begin{itemize}
+\item màn hình học theo topic;
+\item màn hình bài học và flashcard;
+\item màn hình quiz để đánh giá sau bài học;
+\item màn hình tiến độ học tập;
+\item giao diện trực quan phù hợp với trẻ em.
+\end{itemize}
+
+\subsection{Backend}
+Phần backend cần trình bày các chức năng chính:
+\begin{itemize}
+\item quản lý dữ liệu bài học, topic và quiz;
+\item xử lý chức năng dịch sign-to-text;
+\item cung cấp API cho frontend;
+\item thực hiện các thao tác CRUD cho nội dung hệ thống.
+\end{itemize}
+
+\section{Huấn Luyện Mô Hình}
+Slide dành một phần riêng cho huấn luyện mô hình. Trong báo cáo đầy đủ, mục này nên trình bày theo khung sau:
+\begin{itemize}
+\item dữ liệu dùng để huấn luyện;
+\item tiền xử lý dữ liệu ký hiệu;
+\item mô hình nhận diện cử chỉ;
+\item cách đánh giá mô hình;
+\item cách tích hợp mô hình vào chức năng sign-to-text.
+\end{itemize}
+
+Nội dung chi tiết của mục này cần được bổ sung từ notebook hoặc kết quả thực nghiệm nếu nhóm muốn báo cáo có đầy đủ số liệu định lượng.
+
+\section{Demo}
+Phần demo cần minh họa luồng sử dụng chính của hệ thống:
+\begin{enumerate}
+\item người học chọn topic;
+\item hệ thống hiển thị bài học hoặc flashcard;
+\item người học thực hiện quiz hoặc luyện ký hiệu;
+\item hệ thống phản hồi đúng/sai;
+\item tiến độ học tập được cập nhật.
+\end{enumerate}
+
+Mục tiêu của demo là chứng minh hệ thống không chỉ hiển thị tài liệu học, mà còn tạo trải nghiệm học tập có tương tác, phản hồi và theo dõi tiến trình.
+
+\section{Kết Luận}
+Báo cáo đã trình bày khung thiết kế cho hệ thống giúp trẻ khiếm thính học ngôn ngữ ký hiệu. Từ bối cảnh và hiện trạng vấn đề, có thể thấy nhu cầu về một nền tảng học tập trực quan, hấp dẫn và có phản hồi tức thời. Các nguyên lý như Visual Learning, Multimedia Learning, Cognitive Load, Feedback Learning, User-Centered Design, Visibility of System Status, Immediate Feedback và Consistency and Standards là nền tảng để định hướng thiết kế hệ thống. Trong các bước tiếp theo, nhóm cần bổ sung chi tiết về kiến trúc frontend/backend, kết quả huấn luyện mô hình và minh họa demo để hoàn thiện báo cáo.
+
+\section*{Acknowledgment}
+Nhóm tác giả cảm ơn giảng viên và các bạn trong lớp đã góp ý trong quá trình phát triển đề tài Human-Computer Interaction.
+
+\begin{thebibliography}{00}
+\bibitem{who} World Health Organization, ``Deafness and hearing loss,'' Mar. 3, 2026. [Online]. Available: \url{https://www.who.int/news-room/fact-sheets/detail/deafness-and-hearing-loss}
+\bibitem{mayer} R. E. Mayer, \textit{Multimedia Learning}, 2nd ed. Cambridge, U.K.: Cambridge University Press, 2009.
+\bibitem{sweller} J. Sweller, ``Cognitive load during problem solving: Effects on learning,'' \textit{Cognitive Science}, vol. 12, no. 2, pp. 257--285, 1988.
+\bibitem{nielsen} J. Nielsen, ``10 usability heuristics for user interface design,'' Nielsen Norman Group, Apr. 24, 1994, updated Jan. 30, 2024. [Online]. Available: \url{https://www.nngroup.com/articles/ten-usability-heuristics/}
+\end{thebibliography}
+
+\end{document}
