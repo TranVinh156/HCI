@@ -613,27 +613,7 @@ export default function TranslateRoute() {
 
         <div className="grid gap-4 lg:grid-cols-[1fr_auto_1fr] lg:items-stretch">
           <Card className="min-h-[24rem] rounded-[2rem] border-3 border-slate-800 bg-white shadow-[4px_6px_0_#1f2937]">
-            <CardHeader className="border-b border-slate-100 pb-4">
-              <CardTitle className="flex items-center gap-2 text-lg font-black">
-                {isHandsignToText ? (
-                  <Hand className="size-5 text-primary" />
-                ) : (
-                  <Type className="size-5 text-primary" />
-                )}
-                {sourceLabel}
-              </CardTitle>
-              <CardDescription className="font-semibold">
-                {!isHandsignToText
-                  ? "Type a phrase to convert into hand signs."
-                  : kind === "word"
-                    ? "Bật camera, đưa tay vào khung, bấm Record và thực hiện cử chỉ trong ~2 giây."
-                    : kind === "landmark" && landmarkCaptureMode === "dynamic"
-                      ? "Bật camera, đưa tay vào khung, bấm Record và thực hiện cử chỉ trong ~2 giây (mô hình mới — words)."
-                      : kind === "landmark"
-                        ? "Bật camera, đưa tay vào khung, bấm Capture để nhận diện ký tự / số (mô hình mới)."
-                        : "Bật camera, đưa tay vào khung, bấm Capture để nhận diện."}
-              </CardDescription>
-            </CardHeader>
+
             <CardContent className="flex h-full flex-col gap-4">
               {isHandsignToText ? (
                 <>
@@ -851,20 +831,8 @@ export default function TranslateRoute() {
           </div>
 
           <Card className="min-h-[24rem] rounded-[2rem] border-3 border-slate-800 bg-white shadow-[4px_6px_0_#1f2937]">
-            <CardHeader className="border-b border-slate-100 pb-4">
-              <CardTitle className="flex items-center gap-2 text-lg font-black">
-                {isHandsignToText ? (
-                  <Type className="size-5 text-primary" />
-                ) : (
-                  <Hand className="size-5 text-primary" />
-                )}
-                {targetLabel}
-              </CardTitle>
-              <CardDescription className="font-semibold">
-                Translation result
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="flex min-h-72 flex-col gap-4">
+
+            <CardContent className="flex h-full flex-col gap-4">
               {isHandsignToText ? (
                 <div className="grow rounded-[1.5rem] bg-muted p-4 text-3xl font-black leading-snug text-slate-900">
                   {recognizedText || (
@@ -908,19 +876,6 @@ export default function TranslateRoute() {
                   ) : null}
                 </>
               )}
-
-              <div className="flex flex-wrap gap-2">
-                <Button
-                  type="button"
-                  onClick={copyText}
-                  className="h-11 rounded-2xl font-black"
-                >
-                  <a className="flex gap-2 items-center" href={videoUrl}>
-                    <Download className="size-5" />
-                    Download
-                  </a>
-                </Button>
-              </div>
             </CardContent>
           </Card>
         </div>

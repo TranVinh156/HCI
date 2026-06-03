@@ -220,15 +220,7 @@ export function CameraPractice({ lesson }: CameraPracticeProps) {
               Use the live camera preview to compare the sign with the sample.
             </CardDescription>
           </div>
-          <Badge
-            className={`h-8 px-3 ${
-              isAlphabetLesson
-                ? "bg-emerald-100 text-emerald-700"
-                : "bg-amber-100 text-amber-700"
-            }`}
-          >
-            {isAlphabetLesson ? "AI scoring (real)" : "Gemini scoring (real)"}
-          </Badge>
+
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
