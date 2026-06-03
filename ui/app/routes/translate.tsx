@@ -834,8 +834,8 @@ export default function TranslateRoute() {
 
             <CardContent className="flex h-full flex-col gap-4">
               {isHandsignToText ? (
-                <div className="grow rounded-[1.5rem] bg-muted p-4 text-3xl font-black leading-snug text-slate-900">
-                  {recognizedText || (
+                <div className="grow rounded-[1.5rem] bg-muted p-4 text-3xl font-black leading-snug text-slate-900 text-wrap break-all">
+                  {recognizedText ? <p>{recognizedText}</p> : (
                     <span className="text-slate-400">
                       Capture a sign to see text…
                     </span>

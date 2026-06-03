@@ -4,7 +4,9 @@ import {
   ChevronRight,
   ClipboardCheck,
   HelpCircle,
+  Pencil,
   Plus,
+  Trash2,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
@@ -127,6 +129,34 @@ export default function AdminQuizzesRoute() {
                   key: "options",
                   header: "Options",
                   render: (item) => item.options.length,
+                },
+                {
+                  key: "actions",
+                  header: "Actions",
+                  render: (item) => (
+                    <div className="flex justify-start gap-2">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon-sm"
+                        aria-label={`Edit quiz question ${item.id}`}
+                        title="Edit"
+                        className="text-slate-600 hover:text-primary"
+                      >
+                        <Pencil className="size-4" />
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon-sm"
+                        aria-label={`Delete quiz question ${item.id}`}
+                        title="Delete"
+                        className="text-rose-600 hover:text-rose-700"
+                      >
+                        <Trash2 className="size-4" />
+                      </Button>
+                    </div>
+                  ),
                 },
               ]}
             />
